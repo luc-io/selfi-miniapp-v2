@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .hover-bg {
+    @apply hover:bg-gray-50 transition-colors;
+  }
+
+  .interactive {
+    @apply hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer;
+  }
+}
