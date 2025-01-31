@@ -43,9 +43,29 @@ export function GenerateTab() {
 
   const updateParam = <K extends keyof Params>(key: K, value: Params[K]) => {
     setParams(prev => ({ ...prev, [key]: value }));
-    // Store params in localStorage
-    const stored = JSON.parse(localStorage.getItem('selfi-params') || '{}');
-    localStorage.setItem('selfi-params', JSON.stringify({ ...stored, [key]: value }));
+  };
+
+  const handleSave = () => {
+    // Create a data object that includes both the model and parameters
+    const data = {
+      model: selectedModel?.id,
+      ...params
+    };
+
+    // Convert the data to a string because Telegram WebApp expects a string
+    const dataStr = JSON.stringify(data);
+
+    // Send the data back to the bot
+    if (window.Telegram?.WebApp) {
+      // Store in localStorage for persistence
+      localStorage.setItem('selfi-params', dataStr);
+      
+      // Send data back to the bot
+      window.Telegram.WebApp.sendData(dataStr);
+      
+      // Close the WebApp
+      window.Telegram.WebApp.close();
+    }
   };
 
   return (
@@ -174,10 +194,7 @@ export function GenerateTab() {
         <button
           className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
           disabled={!selectedModel || generate.isPending}
-          onClick={() => {
-            localStorage.setItem('selfi-params', JSON.stringify(params));
-            window.Telegram?.WebApp?.close();
-          }}
+          onClick={handleSave}
         >
           {generate.isPending ? 'Generating...' : 'Save Parameters'}
         </button>
