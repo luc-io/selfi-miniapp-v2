@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Wand2, Sparkles, Images } from 'lucide-react';
+import { useState } from 'react';
+import { Wand2, Sparkles, Image } from 'lucide-react';
 import { Layout, Tabs } from './components/ui/Layout';
 import { useTelegram } from './hooks/useTelegram';
 import { GenerateTab } from './components/generate/GenerateTab';
 import { TrainTab } from './components/train/TrainTab';
 import { ModelsTab } from './components/models/ModelsTab';
 
-// Tab configuration
 const TABS = [
   {
     id: 'generate',
@@ -21,7 +20,7 @@ const TABS = [
   {
     id: 'models',
     label: 'My Models',
-    icon: <Images className="w-4 h-4" />,
+    icon: <Image className="w-4 h-4" />,
   },
 ] as const;
 
