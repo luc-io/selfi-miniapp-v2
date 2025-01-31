@@ -1,37 +1,42 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { generateImage, type GenerateRequest } from '@/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { generateImage } from '@/api';
+import type { Generation } from '@/types';
+import { useTelegram } from './useTelegram';
 
-export function useGenerateImage() {
-  const queryClient = useQueryClient();
-  const { mutateAsync: generate, isPending: isGenerating } = useMutation({
+interface GenerateParams {
+  prompt: string;
+  loraId?: string;
+  negativePrompt?: string;
+  seed?: number;
+  numInferenceSteps?: number;
+  guidanceScale?: number;
+  imageSize?: string;
+  numImages?: number;
+  syncMode?: boolean;
+  outputFormat?: string;
+}
+
+export function useGenerate() {
+  const { tg } = useTelegram();
+
+  const mutation = useMutation({
     mutationFn: generateImage,
-    onSuccess: (data) => {
-      // Invalidate generations query to show new result
-      queryClient.invalidateQueries({ queryKey: ['generations'] });
-
-      // Scroll image into view
-      setTimeout(() => {
-        const img = document.getElementById(`generation-${data.id}`);
-        img?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
-    },
     onError: (error) => {
-      // Show Telegram notification
-      window.Telegram?.WebApp?.showAlert(
-        error instanceof Error ? error.message : 'Failed to generate image'
-      );
+      tg?.showPopup({
+        title: 'Error',
+        message: error.message || 'Failed to generate image'
+      });
     }
   });
 
-  return {
-    generate,
-    isGenerating
-  };
+  return mutation;
 }
 
 export function useGenerations() {
-  return useQuery({
+  const { data: generations = [] } = useQuery<Generation[]>({
     queryKey: ['generations'],
-    queryFn: getGenerations
+    queryFn: () => fetch('/api/generations').then(res => res.json())
   });
+
+  return generations;
 }
