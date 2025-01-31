@@ -43,29 +43,21 @@ export function GenerateTab() {
 
   const updateParam = <K extends keyof Params>(key: K, value: Params[K]) => {
     setParams(prev => ({ ...prev, [key]: value }));
+    // Store params in localStorage
+    const stored = JSON.parse(localStorage.getItem('selfi-params') || '{}');
+    localStorage.setItem('selfi-params', JSON.stringify({ ...stored, [key]: value }));
   };
 
   const handleSave = () => {
-    // Create a data object that includes both the model and parameters
     const data = {
-      model: selectedModel?.id,
-      ...params
+      action: 'save_params',
+      model: selectedModel,
+      params: params
     };
 
-    // Convert the data to a string because Telegram WebApp expects a string
-    const dataStr = JSON.stringify(data);
-
-    // Send the data back to the bot
-    if (window.Telegram?.WebApp) {
-      // Store in localStorage for persistence
-      localStorage.setItem('selfi-params', dataStr);
-      
-      // Send data back to the bot
-      window.Telegram.WebApp.sendData(dataStr);
-      
-      // Close the WebApp
-      window.Telegram.WebApp.close();
-    }
+    // Send data to bot before closing
+    window.Telegram?.WebApp?.sendData(JSON.stringify(data));
+    window.Telegram?.WebApp?.close();
   };
 
   return (
