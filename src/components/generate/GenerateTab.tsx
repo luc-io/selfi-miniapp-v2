@@ -49,107 +49,142 @@ export function GenerateTab() {
   };
 
   return (
-    <Card className="space-y-6 p-4">
-      <ModelSelector onSelect={setSelectedModel} />
-
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Image Size</label>
-          <Select 
-            value={params.image_size} 
-            onValueChange={v => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(IMAGE_SIZES).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <Card className="bg-white rounded-lg shadow-md">
+      <div className="p-6 space-y-8">
+        {/* Model Selection */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800">Model Settings</h2>
+          <ModelSelector onSelect={setSelectedModel} />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Steps ({params.num_inference_steps})</label>
-          <Slider 
-            value={[params.num_inference_steps]}
-            onValueChange={(v: number[]) => updateParam('num_inference_steps', v[0])}
-            min={1}
-            max={50}
-            step={1}
-          />
+        {/* Image Parameters */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-gray-800">Image Parameters</h2>
+          
+          {/* Image Size */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Image Size</label>
+            <Select 
+              value={params.image_size} 
+              onValueChange={v => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(IMAGE_SIZES).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Steps */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Steps <span className="text-gray-500">({params.num_inference_steps})</span>
+            </label>
+            <Slider 
+              value={[params.num_inference_steps]}
+              onValueChange={(v: number[]) => updateParam('num_inference_steps', v[0])}
+              min={1}
+              max={50}
+              step={1}
+              className="py-2"
+            />
+          </div>
+
+          {/* Guidance Scale */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Guidance Scale <span className="text-gray-500">({params.guidance_scale})</span>
+            </label>
+            <Slider 
+              value={[params.guidance_scale]}
+              onValueChange={(v: number[]) => updateParam('guidance_scale', v[0])}
+              min={1}
+              max={20}
+              step={0.1}
+              className="py-2"
+            />
+          </div>
+
+          {/* Number of Images */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Number of Images <span className="text-gray-500">({params.num_images})</span>
+            </label>
+            <Slider 
+              value={[params.num_images]}
+              onValueChange={(v: number[]) => updateParam('num_images', v[0])}
+              min={1}
+              max={4}
+              step={1}
+              className="py-2"
+            />
+          </div>
+
+          {/* Output Format */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Output Format</label>
+            <Select 
+              value={params.output_format}
+              onValueChange={v => updateParam('output_format', v as 'jpeg' | 'png')}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="jpeg">JPEG</SelectItem>
+                <SelectItem value="png">PNG</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Guidance Scale ({params.guidance_scale})</label>
-          <Slider 
-            value={[params.guidance_scale]}
-            onValueChange={(v: number[]) => updateParam('guidance_scale', v[0])}
-            min={1}
-            max={20}
-            step={0.1}
-          />
+        {/* Additional Options */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800">Additional Options</h2>
+          
+          {/* Safety Checker */}
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Safety Checker</label>
+              <p className="text-sm text-gray-500">Filter inappropriate content</p>
+            </div>
+            <Switch 
+              checked={params.enable_safety_checker}
+              onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
+            />
+          </div>
+
+          {/* Sync Mode */}
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Sync Mode</label>
+              <p className="text-sm text-gray-500">Wait for generation to complete</p>
+            </div>
+            <Switch 
+              checked={params.sync_mode}
+              onCheckedChange={(v: boolean) => updateParam('sync_mode', v)}
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Number of Images ({params.num_images})</label>
-          <Slider 
-            value={[params.num_images]}
-            onValueChange={(v: number[]) => updateParam('num_images', v[0])}
-            min={1}
-            max={4}
-            step={1}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Safety Checker</label>
-          <Switch 
-            checked={params.enable_safety_checker}
-            onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Output Format</label>
-          <Select 
-            value={params.output_format}
-            onValueChange={v => updateParam('output_format', v as 'jpeg' | 'png')}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="jpeg">JPEG</SelectItem>
-              <SelectItem value="png">PNG</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">Sync Mode</label>
-          <Switch 
-            checked={params.sync_mode}
-            onCheckedChange={(v: boolean) => updateParam('sync_mode', v)}
-          />
-        </div>
+        {/* Save Button */}
+        <button
+          className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+          disabled={!selectedModel || generate.isPending}
+          onClick={() => {
+            localStorage.setItem('selfi-params', JSON.stringify(params));
+            window.Telegram?.WebApp?.close();
+          }}
+        >
+          {generate.isPending ? 'Generating...' : 'Save Parameters'}
+        </button>
       </div>
-
-      <button
-        className="w-full bg-blue-500 text-white rounded-lg px-4 py-2 font-medium disabled:opacity-50 hover:bg-blue-600"
-        disabled={!selectedModel || generate.isPending}
-        onClick={() => {
-          // Store all params
-          localStorage.setItem('selfi-params', JSON.stringify(params));
-          // Close WebApp
-          window.Telegram?.WebApp?.close();
-        }}
-      >
-        {generate.isPending ? 'Generating...' : 'Save Parameters'}
-      </button>
     </Card>
   );
 }
