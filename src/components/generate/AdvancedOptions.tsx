@@ -1,56 +1,35 @@
-import React from 'react';
-import { Input, Textarea } from '../ui/Layout';
+import { useState } from 'react';
+import { Input, Textarea } from '../ui/components';
+import type { AdvancedOptionsProps } from './types';
 
-interface AdvancedOptionsProps {
-  negativePrompt?: string;
-  seed?: number;
-  onChange: (options: { negativePrompt?: string; seed?: number }) => void;
-  disabled?: boolean;
-}
+export function AdvancedOptions({ onChange }: AdvancedOptionsProps) {
+  const [negativePrompt, setNegativePrompt] = useState('');
+  const [seed, setSeed] = useState('');
 
-export function AdvancedOptions({
-  negativePrompt,
-  seed,
-  onChange,
-  disabled
-}: AdvancedOptionsProps) {
-  const handleNegativePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange({
-      negativePrompt: e.target.value,
-      seed
-    });
+  const handleNegativePromptChange = (value: string) => {
+    setNegativePrompt(value);
+    onChange({ negativePrompt: value, seed: Number(seed) || undefined });
   };
 
-  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    onChange({
-      negativePrompt,
-      seed: value ? parseInt(value) : undefined
-    });
+  const handleSeedChange = (value: string) => {
+    setSeed(value);
+    onChange({ negativePrompt, seed: Number(value) || undefined });
   };
 
   return (
     <div className="space-y-4">
       <Textarea
-        label="Negative Prompt"
-        placeholder="Things you don't want in the image..."
         value={negativePrompt}
         onChange={handleNegativePromptChange}
-        disabled={disabled}
+        placeholder="Negative prompt (things to avoid in the image)..."
       />
-
+      
       <Input
-        type="number"
-        label="Seed"
-        placeholder="Random seed"
-        value={seed ?? ''}
+        value={seed}
         onChange={handleSeedChange}
-        disabled={disabled}
+        placeholder="Seed (optional)"
+        type="number"
       />
-
-      <div className="text-xs text-gray-500">
-        Using the same seed with the same prompt and style will generate the same image.
-      </div>
     </div>
   );
 }
