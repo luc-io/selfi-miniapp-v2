@@ -5,6 +5,7 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
+import type { Model } from '@/types';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -13,12 +14,23 @@ const IMAGE_SIZES = {
   square: 'Square',
   portrait_4_3: 'Portrait 4:3',
   portrait_16_9: 'Portrait 16:9',
+} as const;
+
+type Params = {
+  image_size: keyof typeof IMAGE_SIZES;
+  num_inference_steps: number;
+  seed: number;
+  guidance_scale: number;
+  num_images: number;
+  sync_mode: boolean;
+  enable_safety_checker: boolean;
+  output_format: 'jpeg' | 'png';
 };
 
 export function GenerateTab() {
   const generate = useGenerate();
-  const [selectedModel, setSelectedModel] = useState(null);
-  const [params, setParams] = useState({
+  const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
+  const [params, setParams] = useState<Params>({
     image_size: 'landscape_4_3',
     num_inference_steps: 28,
     seed: Math.floor(Math.random() * 1000000),
@@ -29,7 +41,7 @@ export function GenerateTab() {
     output_format: 'jpeg'
   });
 
-  const updateParam = (key: string, value: any) => {
+  const updateParam = <K extends keyof Params>(key: K, value: Params[K]) => {
     setParams(prev => ({ ...prev, [key]: value }));
     // Store params in localStorage
     const stored = JSON.parse(localStorage.getItem('selfi-params') || '{}');
@@ -45,7 +57,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Image Size</label>
           <Select 
             value={params.image_size} 
-            onValueChange={v => updateParam('image_size', v)}
+            onValueChange={v => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
           >
             <SelectTrigger>
               <SelectValue />
@@ -64,7 +76,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Steps ({params.num_inference_steps})</label>
           <Slider 
             value={[params.num_inference_steps]}
-            onValueChange={([v]) => updateParam('num_inference_steps', v)}
+            onValueChange={(v: number[]) => updateParam('num_inference_steps', v[0])}
             min={1}
             max={50}
             step={1}
@@ -75,7 +87,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Guidance Scale ({params.guidance_scale})</label>
           <Slider 
             value={[params.guidance_scale]}
-            onValueChange={([v]) => updateParam('guidance_scale', v)}
+            onValueChange={(v: number[]) => updateParam('guidance_scale', v[0])}
             min={1}
             max={20}
             step={0.1}
@@ -86,7 +98,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Number of Images ({params.num_images})</label>
           <Slider 
             value={[params.num_images]}
-            onValueChange={([v]) => updateParam('num_images', v)}
+            onValueChange={(v: number[]) => updateParam('num_images', v[0])}
             min={1}
             max={4}
             step={1}
@@ -97,7 +109,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Safety Checker</label>
           <Switch 
             checked={params.enable_safety_checker}
-            onCheckedChange={v => updateParam('enable_safety_checker', v)}
+            onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
           />
         </div>
 
@@ -105,7 +117,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Output Format</label>
           <Select 
             value={params.output_format}
-            onValueChange={v => updateParam('output_format', v)}
+            onValueChange={v => updateParam('output_format', v as 'jpeg' | 'png')}
           >
             <SelectTrigger>
               <SelectValue />
@@ -121,7 +133,7 @@ export function GenerateTab() {
           <label className="text-sm font-medium">Sync Mode</label>
           <Switch 
             checked={params.sync_mode}
-            onCheckedChange={v => updateParam('sync_mode', v)}
+            onCheckedChange={(v: boolean) => updateParam('sync_mode', v)}
           />
         </div>
       </div>
