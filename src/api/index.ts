@@ -1,7 +1,6 @@
 import { useTelegram } from '@/hooks/useTelegram';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const DEBUG = import.meta.env.VITE_DEBUG === 'true';
 
 async function createApiRequest<T>(
   path: string,
