@@ -24,11 +24,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-
-    /* Type Definitions */
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "types.d.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
