@@ -1,25 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Model } from '@/types';
 
+// Sample data for development
+const SAMPLE_MODELS: Model[] = [
+  { id: '1', name: 'SDXL Base', type: 'public' },
+  { id: '2', name: 'SDXL Turbo', type: 'public' },
+  { id: '3', name: 'DallE', type: 'public' },
+];
+
 async function fetchModels() {
-  const response = await fetch('/api/models');
-  return response.json() as Promise<Model[]>;
+  // For development, return sample data
+  return SAMPLE_MODELS;
 }
 
 async function fetchPublicModels() {
-  const response = await fetch('/api/models/public');
-  return response.json() as Promise<Model[]>;
+  // For development, return sample data
+  return SAMPLE_MODELS.filter(model => model.type === 'public');
 }
 
 export function useModels() {
-  const { data: models = [] } = useQuery<Model[]>({
+  const { data: models = SAMPLE_MODELS } = useQuery<Model[]>({
     queryKey: ['models'],
-    queryFn: fetchModels
+    queryFn: fetchModels,
+    initialData: SAMPLE_MODELS,
   });
 
-  const { data: publicModels = [] } = useQuery<Model[]>({
+  const { data: publicModels = SAMPLE_MODELS } = useQuery<Model[]>({
     queryKey: ['models', 'public'],
-    queryFn: fetchPublicModels
+    queryFn: fetchPublicModels,
+    initialData: SAMPLE_MODELS,
   });
 
   function getModel(modelId: string): Model | undefined {
