@@ -51,11 +51,8 @@ export function GenerateTab() {
   return (
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
-        {/* Model Selection */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">Model Settings</h2>
-          <ModelSelector onSelect={setSelectedModel} />
-        </div>
+        {/* Hidden ModelSelector to handle model selection */}
+        <ModelSelector onSelect={setSelectedModel} />
 
         {/* Image Parameters */}
         <div className="space-y-6">
