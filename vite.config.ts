@@ -2,14 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// Import Tailwind CSS plugin
-import tailwindcss from '@tailwindcss/vite';
-
+// Tailwind is configured through PostCSS, no need for direct import
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [react()],
   server: {
     https: true,
     port: 5173,
