@@ -20,6 +20,7 @@ interface TelegramPopup {
 export interface TelegramWebApp {
   ready(): void;
   close(): void;
+  sendData(data: string): void;
   initData: string;
   initDataUnsafe: {
     user?: TelegramUser;
