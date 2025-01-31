@@ -1,13 +1,9 @@
-import React from 'react';
-import { Card } from '../ui/Layout';
+import { Card } from '../ui/components';
 
 export function ModelsTab() {
   return (
     <Card>
-      {/* TODO: Implement models list UI */}
-      <div className="text-center py-8 text-gray-500">
-        My models will appear here...
-      </div>
+      <div>Models tab - Coming soon</div>
     </Card>
   );
 }
