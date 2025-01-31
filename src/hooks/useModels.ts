@@ -1,39 +1,37 @@
 import { useQuery } from '@tanstack/react-query';
-import { getMyModels, getPublicModels } from '@/api';
+import type { Model } from '@/types';
 
-export function useMyModels() {
-  return useQuery({
-    queryKey: ['models', 'my'],
-    queryFn: getMyModels
-  });
+async function fetchModels() {
+  const response = await fetch('/api/models');
+  return response.json() as Promise<Model[]>;
 }
 
-export function usePublicModels(options?: {
-  limit?: number;
-  offset?: number;
-  sort?: 'newest' | 'popular';
-}) {
-  return useQuery({
-    queryKey: ['models', 'public', options],
-    queryFn: () => getPublicModels(options)
-  });
+async function fetchPublicModels() {
+  const response = await fetch('/api/models/public');
+  return response.json() as Promise<Model[]>;
 }
 
-export function useModel(modelId: string) {
-  return useQuery({
-    queryKey: ['models', modelId],
-    queryFn: async () => {
-      // First try public models
-      const publicModels = await getPublicModels();
-      const publicModel = publicModels.find(m => m.id === modelId);
-      if (publicModel) return publicModel;
-
-      // Then try user's models
-      const myModels = await getMyModels();
-      const myModel = myModels.find(m => m.id === modelId);
-      if (myModel) return myModel;
-
-      throw new Error('Model not found');
-    }
+export function useModels() {
+  const { data: models = [] } = useQuery<Model[]>({
+    queryKey: ['models'],
+    queryFn: fetchModels
   });
+
+  const { data: publicModels = [] } = useQuery<Model[]>({
+    queryKey: ['models', 'public'],
+    queryFn: fetchPublicModels
+  });
+
+  function getModel(modelId: string): Model | undefined {
+    const model = models.find((m: Model) => m.id === modelId);
+    if (model) return model;
+
+    return publicModels.find((m: Model) => m.id === modelId);
+  }
+
+  return {
+    models,
+    publicModels,
+    getModel
+  };
 }
