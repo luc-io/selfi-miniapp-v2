@@ -30,6 +30,16 @@ export interface Generation {
   error?: string;
 }
 
+interface TelegramPopup {
+  title?: string;
+  message: string;
+  buttons?: Array<{
+    id?: string;
+    type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+    text?: string;
+  }>;
+}
+
 // Declare Telegram WebApp types
 declare global {
   interface Window {
@@ -41,6 +51,7 @@ declare global {
         initDataUnsafe: {
           user?: TelegramUser;
         };
+        showPopup(params: TelegramPopup): Promise<string | void>;
       };
     };
   }
