@@ -3,10 +3,21 @@ import { Card, Button, Textarea } from '../ui/components';
 import { useGenerate } from '@/hooks/useGenerate';
 import { ModelSelector } from './ModelSelector';
 import { AdvancedOptions } from './AdvancedOptions';
+import type { Model } from '@/types';
 
 export function GenerateTab() {
   const [prompt, setPrompt] = useState('');
+  const [selectedModel, setSelectedModel] = useState<Model>();
+  const [advancedOptions, setAdvancedOptions] = useState({});
   const generate = useGenerate();
+
+  const handleGenerate = () => {
+    generate.mutate({
+      prompt,
+      loraId: selectedModel?.id,
+      ...advancedOptions,
+    });
+  };
 
   return (
     <Card>
@@ -17,11 +28,11 @@ export function GenerateTab() {
           placeholder="Enter your prompt..."
         />
         
-        <ModelSelector />
-        <AdvancedOptions />
+        <ModelSelector onSelect={setSelectedModel} />
+        <AdvancedOptions onChange={setAdvancedOptions} />
         
         <Button 
-          onClick={() => generate.mutate({ prompt })}
+          onClick={handleGenerate}
           disabled={!prompt.trim() || generate.isPending}
           className="w-full bg-blue-500 text-white hover:bg-blue-600"
         >
