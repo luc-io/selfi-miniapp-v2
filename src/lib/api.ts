@@ -1,4 +1,4 @@
-import { useTelegram } from '../hooks/useTelegram';
+import type { TelegramUser } from '../types/telegram';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -10,10 +10,9 @@ export class APIError extends Error {
 
 export async function apiRequest<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  user?: TelegramUser
 ): Promise<T> {
-  const { user } = useTelegram();
-  
   const headers = {
     'Content-Type': 'application/json',
     'x-user-id': user?.id.toString() || '',
