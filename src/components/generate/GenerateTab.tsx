@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '../ui/components';
 import { useGenerate } from '@/hooks/useGenerate';
 import { ModelSelector } from './ModelSelector';
@@ -6,6 +6,7 @@ import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
 import type { Model } from '@/types';
+import { getUserParameters, saveUserParameters } from '@/api/parameters';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -27,44 +28,84 @@ type Params = {
   output_format: 'jpeg' | 'png';
 };
 
+const DEFAULT_PARAMS: Params = {
+  image_size: 'landscape_4_3',
+  num_inference_steps: 28,
+  seed: Math.floor(Math.random() * 1000000),
+  guidance_scale: 3.5,
+  num_images: 1,
+  sync_mode: false,
+  enable_safety_checker: true,
+  output_format: 'jpeg'
+};
+
 export function GenerateTab() {
   const generate = useGenerate();
   const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
-  const [params, setParams] = useState<Params>({
-    image_size: 'landscape_4_3',
-    num_inference_steps: 28,
-    seed: Math.floor(Math.random() * 1000000),
-    guidance_scale: 3.5,
-    num_images: 1,
-    sync_mode: false,
-    enable_safety_checker: true,
-    output_format: 'jpeg'
-  });
+  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const updateParam = <K extends keyof Params>(key: K, value: Params[K]) => {
-    setParams(prev => ({ ...prev, [key]: value }));
-    // Store params in localStorage
-    const stored = JSON.parse(localStorage.getItem('selfi-params') || '{}');
-    localStorage.setItem('selfi-params', JSON.stringify({ ...stored, [key]: value }));
+  // Load saved parameters on component mount
+  useEffect(() => {
+    const loadParams = async () => {
+      try {
+        const savedParams = await getUserParameters();
+        if (savedParams?.params) {
+          setParams(savedParams.params as Params);
+          
+          // If model was saved, select it
+          if (savedParams.params.model) {
+            setSelectedModel(savedParams.params.model as Model);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading parameters:', error);
+      }
+    };
+    loadParams();
+  }, []);
+
+  const updateParam = async <K extends keyof Params>(key: K, value: Params[K]) => {
+    const newParams = { ...params, [key]: value };
+    setParams(newParams);
+    
+    try {
+      await saveUserParameters(newParams);
+    } catch (error) {
+      console.error('Error saving parameters:', error);
+    }
   };
 
-  const handleSave = () => {
-    const data = {
-      action: 'save_params',
-      model: selectedModel,
-      params: params
-    };
+  const handleSave = async () => {
+    if (!selectedModel) return;
 
-    // Send data to bot before closing
-    window.Telegram?.WebApp?.sendData(JSON.stringify(data));
-    window.Telegram?.WebApp?.close();
+    setIsSaving(true);
+    try {
+      await saveUserParameters({
+        ...params,
+        model: selectedModel
+      });
+      
+      window.Telegram?.WebApp?.sendData(JSON.stringify({
+        action: 'save_params',
+        model: selectedModel,
+        params: params
+      }));
+      window.Telegram?.WebApp?.close();
+    } catch (error) {
+      console.error('Error saving parameters:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
-        {/* Hidden ModelSelector to handle model selection */}
-        <ModelSelector onSelect={setSelectedModel} />
+        <ModelSelector 
+          onSelect={setSelectedModel} 
+          defaultValue={selectedModel}
+        />
 
         {/* Image Parameters */}
         <div className="space-y-6">
@@ -185,10 +226,10 @@ export function GenerateTab() {
         {/* Save Button */}
         <button
           className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-          disabled={!selectedModel || generate.isPending}
+          disabled={!selectedModel || generate.isPending || isSaving}
           onClick={handleSave}
         >
-          {generate.isPending ? 'Generating...' : 'Save Parameters'}
+          {isSaving ? 'Saving...' : 'Save Parameters'}
         </button>
       </div>
     </Card>
