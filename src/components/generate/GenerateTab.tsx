@@ -5,7 +5,10 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Loader2 } from 'lucide-react';
 import type { Model } from '@/types';
+import { paramsApi } from '@/api/params';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -40,29 +43,49 @@ export function GenerateTab() {
     enable_safety_checker: true,
     output_format: 'jpeg'
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateParam = <K extends keyof Params>(key: K, value: Params[K]) => {
+    console.log(`[GenerateTab] Updating param ${key}:`, value);
     setParams(prev => ({ ...prev, [key]: value }));
     // Store params in localStorage
     const stored = JSON.parse(localStorage.getItem('selfi-params') || '{}');
     localStorage.setItem('selfi-params', JSON.stringify({ ...stored, [key]: value }));
   };
 
-  const handleSave = () => {
-    const data = {
-      action: 'save_params',
-      model: selectedModel,
-      params: params
-    };
+  const handleSave = async () => {
+    if (!selectedModel) return;
+    
+    console.log('[GenerateTab] Saving parameters...');
+    setIsSaving(true);
+    setError(null);
 
-    // Send data to bot before closing
-    window.Telegram?.WebApp?.sendData(JSON.stringify(data));
-    window.Telegram?.WebApp?.close();
+    try {
+      const response = await paramsApi.saveParams(selectedModel, params);
+      console.log('[GenerateTab] Parameters saved successfully:', response);
+      
+      // Optional: close the app after successful save
+      window.Telegram?.WebApp?.close();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save parameters. Please try again.';
+      console.error('[GenerateTab] Error saving parameters:', err);
+      setError(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Hidden ModelSelector to handle model selection */}
         <ModelSelector onSelect={setSelectedModel} />
 
@@ -184,11 +207,12 @@ export function GenerateTab() {
 
         {/* Save Button */}
         <button
-          className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-          disabled={!selectedModel || generate.isPending}
+          className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 flex items-center justify-center gap-2"
+          disabled={!selectedModel || isSaving || generate.isPending}
           onClick={handleSave}
         >
-          {generate.isPending ? 'Generating...' : 'Save Parameters'}
+          {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isSaving ? 'Saving...' : 'Save Parameters'}
         </button>
       </div>
     </Card>
