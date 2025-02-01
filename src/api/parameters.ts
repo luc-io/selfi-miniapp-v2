@@ -1,4 +1,5 @@
 import { WebApp } from '@twa-dev/types';
+import { apiRequest } from '../lib/api';
 
 declare global {
   interface Window {
@@ -18,20 +19,16 @@ interface UserParameters {
     sync_mode?: boolean;
     enable_safety_checker?: boolean;
     output_format?: string;
+    model?: any;  // Add model to params type
   };
 }
 
 export async function getUserParameters(): Promise<UserParameters | null> {
-  const telegramId = window.Telegram.WebApp.initDataUnsafe.user?.id;
-  if (!telegramId) return null;
+  const user = window.Telegram.WebApp.initDataUnsafe.user;
+  if (!user?.id) return null;
 
   try {
-    const response = await fetch(`/api/user-parameters/${telegramId}`);
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error(`Failed to get user parameters: ${response.statusText}`);
-    }
-    return response.json();
+    return await apiRequest<UserParameters>(`/api/params/${user.id}`, {}, user);
   } catch (error) {
     console.error('Error fetching user parameters:', error);
     return null;
@@ -39,21 +36,14 @@ export async function getUserParameters(): Promise<UserParameters | null> {
 }
 
 export async function saveUserParameters(params: UserParameters['params']): Promise<UserParameters> {
-  const telegramId = window.Telegram.WebApp.initDataUnsafe.user?.id;
-  if (!telegramId) throw new Error('No user ID found');
+  const user = window.Telegram.WebApp.initDataUnsafe.user;
+  if (!user?.id) throw new Error('No user ID found');
 
-  const response = await fetch(`/api/user-parameters/${telegramId}`, {
+  return await apiRequest<UserParameters>('/api/params', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ params }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to save parameters');
-  }
-
-  return response.json();
+    body: JSON.stringify({ 
+      model: params.model,
+      params
+    })
+  }, user);
 }
