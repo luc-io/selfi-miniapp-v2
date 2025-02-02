@@ -33,6 +33,7 @@ export async function saveUserParameters(params: UserParameters['params']): Prom
   return await apiRequest<UserParameters>('/api/params', {
     method: 'POST',
     body: JSON.stringify({ 
+      user_id: user.id,  // Add user_id to body
       model: params.model,
       params
     })
