@@ -40,6 +40,10 @@ const DEFAULT_PARAMS: Params = {
   output_format: 'jpeg'
 };
 
+function generateRandomSeed(): number {
+  return Math.floor(Math.random() * 1000000);
+}
+
 export function GenerateTab() {
   const generate = useGenerate();
   const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
@@ -54,7 +58,10 @@ export function GenerateTab() {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
           setParams(savedParams.params as Params);
-          setSeedInput(savedParams.params.seed?.toString() || '');
+          // Only set seed input if it exists
+          if (savedParams.params.seed) {
+            setSeedInput(savedParams.params.seed.toString());
+          }
           
           // If model was saved, select it
           if (savedParams.params.model) {
@@ -79,18 +86,23 @@ export function GenerateTab() {
     }
   };
 
-  const generateRandomSeed = () => {
-    const newSeed = Math.floor(Math.random() * 1000000);
-    setSeedInput(newSeed.toString());
-    updateParam('seed', newSeed);
-  };
-
   const handleSeedChange = (value: string) => {
     setSeedInput(value);
-    const numValue = parseInt(value);
-    if (!isNaN(numValue)) {
-      updateParam('seed', numValue);
+    // If value is empty, don't update the parameter - we'll generate random when needed
+    if (value.trim() === '') {
+      updateParam('seed', generateRandomSeed());
+    } else {
+      const numValue = parseInt(value);
+      if (!isNaN(numValue)) {
+        updateParam('seed', numValue);
+      }
     }
+  };
+
+  const handleRefreshSeed = () => {
+    const newSeed = generateRandomSeed();
+    setSeedInput('');
+    updateParam('seed', newSeed);
   };
 
   const handleSave = async () => {
@@ -98,15 +110,19 @@ export function GenerateTab() {
 
     setIsSaving(true);
     try {
-      await saveUserParameters({
+      // If no seed input, generate a random one
+      const paramsToSave = {
         ...params,
+        seed: seedInput.trim() === '' ? generateRandomSeed() : params.seed,
         model: selectedModel
-      });
+      };
+
+      await saveUserParameters(paramsToSave);
       
       window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
         model: selectedModel,
-        params: params
+        params: paramsToSave
       }));
       window.Telegram?.WebApp?.close();
     } catch (error) {
@@ -156,19 +172,19 @@ export function GenerateTab() {
                 type="number"
                 value={seedInput}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleSeedChange(e.target.value)}
-                placeholder="Enter seed number"
+                placeholder="Random seed"
                 className="flex-1"
               />
               <Button 
-                onClick={generateRandomSeed}
+                onClick={handleRefreshSeed}
                 variant="outline"
                 className="px-3"
-                title="Generate random seed"
+                title="Use random seed"
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-sm text-gray-500">Use the same seed to get consistent results</p>
+            <p className="text-sm text-gray-500">Leave empty for random seed, or enter a value for consistent results</p>
           </div>
 
           {/* Steps */}
