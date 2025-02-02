@@ -1,5 +1,4 @@
 import { apiRequest } from '../lib/api';
-import { TelegramWebApp, TelegramUser } from '../types/telegram';
 
 interface UserParameters {
   params: {
