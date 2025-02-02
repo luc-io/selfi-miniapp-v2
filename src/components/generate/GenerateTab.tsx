@@ -39,10 +39,6 @@ const DEFAULT_PARAMS: Params = {
   output_format: 'jpeg'
 };
 
-function generateRandomSeed(): number {
-  return Math.floor(Math.random() * 1000000);
-}
-
 export function GenerateTab() {
   const generate = useGenerate();
   const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
