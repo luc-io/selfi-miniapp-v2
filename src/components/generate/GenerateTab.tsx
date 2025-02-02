@@ -23,7 +23,7 @@ const IMAGE_SIZES = {
 type Params = {
   image_size: keyof typeof IMAGE_SIZES;
   num_inference_steps: number;
-  seed: number;
+  seed?: number;
   guidance_scale: number;
   num_images: number;
   enable_safety_checker: boolean;
@@ -33,7 +33,6 @@ type Params = {
 const DEFAULT_PARAMS: Params = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
-  seed: Math.floor(Math.random() * 1000000),
   guidance_scale: 3.5,
   num_images: 1,
   enable_safety_checker: true,
@@ -57,10 +56,14 @@ export function GenerateTab() {
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
-          setParams(savedParams.params as Params);
-          // Only set seed input if it exists
-          if (savedParams.params.seed) {
+          const loadedParams = savedParams.params as Params;
+          
+          // Don't include seed in default params unless explicitly set by the user
+          if (savedParams.params.seed !== undefined) {
             setSeedInput(savedParams.params.seed.toString());
+            setParams({ ...loadedParams });
+          } else {
+            setParams({ ...loadedParams, seed: undefined });
           }
           
           // If model was saved, select it
@@ -88,9 +91,13 @@ export function GenerateTab() {
 
   const handleSeedChange = (value: string) => {
     setSeedInput(value);
-    // If value is empty, don't update the parameter - we'll generate random when needed
     if (value.trim() === '') {
-      updateParam('seed', generateRandomSeed());
+      // Remove seed from params if input is empty
+      const { seed, ...rest } = params;
+      setParams(rest);
+      saveUserParameters(rest).catch(error => {
+        console.error('Error saving parameters:', error);
+      });
     } else {
       const numValue = parseInt(value);
       if (!isNaN(numValue)) {
@@ -100,9 +107,13 @@ export function GenerateTab() {
   };
 
   const handleRefreshSeed = () => {
-    const newSeed = generateRandomSeed();
     setSeedInput('');
-    updateParam('seed', newSeed);
+    // Remove seed from params when clearing
+    const { seed, ...rest } = params;
+    setParams(rest);
+    saveUserParameters(rest).catch(error => {
+      console.error('Error saving parameters:', error);
+    });
   };
 
   const handleSave = async () => {
@@ -110,10 +121,9 @@ export function GenerateTab() {
 
     setIsSaving(true);
     try {
-      // If no seed input, generate a random one
+      // Only include seed if explicitly set
       const paramsToSave = {
         ...params,
-        seed: seedInput.trim() === '' ? generateRandomSeed() : params.seed,
         model: selectedModel
       };
 
