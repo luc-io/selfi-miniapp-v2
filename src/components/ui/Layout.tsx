@@ -35,7 +35,7 @@ export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-6">
+    <div className="container max-w-4xl mx-auto px-1 py-2">
       {children}
     </div>
   );
