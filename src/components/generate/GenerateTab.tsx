@@ -5,6 +5,9 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
+import { RefreshCw } from 'lucide-react';
 import type { Model } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
 
@@ -23,7 +26,6 @@ type Params = {
   seed: number;
   guidance_scale: number;
   num_images: number;
-  sync_mode: boolean;
   enable_safety_checker: boolean;
   output_format: 'jpeg' | 'png';
 };
@@ -34,7 +36,6 @@ const DEFAULT_PARAMS: Params = {
   seed: Math.floor(Math.random() * 1000000),
   guidance_scale: 3.5,
   num_images: 1,
-  sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg'
 };
@@ -44,6 +45,7 @@ export function GenerateTab() {
   const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
+  const [seedInput, setSeedInput] = useState<string>('');
 
   // Load saved parameters on component mount
   useEffect(() => {
@@ -52,6 +54,7 @@ export function GenerateTab() {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
           setParams(savedParams.params as Params);
+          setSeedInput(savedParams.params.seed?.toString() || '');
           
           // If model was saved, select it
           if (savedParams.params.model) {
@@ -73,6 +76,20 @@ export function GenerateTab() {
       await saveUserParameters(newParams);
     } catch (error) {
       console.error('Error saving parameters:', error);
+    }
+  };
+
+  const generateRandomSeed = () => {
+    const newSeed = Math.floor(Math.random() * 1000000);
+    setSeedInput(newSeed.toString());
+    updateParam('seed', newSeed);
+  };
+
+  const handleSeedChange = (value: string) => {
+    setSeedInput(value);
+    const numValue = parseInt(value);
+    if (!isNaN(numValue)) {
+      updateParam('seed', numValue);
     }
   };
 
@@ -129,6 +146,29 @@ export function GenerateTab() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Seed */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Seed</label>
+            <div className="flex space-x-2">
+              <Input
+                type="number"
+                value={seedInput}
+                onChange={(e) => handleSeedChange(e.target.value)}
+                placeholder="Enter seed number"
+                className="flex-1"
+              />
+              <Button 
+                onClick={generateRandomSeed}
+                variant="outline"
+                className="px-3"
+                title="Generate random seed"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500">Use the same seed to get consistent results</p>
           </div>
 
           {/* Steps */}
@@ -207,18 +247,6 @@ export function GenerateTab() {
             <Switch 
               checked={params.enable_safety_checker}
               onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
-            />
-          </div>
-
-          {/* Sync Mode */}
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Sync Mode</label>
-              <p className="text-sm text-gray-500">Wait for generation to complete</p>
-            </div>
-            <Switch 
-              checked={params.sync_mode}
-              onCheckedChange={(v: boolean) => updateParam('sync_mode', v)}
             />
           </div>
         </div>
