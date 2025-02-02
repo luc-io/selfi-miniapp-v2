@@ -1,13 +1,5 @@
-import { WebApp } from '@twa-dev/types';
 import { apiRequest } from '../lib/api';
-
-declare global {
-  interface Window {
-    Telegram: {
-      WebApp: WebApp;
-    };
-  }
-}
+import { TelegramWebApp, TelegramUser } from '../types/telegram';
 
 interface UserParameters {
   params: {
@@ -24,7 +16,7 @@ interface UserParameters {
 }
 
 export async function getUserParameters(): Promise<UserParameters | null> {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
+  const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
   if (!user?.id) return null;
 
   try {
@@ -36,7 +28,7 @@ export async function getUserParameters(): Promise<UserParameters | null> {
 }
 
 export async function saveUserParameters(params: UserParameters['params']): Promise<UserParameters> {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
+  const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
   if (!user?.id) throw new Error('No user ID found');
 
   return await apiRequest<UserParameters>('/api/params', {
