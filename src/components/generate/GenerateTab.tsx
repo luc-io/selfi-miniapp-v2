@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ChangeEvent } from 'react';
 import { Card } from '../ui/components';
 import { useGenerate } from '@/hooks/useGenerate';
 import { ModelSelector } from './ModelSelector';
@@ -155,7 +155,7 @@ export function GenerateTab() {
               <Input
                 type="number"
                 value={seedInput}
-                onChange={(e) => handleSeedChange(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleSeedChange(e.target.value)}
                 placeholder="Enter seed number"
                 className="flex-1"
               />
