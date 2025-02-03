@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card } from '../ui/components';
 import { useGenerate } from '@/hooks/useGenerate';
 import { ModelSelector } from './ModelSelector';
@@ -6,7 +6,8 @@ import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
 import type { Model } from '@/types';
-import { getUserParameters, saveUserParameters } from '@/api/parameters';
+import { getUserParameters, saveUserParameters, type Params } from '@/api/parameters';
+import { debounce } from 'lodash';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -16,17 +17,6 @@ const IMAGE_SIZES = {
   portrait_4_3: 'Portrait 4:3',
   portrait_16_9: 'Portrait 16:9',
 } as const;
-
-type Params = {
-  image_size: keyof typeof IMAGE_SIZES;
-  num_inference_steps: number;
-  seed: number;
-  guidance_scale: number;
-  num_images: number;
-  sync_mode: boolean;
-  enable_safety_checker: boolean;
-  output_format: 'jpeg' | 'png';
-};
 
 const DEFAULT_PARAMS: Params = {
   image_size: 'landscape_4_3',
@@ -51,11 +41,12 @@ export function GenerateTab() {
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
-          setParams(savedParams.params as Params);
+          const { model, ...otherParams } = savedParams.params;
+          setParams(otherParams as Params);
           
           // If model was saved, select it
-          if (savedParams.params.model) {
-            setSelectedModel(savedParams.params.model as Model);
+          if (model) {
+            setSelectedModel(model as Model);
           }
         }
       } catch (error) {
@@ -65,15 +56,21 @@ export function GenerateTab() {
     loadParams();
   }, []);
 
-  const updateParam = async <K extends keyof Params>(key: K, value: Params[K]) => {
+  const debouncedSave = useCallback(
+    debounce(async (newParams: Params & { model?: Model }) => {
+      try {
+        await saveUserParameters(newParams);
+      } catch (error) {
+        console.error('Error saving parameters:', error);
+      }
+    }, 500),
+    []
+  );
+
+  const updateParam = <K extends keyof Params>(key: K, value: Params[K]) => {
     const newParams = { ...params, [key]: value };
     setParams(newParams);
-    
-    try {
-      await saveUserParameters(newParams);
-    } catch (error) {
-      console.error('Error saving parameters:', error);
-    }
+    debouncedSave({ ...newParams, model: selectedModel });
   };
 
   const handleSave = async () => {
@@ -137,7 +134,7 @@ export function GenerateTab() {
               Steps <span className="text-gray-500">({params.num_inference_steps})</span>
             </label>
             <Slider 
-              value={[params.num_inference_steps]}
+              value={[params.num_inference_steps || DEFAULT_PARAMS.num_inference_steps]}
               onValueChange={(v: number[]) => updateParam('num_inference_steps', v[0])}
               min={1}
               max={50}
@@ -152,7 +149,7 @@ export function GenerateTab() {
               Guidance Scale <span className="text-gray-500">({params.guidance_scale})</span>
             </label>
             <Slider 
-              value={[params.guidance_scale]}
+              value={[params.guidance_scale || DEFAULT_PARAMS.guidance_scale]}
               onValueChange={(v: number[]) => updateParam('guidance_scale', v[0])}
               min={1}
               max={20}
@@ -167,7 +164,7 @@ export function GenerateTab() {
               Number of Images <span className="text-gray-500">({params.num_images})</span>
             </label>
             <Slider 
-              value={[params.num_images]}
+              value={[params.num_images || DEFAULT_PARAMS.num_images]}
               onValueChange={(v: number[]) => updateParam('num_images', v[0])}
               min={1}
               max={4}
@@ -205,7 +202,7 @@ export function GenerateTab() {
               <p className="text-sm text-gray-500">Filter inappropriate content</p>
             </div>
             <Switch 
-              checked={params.enable_safety_checker}
+              checked={params.enable_safety_checker ?? DEFAULT_PARAMS.enable_safety_checker}
               onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
             />
           </div>
@@ -217,7 +214,7 @@ export function GenerateTab() {
               <p className="text-sm text-gray-500">Wait for generation to complete</p>
             </div>
             <Switch 
-              checked={params.sync_mode}
+              checked={params.sync_mode ?? DEFAULT_PARAMS.sync_mode}
               onCheckedChange={(v: boolean) => updateParam('sync_mode', v)}
             />
           </div>
