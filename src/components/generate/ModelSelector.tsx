@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { Model } from '@/types';
-import type { ModelSelectorProps } from './types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CrownIcon, SparklesIcon } from 'lucide-react';
+
+export interface ModelSelectorProps {
+  onSelect: (model: Model | undefined) => void;
+  selectedModel?: Model;
+}
 
 const MODELS: Model[] = [
   {
@@ -18,8 +22,17 @@ const MODELS: Model[] = [
   }
 ];
 
-export function ModelSelector({ onSelect }: ModelSelectorProps) {
-  const [selectedModel, setSelectedModel] = useState<Model>(MODELS[0]);
+export function ModelSelector({ onSelect, selectedModel: initialModel }: ModelSelectorProps) {
+  const [selectedModel, setSelectedModel] = useState<Model>(() => 
+    initialModel || MODELS[0]
+  );
+
+  // Update selected model when initialModel changes
+  useEffect(() => {
+    if (initialModel && initialModel.id !== selectedModel.id) {
+      setSelectedModel(initialModel);
+    }
+  }, [initialModel]);
 
   // Auto-select first model on mount
   useEffect(() => {
