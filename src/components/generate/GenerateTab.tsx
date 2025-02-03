@@ -17,7 +17,7 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-const DEFAULT_PARAMS: Params = {
+const DEFAULT_PARAMS: Required<Params> = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
   seed: Math.floor(Math.random() * 1000000),
@@ -25,13 +25,14 @@ const DEFAULT_PARAMS: Params = {
   num_images: 1,
   sync_mode: false,
   enable_safety_checker: true,
-  output_format: 'jpeg'
+  output_format: 'jpeg',
+  model: undefined
 };
 
 export function GenerateTab() {
   const generate = useGenerate();
   const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
-  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const [params, setParams] = useState<Required<Params>>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
 
   // Load saved parameters on component mount
@@ -41,7 +42,10 @@ export function GenerateTab() {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
           const { model, ...otherParams } = savedParams.params;
-          setParams(otherParams);
+          setParams({
+            ...DEFAULT_PARAMS,
+            ...otherParams
+          });
           
           // If model was saved, select it
           if (model) {
