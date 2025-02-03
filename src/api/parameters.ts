@@ -1,5 +1,6 @@
 import { WebApp } from '@twa-dev/types';
 import { apiRequest } from '../lib/api';
+import type { Model } from '@/types';
 
 declare global {
   interface Window {
@@ -9,17 +10,20 @@ declare global {
   }
 }
 
-interface UserParameters {
-  params: {
-    image_size?: string;
-    num_inference_steps?: number;
-    seed?: number;
-    guidance_scale?: number;
-    num_images?: number;
-    sync_mode?: boolean;
-    enable_safety_checker?: boolean;
-    output_format?: string;
-    model?: any;  // Add model to params type
+export interface Params {
+  image_size?: string;
+  num_inference_steps?: number;
+  seed?: number;
+  guidance_scale?: number;
+  num_images?: number;
+  sync_mode?: boolean;
+  enable_safety_checker?: boolean;
+  output_format?: string;
+}
+
+export interface UserParameters {
+  params: Params & {
+    model?: Model;
   };
 }
 
@@ -41,9 +45,6 @@ export async function saveUserParameters(params: UserParameters['params']): Prom
 
   return await apiRequest<UserParameters>('/api/params', {
     method: 'POST',
-    body: JSON.stringify({ 
-      model: params.model,
-      params
-    })
+    body: JSON.stringify({ params })
   }, user);
 }
