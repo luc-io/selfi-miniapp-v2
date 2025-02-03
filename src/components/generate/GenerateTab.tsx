@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Card } from '../ui/components';
+import { Card } from '../ui/card';
 import { useGenerate } from '@/hooks/useGenerate';
 import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
 import type { Model } from '@/types';
-import { getUserParameters, saveUserParameters } from '@/api/parameters';
+import { getUserParameters, saveUserParameters, type Params } from '@/api/parameters';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -16,17 +16,6 @@ const IMAGE_SIZES = {
   portrait_4_3: 'Portrait 4:3',
   portrait_16_9: 'Portrait 16:9',
 } as const;
-
-type Params = {
-  image_size: keyof typeof IMAGE_SIZES;
-  num_inference_steps: number;
-  seed: number;
-  guidance_scale: number;
-  num_images: number;
-  sync_mode: boolean;
-  enable_safety_checker: boolean;
-  output_format: 'jpeg' | 'png';
-};
 
 const DEFAULT_PARAMS: Params = {
   image_size: 'landscape_4_3',
@@ -51,11 +40,12 @@ export function GenerateTab() {
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
-          setParams(savedParams.params as Params);
+          const { model, ...otherParams } = savedParams.params;
+          setParams(otherParams);
           
           // If model was saved, select it
-          if (savedParams.params.model) {
-            setSelectedModel(savedParams.params.model as Model);
+          if (model) {
+            setSelectedModel(model);
           }
         }
       } catch (error) {
@@ -70,7 +60,10 @@ export function GenerateTab() {
     setParams(newParams);
     
     try {
-      await saveUserParameters(newParams);
+      await saveUserParameters({
+        ...newParams,
+        model: selectedModel
+      });
     } catch (error) {
       console.error('Error saving parameters:', error);
     }
@@ -104,7 +97,7 @@ export function GenerateTab() {
       <div className="p-6 space-y-8">
         <ModelSelector 
           onSelect={setSelectedModel} 
-          defaultValue={selectedModel}
+          selectedModel={selectedModel}
         />
 
         {/* Image Parameters */}
