@@ -29,6 +29,15 @@ export interface TelegramWebApp {
   expand: () => void;
   close: () => void;
   sendData: (data: string) => void;
+  showPopup: (params: {
+    title?: string;
+    message: string;
+    buttons?: Array<{
+      type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+      text: string;
+      id?: string;
+    }>;
+  }) => Promise<{ button_id: string }>;
 }
 
 export interface TelegramUser {
