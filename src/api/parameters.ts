@@ -1,5 +1,5 @@
 import { apiRequest } from '../lib/api';
-import type { TelegramUser } from '../types/telegram';
+import type { TelegramUser } from '@/types/telegram';
 import type { Model } from '@/types';
 
 export interface Params {
@@ -18,8 +18,12 @@ export interface UserParameters {
   params: Params;
 }
 
+function getTelegramUser(): TelegramUser | undefined {
+  return window.Telegram?.WebApp?.initDataUnsafe?.user;
+}
+
 export async function getUserParameters(): Promise<UserParameters | null> {
-  const user = window.Telegram?.WebApp?.initDataUnsafe.user;
+  const user = getTelegramUser();
   if (!user?.id) return null;
 
   try {
@@ -31,7 +35,7 @@ export async function getUserParameters(): Promise<UserParameters | null> {
 }
 
 export async function saveUserParameters(params: Params): Promise<UserParameters> {
-  const user = window.Telegram?.WebApp?.initDataUnsafe.user;
+  const user = getTelegramUser();
   if (!user?.id) throw new Error('No user ID found');
 
   return await apiRequest<UserParameters>('/api/params', {
