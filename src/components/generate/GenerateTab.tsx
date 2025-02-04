@@ -54,7 +54,7 @@ export function GenerateTab() {
     setParams(newParams);
     
     try {
-      await saveUserParameters({ params: newParams });
+      await saveUserParameters(newParams);
     } catch (error) {
       console.error('Error saving parameters:', error);
     }
@@ -63,11 +63,10 @@ export function GenerateTab() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await saveUserParameters({ params });
+      await saveUserParameters(params);
       
       window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
-        modelPath: params.modelPath,
         params
       }));
       window.Telegram?.WebApp?.close();
