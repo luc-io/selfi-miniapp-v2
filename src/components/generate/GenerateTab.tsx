@@ -52,24 +52,24 @@ export function GenerateTab() {
   const updateParam = async <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
     const newParams = { ...params, [key]: value };
     setParams(newParams);
-    
-    try {
-      await saveUserParameters(newParams);
-    } catch (error) {
-      console.error('Error saving parameters:', error);
-    }
   };
 
   const handleSave = async () => {
+    if (isSaving) return;
+
     setIsSaving(true);
     try {
-      await saveUserParameters(params);
-      
-      window.Telegram?.WebApp?.sendData(JSON.stringify({
-        action: 'save_params',
-        params
-      }));
-      window.Telegram?.WebApp?.close();
+      const result = await saveUserParameters(params);
+
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.sendData(JSON.stringify({
+          action: 'save_params',
+          params: params
+        }));
+        window.Telegram.WebApp.close();
+      }
+
+      setParams(result.params);
     } catch (error) {
       console.error('Error saving parameters:', error);
     } finally {
