@@ -36,7 +36,7 @@ const DEFAULT_PARAMS: GenerationParameters = {
 
 export function GenerateTab() {
   const generate = useGenerate();
-  const [params, setParams] = useState<GenerationParameters | null>(null);
+  const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
@@ -50,11 +50,12 @@ export function GenerateTab() {
           getAvailableLoras()
         ]);
         
-        setParams(savedParams?.params || DEFAULT_PARAMS);
+        if (savedParams?.params) {
+          setParams(savedParams.params);
+        }
         setAvailableLoras(loras);
       } catch (error) {
         console.error('Error loading data:', error);
-        setParams(DEFAULT_PARAMS);
       } finally {
         setIsLoading(false);
       }
@@ -67,43 +68,35 @@ export function GenerateTab() {
     value: GenerationParameters[K]
   ): void => {
     setParams((prevParams) => ({
-      ...(prevParams || DEFAULT_PARAMS),
+      ...prevParams,
       [key]: value
     }));
   };
 
   const handleAddLora = (lora: LoraParameter) => {
     setParams((prevParams) => ({
-      ...(prevParams || DEFAULT_PARAMS),
-      loras: [...((prevParams?.loras || []), lora)]
+      ...prevParams,
+      loras: [...(prevParams.loras || []), lora]
     }));
   };
 
   const handleRemoveLora = (index: number) => {
-    setParams((prevParams) => {
-      if (!prevParams) return DEFAULT_PARAMS;
-      return {
-        ...prevParams,
-        loras: prevParams.loras?.filter((_, i) => i !== index) || []
-      };
-    });
+    setParams((prevParams) => ({
+      ...prevParams,
+      loras: prevParams.loras?.filter((_, i) => i !== index) || []
+    }));
   };
 
   const handleLoraScaleChange = (index: number, scale: number) => {
-    setParams((prevParams) => {
-      if (!prevParams) return DEFAULT_PARAMS;
-      return {
-        ...prevParams,
-        loras: prevParams.loras?.map((lora, i) =>
-          i === index ? { ...lora, scale } : lora
-        ) || []
-      };
-    });
+    setParams((prevParams) => ({
+      ...prevParams,
+      loras: prevParams.loras?.map((lora, i) =>
+        i === index ? { ...lora, scale } : lora
+      ) || []
+    }));
   };
 
   const handleSave = async () => {
-    if (!params) return;
-    
     setIsSaving(true);
     try {
       await saveUserParameters(params);
@@ -123,7 +116,7 @@ export function GenerateTab() {
     }
   };
 
-  if (isLoading || !params) {
+  if (isLoading) {
     return (
       <Card className="bg-white rounded-lg shadow-md">
         <div className="p-6 flex items-center justify-center min-h-[200px]">
