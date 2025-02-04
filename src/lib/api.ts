@@ -25,7 +25,7 @@ export async function apiRequest<T>(
   const initData = getInitData();
   const headers = {
     'Content-Type': 'application/json',
-    'x-telegram-id': user.id.toString(),
+    'x-telegram-user-id': user.id.toString(),
     'x-telegram-init-data': initData,
     ...options.headers,
   };
