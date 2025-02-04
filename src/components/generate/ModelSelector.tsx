@@ -1,13 +1,17 @@
+import { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SparklesIcon } from 'lucide-react';
+import type { ModelSelectorProps } from './types';
 
-interface ModelSelectorProps {
-  defaultValue: string;
-  onSelect: (modelPath: string) => void;
-}
+const DEFAULT_MODEL_PATH = 'fal-ai/flux-lora';
 
 export function ModelSelector({ onSelect, defaultValue }: ModelSelectorProps) {
+  // Automatically select default model
+  useEffect(() => {
+    onSelect(defaultValue || DEFAULT_MODEL_PATH);
+  }, [defaultValue, onSelect]);
+
   return (
     <Card className="relative border-none bg-transparent shadow-none">
       <CardContent className="flex gap-2 p-0">
