@@ -1,5 +1,3 @@
-export * from './telegram';
-
 export type ImageSize = 
   | 'landscape_4_3'
   | 'landscape_16_9'
@@ -10,32 +8,17 @@ export type ImageSize =
 
 export type OutputFormat = 'jpeg' | 'png';
 
-export interface GenerationParameters {
-  image_size: ImageSize;
-  num_inference_steps: number;
-  seed: number;
-  guidance_scale: number;
-  num_images: number;
-  sync_mode: boolean;
-  enable_safety_checker: boolean;
-  output_format: OutputFormat;
-  modelPath: string;
+export interface Parameters {
+  image_size?: ImageSize;
+  num_inference_steps?: number;
+  seed?: number;
+  guidance_scale?: number;
+  num_images?: number;
+  sync_mode?: boolean;
+  enable_safety_checker?: boolean;
+  output_format?: OutputFormat;
 }
 
-export interface UserParameters {
-  databaseId?: string;
-  userDatabaseId?: string;
-  params: GenerationParameters;
-  updatedAt?: string;
-}
-
-export interface Generation {
-  id: string;
-  status: 'pending' | 'success' | 'error';
-  modelPath: string;
-  params: GenerationParameters;
-  result?: {
-    url: string;
-  };
-  error?: string;
+export interface UserParametersResponse {
+  params: Parameters;
 }
