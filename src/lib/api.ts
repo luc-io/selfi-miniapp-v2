@@ -8,14 +8,22 @@ export class APIError extends Error {
   }
 }
 
+function getInitData(): string {
+  const searchParams = new URLSearchParams(window.location.hash.slice(1));
+  return searchParams.get('tgWebAppData') || '';
+}
+
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
   user?: TelegramUser
 ): Promise<T> {
+  const initData = getInitData();
+
   const headers = {
     'Content-Type': 'application/json',
     'x-user-id': user?.id.toString() || '',
+    'x-telegram-init-data': initData,
     ...options.headers,
   };
 
@@ -25,9 +33,10 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }));
     throw new APIError(
       response.status,
-      response.statusText || 'API request failed'
+      error.error || 'API request failed'
     );
   }
 
