@@ -217,12 +217,7 @@ export function GenerateTab() {
               </SelectContent>
             </Select>
           </div>
-        </div>
 
-        {/* Additional Options */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">Additional Options</h2>
-          
           <div className="flex items-center justify-between py-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">Safety Checker</label>
@@ -231,17 +226,6 @@ export function GenerateTab() {
             <Switch 
               checked={params.enable_safety_checker}
               onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Sync Mode</label>
-              <p className="text-sm text-gray-500">Wait for generation to complete</p>
-            </div>
-            <Switch 
-              checked={params.sync_mode}
-              onCheckedChange={(v: boolean) => updateParam('sync_mode', v)}
             />
           </div>
         </div>
