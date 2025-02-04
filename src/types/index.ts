@@ -1,12 +1,12 @@
-export type ImageSize = 
-  | 'landscape_4_3'
-  | 'landscape_16_9'
-  | 'square_hd'
-  | 'square'
-  | 'portrait_4_3'
-  | 'portrait_16_9';
+import type { LoraParameter } from './lora';
 
-export type OutputFormat = 'jpeg' | 'png';
+export type ImageSize = 
+  | 'landscape_4_3' 
+  | 'landscape_16_9' 
+  | 'square_hd' 
+  | 'square' 
+  | 'portrait_4_3' 
+  | 'portrait_16_9';
 
 export interface GenerationParameters {
   image_size: ImageSize;
@@ -16,21 +16,7 @@ export interface GenerationParameters {
   num_images: number;
   sync_mode: boolean;
   enable_safety_checker: boolean;
-  output_format: OutputFormat;
+  output_format: 'jpeg' | 'png';
   modelPath: string;
-}
-
-export interface Generation {
-  id: string;
-  status: 'pending' | 'success' | 'error';
-  modelPath: string;
-  params: GenerationParameters;
-  result?: {
-    url: string;
-  };
-  error?: string;
-}
-
-export interface UserParametersResponse {
-  params: GenerationParameters;
+  loras?: LoraParameter[];
 }
