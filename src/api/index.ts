@@ -1,6 +1,6 @@
-import type { Generation } from '@/types';
+import type { GenerationParameters } from '@/types';
 
-export async function generateImage(params: any): Promise<Generation> {
+export async function generateImage(params: GenerationParameters): Promise<any> {
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: {
