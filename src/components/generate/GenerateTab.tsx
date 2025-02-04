@@ -5,8 +5,9 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import type { GenerationParameters, ImageSize } from '@/types';
+import type { GenerationParameters } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
+import { debounce } from 'lodash';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -49,29 +50,40 @@ export function GenerateTab() {
     loadParams();
   }, []);
 
-  const updateParam = async <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
+  // Create a debounced version of saveUserParameters
+  const debouncedSave = debounce(async (params: GenerationParameters) => {
+    try {
+      await saveUserParameters(params);
+    } catch (error) {
+      console.error('Error saving parameters:', error);
+    }
+  }, 500);
+
+  const updateParam = <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
     const newParams = { ...params, [key]: value };
     setParams(newParams);
+    debouncedSave(newParams);
   };
 
   const handleSave = async () => {
-    if (isSaving) return;
-
     setIsSaving(true);
     try {
-      const result = await saveUserParameters(params);
+      await saveUserParameters(params);
+      
+      const data = {
+        action: 'save_params',
+        params
+      };
 
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.sendData(JSON.stringify({
-          action: 'save_params',
-          params: params
-        }));
-        window.Telegram.WebApp.close();
-      }
-
-      setParams(result.params);
+      // Send the data as a string
+      const jsonString = JSON.stringify(data);
+      window.Telegram?.WebApp?.sendData(jsonString);
+      window.Telegram?.WebApp?.close();
     } catch (error) {
       console.error('Error saving parameters:', error);
+      window.Telegram?.WebApp?.showPopup({
+        message: 'Failed to save parameters. Please try again.'
+      });
     } finally {
       setIsSaving(false);
     }
@@ -81,7 +93,7 @@ export function GenerateTab() {
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
         <ModelSelector 
-          onSelect={(modelPath: string) => updateParam('modelPath', modelPath)}
+          onSelect={(modelPath) => updateParam('modelPath', modelPath)}
           defaultValue={params.modelPath}
         />
 
@@ -94,7 +106,7 @@ export function GenerateTab() {
             <label className="block text-sm font-medium text-gray-700">Image Size</label>
             <Select 
               value={params.image_size} 
-              onValueChange={v => updateParam('image_size', v as ImageSize)}
+              onValueChange={v => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
