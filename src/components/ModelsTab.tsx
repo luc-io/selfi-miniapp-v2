@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Info, Trash2, ChevronRight, Download } from 'lucide-react';
+import { Model } from '../types/model';
 
 // Sample data - replace with actual data from your API
-const sampleModel = {
+const sampleModel: Model = {
   id: 1,
   name: "Model #1",
   createdAt: new Date('2024-02-04'),
@@ -22,8 +23,8 @@ const sampleModel = {
   }
 };
 
-const ModelsTab = () => {
-  const [selectedModel, setSelectedModel] = useState(null);
+export const ModelsTab = () => {
+  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
 
   const formatFileSize = (bytes: number) => {
     const mb = bytes / (1024 * 1024);
@@ -52,7 +53,9 @@ const ModelsTab = () => {
               </div>
               <div className="relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 bg-gray-200">
                 <span
-                  className={`pointer-events-none inline-block h-[20px] w-[20px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-${sampleModel.isActive ? '5' : '0'}`}
+                  className={`pointer-events-none inline-block h-[20px] w-[20px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    sampleModel.isActive ? 'translate-x-5' : 'translate-x-0'
+                  }`}
                 />
               </div>
             </div>
@@ -112,5 +115,3 @@ const ModelsTab = () => {
     </div>
   );
 };
-
-export default ModelsTab;
