@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../ui/switch';
 import type { GenerationParameters } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
-import { debounce } from 'lodash';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -50,19 +49,8 @@ export function GenerateTab() {
     loadParams();
   }, []);
 
-  // Create a debounced version of saveUserParameters
-  const debouncedSave = debounce(async (params: GenerationParameters) => {
-    try {
-      await saveUserParameters(params);
-    } catch (error) {
-      console.error('Error saving parameters:', error);
-    }
-  }, 500);
-
   const updateParam = <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
-    const newParams = { ...params, [key]: value };
-    setParams(newParams);
-    debouncedSave(newParams);
+    setParams(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
