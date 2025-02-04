@@ -22,8 +22,13 @@ export async function saveUserParameters(params: GenerationParameters): Promise<
   if (!user?.id) throw new Error('No user ID found');
 
   const requestData = {
-    telegramId: user.id.toString(),
-    params
+    model: {
+      modelPath: params.modelPath
+    },
+    params: {
+      ...params,
+      modelPath: undefined // Remove modelPath from params since it's in the model object
+    }
   };
 
   return await apiRequest<UserParametersResponse>('/api/params', {
