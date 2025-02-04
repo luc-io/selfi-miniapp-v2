@@ -22,7 +22,7 @@ export async function saveUserParameters(params: GenerationParameters): Promise<
   if (!user?.id) throw new Error('No user ID found');
 
   const requestData = {
-    userId: user.id,
+    telegramId: user.id.toString(),
     params
   };
 
