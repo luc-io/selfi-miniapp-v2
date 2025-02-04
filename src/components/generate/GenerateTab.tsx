@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../ui/switch';
 import type { GenerationParameters } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
+import { useTelegram } from '@/hooks/useTelegram';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -31,23 +32,31 @@ const DEFAULT_PARAMS: GenerationParameters = {
 
 export function GenerateTab() {
   const generate = useGenerate();
+  const { user } = useTelegram();
   const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load saved parameters on component mount
   useEffect(() => {
     const loadParams = async () => {
+      if (!user) return;
+
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
           setParams(savedParams.params);
         }
+        setIsInitialized(true);
       } catch (error) {
         console.error('Error loading parameters:', error);
       }
     };
-    loadParams();
-  }, []);
+
+    if (user && !isInitialized) {
+      loadParams();
+    }
+  }, [user, isInitialized]);
 
   const updateParam = <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
     setParams(prevParams => ({
@@ -57,6 +66,13 @@ export function GenerateTab() {
   };
 
   const handleSave = async () => {
+    if (!user) {
+      window.Telegram?.WebApp?.showPopup({
+        message: 'Error: User not authenticated. Please try again.'
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
       await saveUserParameters(params);
@@ -77,6 +93,11 @@ export function GenerateTab() {
       setIsSaving(false);
     }
   };
+
+  // Don't render until user is available and parameters are loaded
+  if (!user || !isInitialized) {
+    return null;
+  }
 
   return (
     <Card className="bg-white rounded-lg shadow-md">
