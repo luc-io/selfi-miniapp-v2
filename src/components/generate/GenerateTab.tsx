@@ -50,7 +50,10 @@ export function GenerateTab() {
   }, []);
 
   const updateParam = <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
-    setParams(prev => ({ ...prev, [key]: value }));
+    setParams(prevParams => ({
+      ...prevParams,
+      [key]: value
+    }));
   };
 
   const handleSave = async () => {
@@ -63,9 +66,7 @@ export function GenerateTab() {
         params
       };
 
-      // Send the data as a string
-      const jsonString = JSON.stringify(data);
-      window.Telegram?.WebApp?.sendData(jsonString);
+      window.Telegram?.WebApp?.sendData(JSON.stringify(data));
       window.Telegram?.WebApp?.close();
     } catch (error) {
       console.error('Error saving parameters:', error);
