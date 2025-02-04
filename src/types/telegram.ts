@@ -6,18 +6,31 @@ export interface TelegramUser {
   language_code?: string;
 }
 
+interface PopupParams {
+  title?: string;
+  message: string;
+  buttons?: Array<{
+    id: string;
+    type: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+    text: string;
+  }>;
+}
+
+interface WebApp {
+  initDataUnsafe: {
+    user?: TelegramUser;
+    auth_date?: string;
+    hash?: string;
+  };
+  close: () => void;
+  sendData: (data: string) => void;
+  showPopup: (params: PopupParams) => Promise<string>;
+}
+
 declare global {
   interface Window {
     Telegram?: {
-      WebApp?: {
-        initDataUnsafe: {
-          user?: TelegramUser;
-          auth_date?: string;
-          hash?: string;
-        };
-        close: () => void;
-        sendData: (data: string) => void;
-      };
+      WebApp?: WebApp;
     };
   }
 }
