@@ -17,11 +17,8 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-// Default model configuration
 const DEFAULT_MODEL: Model = {
-  id: 'fal-ai/flux-lora',
-  name: 'Flux LoRA',
-  type: 'public'
+  modelPath: 'fal-ai/flux-lora'
 };
 
 type Params = {
@@ -45,7 +42,7 @@ const DEFAULT_PARAMS: Params = {
   sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg',
-  model: DEFAULT_MODEL
+  model: DEFAULT_MODEL,
 };
 
 export function GenerateTab() {
