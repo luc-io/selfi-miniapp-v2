@@ -8,7 +8,6 @@ const defaultParameters: GenerationParameters = {
   seed: Math.floor(Math.random() * 1000000),
   guidance_scale: 3.5,
   num_images: 1,
-  sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg',
   modelPath: 'fal-ai/flux-lora',
@@ -24,7 +23,9 @@ export function useParameters() {
       try {
         const response = await getUserParameters();
         if (response?.params) {
-          return response.params;
+          // Ensure sync_mode is not included
+          const { sync_mode, ...params } = response.params;
+          return params;
         }
         return defaultParameters;
       } catch (error) {
