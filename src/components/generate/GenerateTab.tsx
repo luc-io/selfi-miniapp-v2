@@ -5,7 +5,7 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import type { Model } from '@/types';
+import type { GenerationParameters, ImageSize } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
 
 const IMAGE_SIZES = {
@@ -17,23 +17,7 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-const DEFAULT_MODEL: Model = {
-  modelPath: 'fal-ai/flux-lora'
-};
-
-type Params = {
-  image_size: keyof typeof IMAGE_SIZES;
-  num_inference_steps: number;
-  seed: number;
-  guidance_scale: number;
-  num_images: number;
-  sync_mode: boolean;
-  enable_safety_checker: boolean;
-  output_format: 'jpeg' | 'png';
-  model: Model;
-};
-
-const DEFAULT_PARAMS: Params = {
+const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
   seed: Math.floor(Math.random() * 1000000),
@@ -42,13 +26,12 @@ const DEFAULT_PARAMS: Params = {
   sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg',
-  model: DEFAULT_MODEL,
+  modelPath: 'fal-ai/flux-lora'
 };
 
 export function GenerateTab() {
   const generate = useGenerate();
-  const [selectedModel, setSelectedModel] = useState<Model>(DEFAULT_MODEL);
-  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
 
   // Load saved parameters on component mount
@@ -57,12 +40,7 @@ export function GenerateTab() {
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
-          setParams(savedParams.params as Params);
-          
-          // If model was saved, select it
-          if (savedParams.params.model) {
-            setSelectedModel(savedParams.params.model as Model);
-          }
+          setParams(savedParams.params);
         }
       } catch (error) {
         console.error('Error loading parameters:', error);
@@ -71,12 +49,12 @@ export function GenerateTab() {
     loadParams();
   }, []);
 
-  const updateParam = async <K extends keyof Params>(key: K, value: Params[K]) => {
+  const updateParam = async <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
     const newParams = { ...params, [key]: value };
     setParams(newParams);
     
     try {
-      await saveUserParameters(newParams);
+      await saveUserParameters({ params: newParams });
     } catch (error) {
       console.error('Error saving parameters:', error);
     }
@@ -85,17 +63,12 @@ export function GenerateTab() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const paramsToSave = {
-        ...params,
-        model: selectedModel
-      };
-      
-      await saveUserParameters(paramsToSave);
+      await saveUserParameters({ params });
       
       window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
-        model: selectedModel,
-        params: paramsToSave
+        modelPath: params.modelPath,
+        params
       }));
       window.Telegram?.WebApp?.close();
     } catch (error) {
@@ -109,8 +82,8 @@ export function GenerateTab() {
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
         <ModelSelector 
-          onSelect={setSelectedModel} 
-          defaultValue={selectedModel}
+          onSelect={(modelPath: string) => updateParam('modelPath', modelPath)}
+          defaultValue={params.modelPath}
         />
 
         {/* Image Parameters */}
@@ -122,7 +95,7 @@ export function GenerateTab() {
             <label className="block text-sm font-medium text-gray-700">Image Size</label>
             <Select 
               value={params.image_size} 
-              onValueChange={v => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
+              onValueChange={v => updateParam('image_size', v as ImageSize)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
