@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Card } from '../ui/card';
+import { Card } from '../ui/components';
 import { useGenerate } from '@/hooks/useGenerate';
 import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
 import type { Model } from '@/types';
-import { getUserParameters, saveUserParameters, type Params } from '@/api/parameters';
+import { getUserParameters, saveUserParameters } from '@/api/parameters';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -17,7 +17,19 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-const DEFAULT_PARAMS: Required<Params> = {
+type Params = {
+  image_size: keyof typeof IMAGE_SIZES;
+  num_inference_steps: number;
+  seed: number;
+  guidance_scale: number;
+  num_images: number;
+  sync_mode: boolean;
+  enable_safety_checker: boolean;
+  output_format: 'jpeg' | 'png';
+  model?: Model;  // Add model to Params type
+};
+
+const DEFAULT_PARAMS: Params = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
   seed: Math.floor(Math.random() * 1000000),
@@ -26,13 +38,13 @@ const DEFAULT_PARAMS: Required<Params> = {
   sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg',
-  model: undefined
+  model: undefined  // Initialize with undefined
 };
 
 export function GenerateTab() {
   const generate = useGenerate();
   const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
-  const [params, setParams] = useState<Required<Params>>(DEFAULT_PARAMS);
+  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
 
   // Load saved parameters on component mount
@@ -41,15 +53,11 @@ export function GenerateTab() {
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
-          const { model, ...otherParams } = savedParams.params;
-          setParams({
-            ...DEFAULT_PARAMS,
-            ...otherParams
-          });
+          setParams(savedParams.params as Params);
           
           // If model was saved, select it
-          if (model) {
-            setSelectedModel(model);
+          if (savedParams.params.model) {
+            setSelectedModel(savedParams.params.model as Model);
           }
         }
       } catch (error) {
@@ -64,10 +72,7 @@ export function GenerateTab() {
     setParams(newParams);
     
     try {
-      await saveUserParameters({
-        ...newParams,
-        model: selectedModel
-      });
+      await saveUserParameters(newParams);
     } catch (error) {
       console.error('Error saving parameters:', error);
     }
@@ -78,15 +83,17 @@ export function GenerateTab() {
 
     setIsSaving(true);
     try {
-      await saveUserParameters({
+      const paramsToSave = {
         ...params,
         model: selectedModel
-      });
+      };
+      
+      await saveUserParameters(paramsToSave);
       
       window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
         model: selectedModel,
-        params: params
+        params: paramsToSave
       }));
       window.Telegram?.WebApp?.close();
     } catch (error) {
@@ -101,7 +108,7 @@ export function GenerateTab() {
       <div className="p-6 space-y-8">
         <ModelSelector 
           onSelect={setSelectedModel} 
-          selectedModel={selectedModel}
+          defaultValue={selectedModel}
         />
 
         {/* Image Parameters */}
