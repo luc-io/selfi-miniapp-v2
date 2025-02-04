@@ -1,9 +1,5 @@
-import { GenerationParameters } from '@/types';
+import { Parameters, UserParametersResponse } from '@/types';
 import { apiRequest } from '../lib/api';
-
-export interface UserParametersResponse {
-  params: GenerationParameters;
-}
 
 export async function getUserParameters(): Promise<UserParametersResponse | null> {
   const user = window.Telegram?.WebApp?.initDataUnsafe.user;
@@ -17,17 +13,27 @@ export async function getUserParameters(): Promise<UserParametersResponse | null
   }
 }
 
-export async function saveUserParameters(params: GenerationParameters): Promise<UserParametersResponse> {
+interface SaveParametersRequest {
+  model?: {
+    modelPath: string;
+  };
+  params: Parameters;
+}
+
+export async function saveUserParameters(params: Parameters): Promise<UserParametersResponse> {
   const user = window.Telegram?.WebApp?.initDataUnsafe.user;
   if (!user?.id) throw new Error('No user ID found');
 
-  const requestData = {
-    model: {
-      modelPath: params.modelPath
-    },
+  const requestData: SaveParametersRequest = {
     params: {
-      ...params,
-      modelPath: undefined // Remove modelPath from params since it's in the model object
+      image_size: params.image_size,
+      num_inference_steps: params.num_inference_steps,
+      seed: params.seed,
+      guidance_scale: params.guidance_scale,
+      num_images: params.num_images,
+      sync_mode: params.sync_mode,
+      enable_safety_checker: params.enable_safety_checker,
+      output_format: params.output_format
     }
   };
 
