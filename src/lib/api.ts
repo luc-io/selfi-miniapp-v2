@@ -25,7 +25,7 @@ export async function apiRequest<T>(
   const initData = getInitData();
   const headers = {
     'Content-Type': 'application/json',
-    'x-user-id': user.id.toString(),
+    'x-telegram-id': user.id.toString(),
     'x-telegram-init-data': initData,
     ...options.headers,
   };
@@ -36,10 +36,19 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    throw new APIError(
-      response.status,
-      response.statusText || 'API request failed'
-    );
+    try {
+      const errorData = await response.json();
+      throw new APIError(
+        response.status,
+        errorData.error || response.statusText || 'API request failed'
+      );
+    } catch (e) {
+      if (e instanceof APIError) throw e;
+      throw new APIError(
+        response.status,
+        response.statusText || 'API request failed'
+      );
+    }
   }
 
   const data = await response.json();
