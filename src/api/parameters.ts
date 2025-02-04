@@ -1,4 +1,3 @@
-import { WebApp } from '@twa-dev/types';
 import { GenerationParameters } from '@/types';
 import { apiRequest } from '../lib/api';
 
