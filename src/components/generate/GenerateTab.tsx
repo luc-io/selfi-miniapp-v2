@@ -35,7 +35,7 @@ const DEFAULT_PARAMS: GenerationParameters = {
 };
 
 export function GenerateTab() {
-  const { generateImage, isPending } = useGenerate();
+  const { isPending } = useGenerate(); // Removed unused generateImage
   const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
