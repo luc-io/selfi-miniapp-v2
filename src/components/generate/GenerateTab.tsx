@@ -17,6 +17,13 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
+// Default model configuration
+const DEFAULT_MODEL: Model = {
+  id: 'fal-ai/flux-lora',
+  name: 'Flux LoRA',
+  type: 'public'
+};
+
 type Params = {
   image_size: keyof typeof IMAGE_SIZES;
   num_inference_steps: number;
@@ -26,7 +33,7 @@ type Params = {
   sync_mode: boolean;
   enable_safety_checker: boolean;
   output_format: 'jpeg' | 'png';
-  model?: Model;  // Add model to Params type
+  model: Model;
 };
 
 const DEFAULT_PARAMS: Params = {
@@ -38,12 +45,12 @@ const DEFAULT_PARAMS: Params = {
   sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg',
-  model: undefined  // Initialize with undefined
+  model: DEFAULT_MODEL
 };
 
 export function GenerateTab() {
   const generate = useGenerate();
-  const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
+  const [selectedModel, setSelectedModel] = useState<Model>(DEFAULT_MODEL);
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -79,8 +86,6 @@ export function GenerateTab() {
   };
 
   const handleSave = async () => {
-    if (!selectedModel) return;
-
     setIsSaving(true);
     try {
       const paramsToSave = {
@@ -230,7 +235,7 @@ export function GenerateTab() {
         {/* Save Button */}
         <button
           className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-          disabled={!selectedModel || generate.isPending || isSaving}
+          disabled={generate.isPending || isSaving}
           onClick={handleSave}
         >
           {isSaving ? 'Saving...' : 'Save Parameters'}
