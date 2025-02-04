@@ -18,7 +18,7 @@ const defaultParameters: GenerationParameters = {
 
 export function Generate() {
   const { parameters, isLoading } = useParameters();
-  const { generateImage, isGenerating } = useGenerate();
+  const { generateImage, isPending } = useGenerate();
   
   // If we're loading parameters, show spinner
   if (isLoading) {
@@ -34,13 +34,13 @@ export function Generate() {
 
   return (
     <div className="space-y-4">
-      {/* Your form fields here using activeParams for values */}
+      {/* Form fields here using activeParams */}
       <button 
         onClick={handleGenerate}
-        disabled={isGenerating}
+        disabled={isPending}
         className="w-full px-4 py-2 text-white bg-primary rounded-md disabled:opacity-50"
       >
-        {isGenerating ? 'Generating...' : 'Generate'}
+        {isPending ? 'Generating...' : 'Generate'}
       </button>
     </div>
   );
