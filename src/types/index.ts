@@ -1,21 +1,13 @@
 export * from './telegram';
 
 export interface Model {
-  id: string;
-  name: string;
-  type: 'public' | 'private' | 'trained';
-}
-
-export interface ModelResponse {
-  success: boolean;
-  model?: Model;
-  error?: string;
+  modelPath: string;
 }
 
 export interface Generation {
   id: string;
   status: 'pending' | 'success' | 'error';
-  model: Model;
+  modelPath: string;
   params: Record<string, any>;
   result?: {
     url: string;
