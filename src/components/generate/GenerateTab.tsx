@@ -145,7 +145,7 @@ export function GenerateTab() {
             <label className="block text-sm font-medium text-gray-700">Image Size</label>
             <Select 
               value={params.image_size} 
-              onValueChange={v => updateParam('image_size', v as ImageSize)}
+              onValueChange={(v: string) => updateParam('image_size', v as ImageSize)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -206,7 +206,7 @@ export function GenerateTab() {
             <label className="block text-sm font-medium text-gray-700">Output Format</label>
             <Select 
               value={params.output_format}
-              onValueChange={v => updateParam('output_format', v as 'jpeg' | 'png')}
+              onValueChange={(v: string) => updateParam('output_format', v as 'jpeg' | 'png')}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -225,7 +225,7 @@ export function GenerateTab() {
             </div>
             <Switch 
               checked={params.enable_safety_checker}
-              onCheckedChange={(v: boolean) => updateParam('enable_safety_checker', v)}
+              onCheckedChange={(checked: boolean) => updateParam('enable_safety_checker', checked)}
             />
           </div>
         </div>
