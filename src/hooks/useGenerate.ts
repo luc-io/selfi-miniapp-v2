@@ -16,10 +16,9 @@ export function useGenerate() {
     }
   });
 
-  // Combine mutate and mutation state into a cleaner interface
   return {
     generateImage: mutation.mutate,
-    isGenerating: mutation.isPending
+    isPending: mutation.isPending
   };
 }
 
