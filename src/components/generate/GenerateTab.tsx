@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '../ui/card';
 import { useGenerate } from '@/hooks/useGenerate';
+import { useParameters } from '@/hooks/useParameters';
 import { ModelSelector } from './ModelSelector';
 import { LoraSelector } from './LoraSelector';
 import { Slider } from '../ui/slider';
@@ -9,7 +10,7 @@ import { Switch } from '../ui/switch';
 import { Loader2 } from 'lucide-react';
 import type { GenerationParameters, ImageSize } from '@/types';
 import type { LoraModel, LoraParameter } from '@/types/lora';
-import { getUserParameters, saveUserParameters } from '@/api/parameters';
+import { saveUserParameters } from '@/api/parameters';
 import { getAvailableLoras } from '@/api/loras';
 
 const IMAGE_SIZES = {
@@ -21,41 +22,27 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-const DEFAULT_PARAMS: GenerationParameters = {
-  image_size: 'landscape_4_3',
-  num_inference_steps: 28,
-  seed: Math.floor(Math.random() * 1000000),
-  guidance_scale: 3.5,
-  num_images: 1,
-  sync_mode: false,
-  enable_safety_checker: true,
-  output_format: 'jpeg',
-  modelPath: 'fal-ai/flux-lora',
-  loras: []
-};
-
 export function GenerateTab() {
-  const { isPending } = useGenerate(); // Removed unused generateImage
-  const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
+  const { isPending } = useGenerate();
+  const { parameters, isLoading: isLoadingParams, invalidateParameters } = useParameters();
+  const [params, setParams] = useState<GenerationParameters>(parameters);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
+
+  // Update local state when parameters load
+  useEffect(() => {
+    setParams(parameters);
+  }, [parameters]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const [savedParams, loras] = await Promise.all([
-          getUserParameters(),
-          getAvailableLoras()
-        ]);
-        
-        if (savedParams?.params) {
-          setParams(savedParams.params);
-        }
+        const loras = await getAvailableLoras();
         setAvailableLoras(loras);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Error loading loras:', error);
       } finally {
         setIsLoading(false);
       }
@@ -100,6 +87,7 @@ export function GenerateTab() {
     setIsSaving(true);
     try {
       await saveUserParameters(params);
+      await invalidateParameters(); // Refresh the parameters in cache
       
       window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
@@ -116,7 +104,7 @@ export function GenerateTab() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingParams) {
     return (
       <Card className="bg-white rounded-lg shadow-md">
         <div className="p-6 flex items-center justify-center min-h-[200px]">
