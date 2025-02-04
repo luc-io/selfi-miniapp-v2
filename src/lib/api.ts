@@ -16,13 +16,16 @@ function getInitData(): string {
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
-  user?: TelegramUser
+  user?: TelegramUser | null
 ): Promise<T> {
-  const initData = getInitData();
+  if (!user?.id) {
+    throw new APIError(401, 'No user ID found');
+  }
 
+  const initData = getInitData();
   const headers = {
     'Content-Type': 'application/json',
-    'x-user-id': user?.id.toString() || '',
+    'x-user-id': user.id.toString(),
     'x-telegram-init-data': initData,
     ...options.headers,
   };
@@ -33,12 +36,19 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: response.statusText }));
     throw new APIError(
       response.status,
-      error.error || 'API request failed'
+      response.statusText || 'API request failed'
     );
   }
 
-  return response.json();
+  const data = await response.json();
+  if (data.error) {
+    throw new APIError(
+      response.status,
+      data.error
+    );
+  }
+
+  return data;
 }
