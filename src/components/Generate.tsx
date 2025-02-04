@@ -18,7 +18,7 @@ const defaultParameters: GenerationParameters = {
 
 export function Generate() {
   const { parameters, isLoading } = useParameters();
-  const { mutate: generateImage, isLoading: isGenerating } = useGenerate();
+  const { generateImage, isGenerating } = useGenerate();
   
   // If we're loading parameters, show spinner
   if (isLoading) {
