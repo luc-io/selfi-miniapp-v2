@@ -21,8 +21,13 @@ export async function saveUserParameters(params: GenerationParameters): Promise<
   const user = window.Telegram?.WebApp?.initDataUnsafe.user;
   if (!user?.id) throw new Error('No user ID found');
 
+  const requestData = {
+    userId: user.id,
+    params
+  };
+
   return await apiRequest<UserParametersResponse>('/api/params', {
     method: 'POST',
-    body: JSON.stringify({ params })
+    body: JSON.stringify(requestData)
   }, user);
 }
