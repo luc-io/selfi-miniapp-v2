@@ -5,9 +5,8 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import type { GenerationParameters } from '@/types';
+import type { GenerationParameters, ImageSize } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
-import { useTelegram } from '@/hooks/useTelegram';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -32,57 +31,43 @@ const DEFAULT_PARAMS: GenerationParameters = {
 
 export function GenerateTab() {
   const generate = useGenerate();
-  const { user } = useTelegram();
   const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load saved parameters on component mount
   useEffect(() => {
     const loadParams = async () => {
-      if (!user) return;
-
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
           setParams(savedParams.params);
         }
-        setIsInitialized(true);
       } catch (error) {
         console.error('Error loading parameters:', error);
       }
     };
+    loadParams();
+  }, []);
 
-    if (user && !isInitialized) {
-      loadParams();
-    }
-  }, [user, isInitialized]);
-
-  const updateParam = <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
-    setParams(prevParams => ({
+  const updateParam = <K extends keyof GenerationParameters>(
+    key: K,
+    value: GenerationParameters[K]
+  ): void => {
+    setParams((prevParams: GenerationParameters) => ({
       ...prevParams,
       [key]: value
     }));
   };
 
   const handleSave = async () => {
-    if (!user) {
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Error: User not authenticated. Please try again.'
-      });
-      return;
-    }
-
     setIsSaving(true);
     try {
       await saveUserParameters(params);
       
-      const data = {
+      window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
         params
-      };
-
-      window.Telegram?.WebApp?.sendData(JSON.stringify(data));
+      }));
       window.Telegram?.WebApp?.close();
     } catch (error) {
       console.error('Error saving parameters:', error);
@@ -94,16 +79,11 @@ export function GenerateTab() {
     }
   };
 
-  // Don't render until user is available and parameters are loaded
-  if (!user || !isInitialized) {
-    return null;
-  }
-
   return (
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
         <ModelSelector 
-          onSelect={(modelPath) => updateParam('modelPath', modelPath)}
+          onSelect={(modelPath: string) => updateParam('modelPath', modelPath)}
           defaultValue={params.modelPath}
         />
 
@@ -116,7 +96,7 @@ export function GenerateTab() {
             <label className="block text-sm font-medium text-gray-700">Image Size</label>
             <Select 
               value={params.image_size} 
-              onValueChange={v => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
+              onValueChange={v => updateParam('image_size', v as ImageSize)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
