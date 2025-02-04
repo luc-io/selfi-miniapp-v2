@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { TelegramUser } from '@/types';
+import { TelegramUser } from '../types/telegram';
 
 export function useTelegram() {
   const [user, setUser] = useState<TelegramUser | null>(null);

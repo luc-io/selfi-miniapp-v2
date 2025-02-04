@@ -1,49 +1,38 @@
-import { WebApp } from '@twa-dev/types';
+import { GenerationParameters } from '@/types';
 import { apiRequest } from '../lib/api';
 
-declare global {
-  interface Window {
-    Telegram: {
-      WebApp: WebApp;
-    };
-  }
+export interface UserParametersResponse {
+  params: GenerationParameters;
 }
 
-interface UserParameters {
-  params: {
-    image_size?: string;
-    num_inference_steps?: number;
-    seed?: number;
-    guidance_scale?: number;
-    num_images?: number;
-    sync_mode?: boolean;
-    enable_safety_checker?: boolean;
-    output_format?: string;
-    model?: any;  // Add model to params type
-  };
-}
-
-export async function getUserParameters(): Promise<UserParameters | null> {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
+export async function getUserParameters(): Promise<UserParametersResponse | null> {
+  const user = window.Telegram?.WebApp?.initDataUnsafe.user;
   if (!user?.id) return null;
 
   try {
-    return await apiRequest<UserParameters>(`/api/params/${user.id}`, {}, user);
+    return await apiRequest<UserParametersResponse>(`/api/params/${user.id}`, {}, user);
   } catch (error) {
     console.error('Error fetching user parameters:', error);
     return null;
   }
 }
 
-export async function saveUserParameters(params: UserParameters['params']): Promise<UserParameters> {
-  const user = window.Telegram.WebApp.initDataUnsafe.user;
+export async function saveUserParameters(params: GenerationParameters): Promise<UserParametersResponse> {
+  const user = window.Telegram?.WebApp?.initDataUnsafe.user;
   if (!user?.id) throw new Error('No user ID found');
 
-  return await apiRequest<UserParameters>('/api/params', {
+  // Extract model info
+  const { modelPath, ...otherParams } = params;
+  
+  const requestData = {
+    model: {
+      modelPath
+    },
+    params: otherParams
+  };
+
+  return await apiRequest<UserParametersResponse>('/api/params', {
     method: 'POST',
-    body: JSON.stringify({ 
-      model: params.model,
-      params
-    })
+    body: JSON.stringify(requestData)
   }, user);
 }

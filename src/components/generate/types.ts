@@ -1,7 +1,6 @@
-import type { Model } from '@/types';
-
 export interface ModelSelectorProps {
-  onSelect: (model: Model | undefined) => void;
+  defaultValue: string;
+  onSelect: (modelPath: string) => void;
 }
 
 export interface AdvancedOptionsProps {

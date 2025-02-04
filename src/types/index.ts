@@ -1,24 +1,24 @@
-export * from './telegram';
+export type ImageSize = 
+  | 'landscape_4_3'
+  | 'landscape_16_9'
+  | 'square_hd'
+  | 'square'
+  | 'portrait_4_3'
+  | 'portrait_16_9';
 
-export interface Model {
-  id: string;
-  name: string;
-  type: 'public' | 'private' | 'trained';
+export type OutputFormat = 'jpeg' | 'png';
+
+export interface Parameters {
+  image_size?: ImageSize;
+  num_inference_steps?: number;
+  seed?: number;
+  guidance_scale?: number;
+  num_images?: number;
+  sync_mode?: boolean;
+  enable_safety_checker?: boolean;
+  output_format?: OutputFormat;
 }
 
-export interface ModelResponse {
-  success: boolean;
-  model?: Model;
-  error?: string;
-}
-
-export interface Generation {
-  id: string;
-  status: 'pending' | 'success' | 'error';
-  model: Model;
-  params: Record<string, any>;
-  result?: {
-    url: string;
-  };
-  error?: string;
+export interface UserParametersResponse {
+  params: Parameters;
 }

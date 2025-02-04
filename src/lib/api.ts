@@ -8,14 +8,25 @@ export class APIError extends Error {
   }
 }
 
+function getInitData(): string {
+  const searchParams = new URLSearchParams(window.location.hash.slice(1));
+  return searchParams.get('tgWebAppData') || '';
+}
+
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
-  user?: TelegramUser
+  user?: TelegramUser | null
 ): Promise<T> {
+  if (!user?.id) {
+    throw new APIError(401, 'No user ID found');
+  }
+
+  const initData = getInitData();
   const headers = {
     'Content-Type': 'application/json',
-    'x-user-id': user?.id.toString() || '',
+    'x-telegram-user-id': user.id.toString(),
+    'x-telegram-init-data': initData,
     ...options.headers,
   };
 
@@ -25,11 +36,28 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    try {
+      const errorData = await response.json();
+      throw new APIError(
+        response.status,
+        errorData.error || response.statusText || 'API request failed'
+      );
+    } catch (e) {
+      if (e instanceof APIError) throw e;
+      throw new APIError(
+        response.status,
+        response.statusText || 'API request failed'
+      );
+    }
+  }
+
+  const data = await response.json();
+  if (data.error) {
     throw new APIError(
       response.status,
-      response.statusText || 'API request failed'
+      data.error
     );
   }
 
-  return response.json();
+  return data;
 }

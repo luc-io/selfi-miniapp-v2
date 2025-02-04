@@ -5,8 +5,9 @@ import { ModelSelector } from './ModelSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import type { Model } from '@/types';
+import type { GenerationParameters } from '@/types';
 import { getUserParameters, saveUserParameters } from '@/api/parameters';
+import { useTelegram } from '@/hooks/useTelegram';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -17,18 +18,7 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-type Params = {
-  image_size: keyof typeof IMAGE_SIZES;
-  num_inference_steps: number;
-  seed: number;
-  guidance_scale: number;
-  num_images: number;
-  sync_mode: boolean;
-  enable_safety_checker: boolean;
-  output_format: 'jpeg' | 'png';
-};
-
-const DEFAULT_PARAMS: Params = {
+const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
   seed: Math.floor(Math.random() * 1000000),
@@ -36,75 +26,85 @@ const DEFAULT_PARAMS: Params = {
   num_images: 1,
   sync_mode: false,
   enable_safety_checker: true,
-  output_format: 'jpeg'
+  output_format: 'jpeg',
+  modelPath: 'fal-ai/flux-lora'
 };
 
 export function GenerateTab() {
   const generate = useGenerate();
-  const [selectedModel, setSelectedModel] = useState<Model | undefined>(undefined);
-  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const { user } = useTelegram();
+  const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load saved parameters on component mount
   useEffect(() => {
     const loadParams = async () => {
+      if (!user) return;
+
       try {
         const savedParams = await getUserParameters();
         if (savedParams?.params) {
-          setParams(savedParams.params as Params);
-          
-          // If model was saved, select it
-          if (savedParams.params.model) {
-            setSelectedModel(savedParams.params.model as Model);
-          }
+          setParams(savedParams.params);
         }
+        setIsInitialized(true);
       } catch (error) {
         console.error('Error loading parameters:', error);
       }
     };
-    loadParams();
-  }, []);
 
-  const updateParam = async <K extends keyof Params>(key: K, value: Params[K]) => {
-    const newParams = { ...params, [key]: value };
-    setParams(newParams);
-    
-    try {
-      await saveUserParameters(newParams);
-    } catch (error) {
-      console.error('Error saving parameters:', error);
+    if (user && !isInitialized) {
+      loadParams();
     }
+  }, [user, isInitialized]);
+
+  const updateParam = <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => {
+    setParams(prevParams => ({
+      ...prevParams,
+      [key]: value
+    }));
   };
 
   const handleSave = async () => {
-    if (!selectedModel) return;
+    if (!user) {
+      window.Telegram?.WebApp?.showPopup({
+        message: 'Error: User not authenticated. Please try again.'
+      });
+      return;
+    }
 
     setIsSaving(true);
     try {
-      await saveUserParameters({
-        ...params,
-        model: selectedModel
-      });
+      await saveUserParameters(params);
       
-      window.Telegram?.WebApp?.sendData(JSON.stringify({
+      const data = {
         action: 'save_params',
-        model: selectedModel,
-        params: params
-      }));
+        params
+      };
+
+      window.Telegram?.WebApp?.sendData(JSON.stringify(data));
       window.Telegram?.WebApp?.close();
     } catch (error) {
       console.error('Error saving parameters:', error);
+      window.Telegram?.WebApp?.showPopup({
+        message: 'Failed to save parameters. Please try again.'
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
+  // Don't render until user is available and parameters are loaded
+  if (!user || !isInitialized) {
+    return null;
+  }
+
   return (
     <Card className="bg-white rounded-lg shadow-md">
       <div className="p-6 space-y-8">
         <ModelSelector 
-          onSelect={setSelectedModel} 
-          defaultValue={selectedModel}
+          onSelect={(modelPath) => updateParam('modelPath', modelPath)}
+          defaultValue={params.modelPath}
         />
 
         {/* Image Parameters */}
@@ -226,7 +226,7 @@ export function GenerateTab() {
         {/* Save Button */}
         <button
           className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-          disabled={!selectedModel || generate.isPending || isSaving}
+          disabled={generate.isPending || isSaving}
           onClick={handleSave}
         >
           {isSaving ? 'Saving...' : 'Save Parameters'}
