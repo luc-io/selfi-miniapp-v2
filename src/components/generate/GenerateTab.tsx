@@ -35,7 +35,7 @@ const DEFAULT_PARAMS: GenerationParameters = {
 };
 
 export function GenerateTab() {
-  const generate = useGenerate();
+  const { generateImage, isPending } = useGenerate();
   const [params, setParams] = useState<GenerationParameters>(DEFAULT_PARAMS);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -261,7 +261,7 @@ export function GenerateTab() {
         {/* Save Button */}
         <button
           className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-          disabled={generate.isPending || isSaving}
+          disabled={isPending || isSaving}
           onClick={handleSave}
         >
           {isSaving ? 'Saving...' : 'Save Parameters'}
