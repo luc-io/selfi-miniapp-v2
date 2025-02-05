@@ -4,27 +4,7 @@ import type { LoraModel } from '@/types/lora';
 const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
 export function buildValidationData(webApp: any): string {
-  const {
-    query_id,
-    user,
-    auth_date,
-    hash,
-    ...rest
-  } = webApp.initDataUnsafe;
-
-  // Convert to URLSearchParams
-  const params = new URLSearchParams({
-    auth_date: auth_date.toString(),
-    query_id: query_id.toString(),
-    user: typeof user === 'string' ? user : JSON.stringify(user),
-    ...rest
-  });
-
-  // Sort and format
-  return Array.from(params.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${k}=${v}`)
-    .join('\n');
+  return encodeURIComponent(webApp.initData);
 }
 
 export async function getAvailableLoras(): Promise<LoraModel[]> {
