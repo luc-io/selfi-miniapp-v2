@@ -9,8 +9,8 @@ const sampleModel: Model = {
   name: "Model #1",
   createdAt: new Date('2024-02-04'),
   isActive: true,
-  status: 'COMPLETED',  // Add status property
-  input: {},           // Add input property
+  status: 'COMPLETED',  // Added required status property
+  input: {},           // Added required input property
   config_file: {
     url: "https://v3.fal.media/files/panda/X1qP-fJhUlclTMJDLG0VR_config.json",
     file_name: "config.json",
