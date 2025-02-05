@@ -34,7 +34,7 @@ export function ModelsTab() {
 
   const handleDelete = async (model: Model) => {
     try {
-      await deleteModel(model.id);
+      await deleteModel(model.databaseId);
       setModelToDelete(null);
       window.Telegram?.WebApp?.showPopup({
         message: `Model ${model.name} deleted successfully`
@@ -76,7 +76,7 @@ export function ModelsTab() {
         {/* List */}
         <div className="divide-y">
           {models.map((model) => (
-            <div key={model.id} className="text-sm">
+            <div key={model.databaseId} className="text-sm">
               <div className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 items-center">
                 <div>
                   <div className="font-medium font-mono">{model.name}</div>
@@ -91,17 +91,17 @@ export function ModelsTab() {
                 </div>
                 <div className="flex items-center justify-end space-x-2">
                   <Switch 
-                    checked={model.isActive}
+                    checked={model.isPublic}
                     onCheckedChange={(checked) => {
-                      toggleActivation({ modelId: model.id, isActive: checked });
+                      toggleActivation({ modelId: model.databaseId, isActive: checked });
                     }}
                     disabled={isToggling || model.status !== 'COMPLETED'}
                   />
                   <button 
-                    onClick={() => setExpandedId(expandedId === model.id ? null : model.id)}
+                    onClick={() => setExpandedId(expandedId === model.databaseId ? null : model.databaseId)}
                     className="p-1 hover:bg-gray-100 rounded"
                   >
-                    {expandedId === model.id ? (
+                    {expandedId === model.databaseId ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
                       <ChevronDown className="h-4 w-4" />
@@ -111,7 +111,7 @@ export function ModelsTab() {
               </div>
 
               {/* Expanded Details */}
-              {expandedId === model.id && (
+              {expandedId === model.databaseId && (
                 <div className="px-4 pt-0 pb-3 bg-gray-50 -mt-2">
                   <div className="space-y-4">
                     {/* Tabs */}
@@ -143,14 +143,16 @@ export function ModelsTab() {
                       {activeTab === 'input' ? (
                         <div className="bg-white p-4 rounded border text-xs">
                           <div className="font-medium mb-2">Training Parameters</div>
-                          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                            {JSON.stringify({
-                              steps: model.input.steps,
-                              is_style: model.input.is_style,
-                              create_masks: model.input.create_masks,
-                              trigger_word: model.input.trigger_word,
-                            }, null, 2)}
-                          </pre>
+                          {model.training ? (
+                            <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                              {JSON.stringify({
+                                steps: model.training.steps,
+                                metadata: model.training.metadata
+                              }, null, 2)}
+                            </pre>
+                          ) : (
+                            <p className="text-gray-500">No training parameters available</p>
+                          )}
                         </div>
                       ) : (
                         <div className="bg-white p-4 rounded border text-xs space-y-4">
@@ -169,6 +171,9 @@ export function ModelsTab() {
                                 {JSON.stringify(model.diffusers_lora_file, null, 2)}
                               </pre>
                             </div>
+                          )}
+                          {!model.config_file && !model.diffusers_lora_file && (
+                            <p className="text-gray-500">No output files available</p>
                           )}
                         </div>
                       )}
