@@ -1,3 +1,5 @@
+export type LoraStatus = 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
+
 export interface ModelFile {
   url: string;
   file_name: string;
@@ -10,6 +12,7 @@ export interface Model {
   name: string;
   triggerWord: string;
   createdAt: Date;
+  status: LoraStatus;
   isActive: boolean;
   config_file: ModelFile;
   diffusers_lora_file: ModelFile;
