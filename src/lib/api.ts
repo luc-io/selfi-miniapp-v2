@@ -1,63 +1,72 @@
-import type { TelegramUser } from '../types/telegram';
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-export class APIError extends Error {
-  constructor(public status: number, message: string) {
-    super(message);
-  }
+interface TrainingParams {
+  steps: number;
+  isStyle: boolean;
+  createMasks: boolean;
+  triggerWord: string;
+  images: File[];
+  captions: Record<string, string>;
 }
 
-function getInitData(): string {
-  const searchParams = new URLSearchParams(window.location.hash.slice(1));
-  return searchParams.get('tgWebAppData') || '';
+interface TrainingResult {
+  requestId: string;
+  loraUrl: string;
+  configUrl: string;
 }
 
-export async function apiRequest<T>(
-  path: string,
-  options: RequestInit = {},
-  user?: TelegramUser | null
-): Promise<T> {
-  if (!user?.id) {
-    throw new APIError(401, 'No user ID found');
-  }
+interface TrainingProgress {
+  status: 'pending' | 'training' | 'completed' | 'failed';
+  progress: number;
+  message?: string;
+}
 
-  const initData = getInitData();
-  const headers = {
-    'Content-Type': 'application/json',
-    'x-telegram-user-id': user.id.toString(),
-    'x-telegram-init-data': initData,
-    ...options.headers,
-  };
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
+export async function startTraining(params: TrainingParams): Promise<string> {
+  const formData = new FormData();
+  
+  // Add each image to form data
+  params.images.forEach((image, index) => {
+    formData.append(`images`, image);
+  });
+
+  // Add captions as JSON
+  formData.append('captions', JSON.stringify(params.captions));
+  
+  // Add other parameters
+  formData.append('steps', params.steps.toString());
+  formData.append('isStyle', params.isStyle.toString());
+  formData.append('createMasks', params.createMasks.toString());
+  formData.append('triggerWord', params.triggerWord);
+
+  const response = await fetch(`${API_BASE_URL}/training/start`, {
+    method: 'POST',
+    body: formData,
   });
 
   if (!response.ok) {
-    try {
-      const errorData = await response.json();
-      throw new APIError(
-        response.status,
-        errorData.error || response.statusText || 'API request failed'
-      );
-    } catch (e) {
-      if (e instanceof APIError) throw e;
-      throw new APIError(
-        response.status,
-        response.statusText || 'API request failed'
-      );
-    }
+    throw new Error('Failed to start training');
   }
 
   const data = await response.json();
-  if (data.error) {
-    throw new APIError(
-      response.status,
-      data.error
-    );
+  return data.requestId;
+}
+
+export async function getTrainingProgress(requestId: string): Promise<TrainingProgress> {
+  const response = await fetch(`${API_BASE_URL}/training/${requestId}/progress`);
+
+  if (!response.ok) {
+    throw new Error('Failed to get training progress');
   }
 
-  return data;
+  return response.json();
+}
+
+export async function getTrainingResult(requestId: string): Promise<TrainingResult> {
+  const response = await fetch(`${API_BASE_URL}/training/${requestId}/result`);
+
+  if (!response.ok) {
+    throw new Error('Failed to get training result');
+  }
+
+  return response.json();
 }
