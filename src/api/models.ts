@@ -4,11 +4,16 @@ import { Model } from '@/types/model';
 const mockModels: Model[] = [
   {
     id: 1,
-    name: "Beach Landscape",
-    triggerWord: "<beach>",
+    name: "<BEACH>",
     createdAt: new Date('2024-02-04'),
     status: 'COMPLETED',
     isActive: true,
+    input: {
+      steps: 1000,
+      is_style: false,
+      create_masks: true,
+      trigger_word: "BEACH"
+    },
     config_file: {
       url: "https://v3.fal.media/files/panda/X1qP-fJhUlclTMJDLG0VR_config.json",
       file_name: "config.json",
@@ -24,11 +29,16 @@ const mockModels: Model[] = [
   },
   {
     id: 2,
-    name: "Portrait Style",
-    triggerWord: "<portrait>",
+    name: "<PORTRAIT>",
     createdAt: new Date('2024-02-03'),
     status: 'TRAINING',
     isActive: false,
+    input: {
+      steps: 1000,
+      is_style: true,
+      create_masks: false,
+      trigger_word: "PORTRAIT"
+    },
     config_file: {
       url: "https://v3.fal.media/files/panda/Y2qP-gKhVmclTMJDLG0VR_config.json",
       file_name: "config.json",
