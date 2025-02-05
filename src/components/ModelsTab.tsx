@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { Info } from 'lucide-react';
-import { Model } from '../types/model';
 
 export function ModelsTab() {
   return (
