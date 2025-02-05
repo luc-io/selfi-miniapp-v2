@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserModels, toggleModelPublic, deleteUserModel } from '@/api/loras';
+import { getUserModels, toggleModelPublic, deleteUserModel, buildValidationData } from '@/api/loras';
 import type { Model } from '@/types/model';
 
 export function useModels() {
