@@ -4,7 +4,8 @@ import { Model } from '@/types/model';
 const mockModels: Model[] = [
   {
     id: 1,
-    name: "Beach Landscape LoRA",
+    name: "Beach Landscape",
+    triggerWord: "<beach>",
     createdAt: new Date('2024-02-04'),
     isActive: true,
     config_file: {
@@ -22,7 +23,8 @@ const mockModels: Model[] = [
   },
   {
     id: 2,
-    name: "Portrait Style LoRA",
+    name: "Portrait Style",
+    triggerWord: "<portrait>",
     createdAt: new Date('2024-02-03'),
     isActive: false,
     config_file: {
