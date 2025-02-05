@@ -4,7 +4,7 @@ import { Model } from '@/types/model';
 const mockModels: Model[] = [
   {
     id: 1,
-    name: "<BEACH>",
+    name: "BEACH",
     createdAt: new Date('2024-02-04'),
     status: 'COMPLETED',
     isActive: true,
@@ -29,7 +29,7 @@ const mockModels: Model[] = [
   },
   {
     id: 2,
-    name: "<PORTRAIT>",
+    name: "PORTRAIT",
     createdAt: new Date('2024-02-03'),
     status: 'TRAINING',
     isActive: false,
