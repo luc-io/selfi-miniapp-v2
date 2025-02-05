@@ -1,4 +1,12 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+}
 
 interface RequestOptions {
   method?: string;
@@ -8,13 +16,24 @@ interface RequestOptions {
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', headers = {}, body } = options;
+  const user = window.Telegram?.WebApp?.initDataUnsafe.user as TelegramUser | undefined;
+
+  // Add auth headers if user exists
+  const authHeaders = user ? {
+    'X-Telegram-User-Id': user.id.toString(),
+    'X-Telegram-Username': user.username || '',
+    'X-Telegram-First-Name': user.first_name,
+    'X-Telegram-Last-Name': user.last_name || ''
+  } : {};
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
       ...headers,
+      ...authHeaders,
       ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
     },
+    credentials: 'include',
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   });
 
@@ -25,7 +44,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   return response.json();
 }
 
-interface TrainingParams {
+// Training Types
+export interface TrainingParams {
   steps: number;
   isStyle: boolean;
   createMasks: boolean;
@@ -34,13 +54,13 @@ interface TrainingParams {
   captions: Record<string, string>;
 }
 
-interface TrainingResult {
+export interface TrainingResult {
   requestId: string;
   loraUrl: string;
   configUrl: string;
 }
 
-interface TrainingProgress {
+export interface TrainingProgress {
   status: 'pending' | 'training' | 'completed' | 'failed';
   progress: number;
   message?: string;
