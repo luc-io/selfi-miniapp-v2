@@ -12,6 +12,8 @@ const STATUS_COLORS: Record<LoraStatus, { bg: string; text: string }> = {
   FAILED: { bg: 'bg-red-100', text: 'text-red-700' }
 };
 
+type DetailsTab = 'input' | 'output';
+
 export function ModelsTab() {
   const { 
     models, 
@@ -24,6 +26,7 @@ export function ModelsTab() {
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null);
+  const [activeTab, setActiveTab] = useState<DetailsTab>('input');
 
   const handleDelete = async (model: Model) => {
     try {
@@ -60,9 +63,8 @@ export function ModelsTab() {
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[2fr,1fr,1fr,auto] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
+        <div className="grid grid-cols-[2fr,1fr,auto] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
           <div>Model</div>
-          <div>Trigger Word</div>
           <div>Status</div>
           <div className="w-24">Actions</div>
         </div>
@@ -71,14 +73,13 @@ export function ModelsTab() {
         <div className="divide-y">
           {models.map((model) => (
             <div key={model.id} className="text-sm">
-              <div className="grid grid-cols-[2fr,1fr,1fr,auto] gap-4 px-4 py-3 items-center">
+              <div className="grid grid-cols-[2fr,1fr,auto] gap-4 px-4 py-3 items-center">
                 <div>
-                  <div className="font-medium">{model.name}</div>
-                  <div className="text-gray-500 text-xs mt-0.5">
-                    Created {formatDistanceToNow(new Date(model.createdAt))} ago
+                  <div className="font-medium font-mono">{model.name}</div>
+                  <div className="text-gray-400 text-[11px] mt-0.5">
+                    {formatDistanceToNow(new Date(model.createdAt))} ago
                   </div>
                 </div>
-                <div className="text-gray-600 font-mono">{model.triggerWord}</div>
                 <div>
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[model.status].bg} ${STATUS_COLORS[model.status].text}`}>
                     {model.status}
@@ -107,26 +108,65 @@ export function ModelsTab() {
 
               {/* Expanded Details */}
               {expandedId === model.id && (
-                <div className="px-4 py-3 bg-gray-50 -mt-2">
+                <div className="px-4 pt-0 pb-3 bg-gray-50 -mt-2">
                   <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2 text-xs uppercase text-gray-500">Model Files</h4>
-                      <div className="bg-white p-4 rounded border text-xs space-y-4">
-                        <div>
-                          <div className="font-medium mb-1">Config File</div>
-                          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                            {JSON.stringify(model.config_file, null, 2)}
-                          </pre>
-                        </div>
-                        <div>
-                          <div className="font-medium mb-1">Model Weights</div>
-                          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                            {JSON.stringify(model.diffusers_lora_file, null, 2)}
-                          </pre>
-                        </div>
-                      </div>
+                    {/* Tabs */}
+                    <div className="flex space-x-4 border-b">
+                      <button
+                        className={`px-4 py-2 text-sm font-medium -mb-px ${
+                          activeTab === 'input'
+                            ? 'border-b-2 border-blue-500 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                        onClick={() => setActiveTab('input')}
+                      >
+                        Input
+                      </button>
+                      <button
+                        className={`px-4 py-2 text-sm font-medium -mb-px ${
+                          activeTab === 'output'
+                            ? 'border-b-2 border-blue-500 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                        onClick={() => setActiveTab('output')}
+                      >
+                        Output
+                      </button>
                     </div>
-                    <div className="flex justify-end">
+
+                    {/* Tab Content */}
+                    <div>
+                      {activeTab === 'input' ? (
+                        <div className="bg-white p-4 rounded border text-xs">
+                          <div className="font-medium mb-2">Training Parameters</div>
+                          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                            {JSON.stringify({
+                              steps: model.input.steps,
+                              is_style: model.input.is_style,
+                              create_masks: model.input.create_masks,
+                              trigger_word: model.input.trigger_word,
+                            }, null, 2)}
+                          </pre>
+                        </div>
+                      ) : (
+                        <div className="bg-white p-4 rounded border text-xs space-y-4">
+                          <div>
+                            <div className="font-medium mb-1">Config File</div>
+                            <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                              {JSON.stringify(model.config_file, null, 2)}
+                            </pre>
+                          </div>
+                          <div>
+                            <div className="font-medium mb-1">Model Weights</div>
+                            <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                              {JSON.stringify(model.diffusers_lora_file, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex justify-end pt-2">
                       <button
                         onClick={() => setModelToDelete(model)}
                         className="flex items-center px-3 py-1.5 text-xs font-medium text-red-600 rounded border border-red-200 hover:bg-red-50"
