@@ -1,9 +1,11 @@
+export type LoraStatus = 'training' | 'ready' | 'failed';
+
 export interface Model {
   id: number;
   name: string;
   createdAt: Date;
   isActive: boolean;
-  status: string;
+  status: LoraStatus;
   input: any; // Update this type based on your actual input structure
   config_file: {
     url: string;
