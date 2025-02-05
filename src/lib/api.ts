@@ -18,21 +18,23 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const { method = 'GET', headers = {}, body } = options;
   const user = window.Telegram?.WebApp?.initDataUnsafe.user as TelegramUser | undefined;
 
+  // Prepare headers
+  const requestHeaders: Record<string, string> = {
+    ...headers,
+    ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+  };
+
   // Add auth headers if user exists
-  const authHeaders = user ? {
-    'X-Telegram-User-Id': user.id.toString(),
-    'X-Telegram-Username': user.username || '',
-    'X-Telegram-First-Name': user.first_name,
-    'X-Telegram-Last-Name': user.last_name || ''
-  } : {};
+  if (user) {
+    requestHeaders['X-Telegram-User-Id'] = user.id.toString();
+    requestHeaders['X-Telegram-Username'] = user.username || '';
+    requestHeaders['X-Telegram-First-Name'] = user.first_name;
+    requestHeaders['X-Telegram-Last-Name'] = user.last_name || '';
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
-    headers: {
-      ...headers,
-      ...authHeaders,
-      ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
-    },
+    headers: requestHeaders,
     credentials: 'include',
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   });
