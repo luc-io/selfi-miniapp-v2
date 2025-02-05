@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Loader2, Upload, X, Edit2 } from 'lucide-react';
 import { startTraining, getTrainingProgress, type TrainingProgress } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
+import type { Query } from '@tanstack/react-query';
 
 interface TrainingImage {
   file: File;
@@ -42,8 +43,8 @@ export function TrainTab() {
     queryKey: ['training-progress', requestId],
     queryFn: () => getTrainingProgress(requestId),
     enabled: !!requestId && !isLoading,
-    refetchInterval: (_, query) => {
-      const data = query.state.data as TrainingProgress | null;
+    refetchInterval: (query: Query<TrainingProgress | null, Error>) => {
+      const data = query.state.data;
       if (!data || data.status === 'completed' || data.status === 'failed') {
         return false;
       }
