@@ -4,7 +4,6 @@ import type { LoraModel } from '@/types/lora';
 const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
 export function buildValidationData(webApp: any): string {
-  // Use raw initData directly - no encoding needed as it's already in the correct format
   return webApp.initData;
 }
 
@@ -37,11 +36,6 @@ export async function getUserModels(): Promise<Model[]> {
     if (!userId) throw new Error('Telegram user ID not available');
 
     const validationData = buildValidationData(webApp);
-    console.log('Making request to /loras/user with:', {
-      userId,
-      validationData
-    });
-
     const response = await fetch(`${API_BASE}/loras/user`, {
       headers: {
         'x-telegram-init-data': validationData,
@@ -50,16 +44,13 @@ export async function getUserModels(): Promise<Model[]> {
       }
     });
     
-    console.log('Response status:', response.status);
     const responseData = await response.json();
-    console.log('Response data:', responseData);
     
     if (!response.ok) {
       throw new Error(responseData.error || 'Failed to fetch user models');
     }
     return responseData;
   } catch (error) {
-    console.error('getUserModels error:', error);
     throw error;
   }
 }

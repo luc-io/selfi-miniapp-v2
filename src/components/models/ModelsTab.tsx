@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
 import { Model, LoraStatus } from '@/types/model';
@@ -23,10 +23,6 @@ export function ModelsTab() {
     deleteModel,
     isDeleting,
   } = useModels();
-
-  useEffect(() => {
-    console.log('ModelsTab render:', { models, isLoading });
-  }, [models, isLoading]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null);
