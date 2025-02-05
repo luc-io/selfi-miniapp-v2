@@ -15,7 +15,7 @@ export interface ModelInput {
 }
 
 export interface Model {
-  id: string;  // Changed from number to string to match Prisma databaseId
+  id: string;
   name: string;
   triggerWord: string;
   weightsUrl?: string;
@@ -25,4 +25,6 @@ export interface Model {
   createdAt: string;
   isActive: boolean;
   input: ModelInput;
+  config_file?: ModelFile;
+  diffusers_lora_file?: ModelFile;
 }
