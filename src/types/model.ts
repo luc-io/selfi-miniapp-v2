@@ -7,21 +7,21 @@ export interface ModelFile {
   content_type: string;
 }
 
-export interface ModelInput {
+export interface ModelTraining {
   steps: number;
-  is_style: boolean;
-  create_masks: boolean;
-  trigger_word: string;
+  metadata: Record<string, any>;
 }
 
 export interface Model {
-  id: number;
+  databaseId: string;
   name: string;
-  createdAt: Date;
+  triggerWord: string;
+  weightsUrl?: string;
+  configUrl?: string;
+  isPublic: boolean;
   status: LoraStatus;
-  isActive: boolean;
-  input: ModelInput;
-  config_file: ModelFile;
-  diffusers_lora_file: ModelFile;
-  debug_preprocessed_output?: any;
+  createdAt: string;
+  training?: ModelTraining;
+  config_file?: ModelFile;
+  diffusers_lora_file?: ModelFile;
 }
