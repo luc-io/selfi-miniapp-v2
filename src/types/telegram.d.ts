@@ -1,34 +1,36 @@
-interface TelegramPopup {
-  title?: string;
-  message: string;
-  buttons?: Array<{
-    id?: string;
-    type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
-    text?: string;
-  }>;
+interface TelegramWebAppUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+}
+
+interface TelegramWebAppInitData {
+  user: TelegramWebAppUser;
+  [key: string]: any;
 }
 
 interface TelegramWebApp {
+  initDataUnsafe: TelegramWebAppInitData;
   ready(): void;
-  close(): void;
-  initData: string;
-  initDataUnsafe: {
-    user?: {
-      id: number;
-      first_name: string;
-      last_name?: string;
-      username?: string;
-      language_code?: string;
-      is_premium?: boolean;
-    };
+  showPopup(params: { message: string }): void;
+  MainButton: {
+    show(): void;
+    hide(): void;
+    enable(): void;
+    disable(): void;
+    showProgress(leaveActive?: boolean): void;
+    hideProgress(): void;
+    setText(text: string): void;
+    onClick(callback: () => void): void;
+    offClick(callback: () => void): void;
   };
-  showPopup(params: TelegramPopup): Promise<string | void>;
+  [key: string]: any;
 }
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: TelegramWebApp;
-    };
-  }
+interface Window {
+  Telegram?: {
+    WebApp: TelegramWebApp;
+  };
 }
