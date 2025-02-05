@@ -19,7 +19,13 @@ const statusStyles: Record<LoraStatus, { bg: string; text: string }> = {
   'PENDING': { bg: 'bg-gray-100', text: 'text-gray-700' },
 };
 
-function ModelCard({ model }: { model: Model }) {
+interface ModelCardProps {
+  model: Model;
+  onToggleActive?: (model: Model) => Promise<void>;
+  onDelete?: (model: Model) => Promise<void>;
+}
+
+function ModelCard({ model, onToggleActive, onDelete }: ModelCardProps) {
   const [isToggling, setIsToggling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -30,26 +36,28 @@ function ModelCard({ model }: { model: Model }) {
   };
 
   const handleToggleActive = useCallback(async () => {
+    if (!onToggleActive) return;
     setIsToggling(true);
     try {
-      // Toggle logic here
+      await onToggleActive(model);
     } catch (error) {
       console.error('Failed to toggle model:', error);
     } finally {
       setIsToggling(false);
     }
-  }, []);
+  }, [model, onToggleActive]);
 
   const handleDelete = useCallback(async () => {
+    if (!onDelete) return;
     setIsDeleting(true);
     try {
-      // Delete logic here
+      await onDelete(model);
     } catch (error) {
       console.error('Failed to delete model:', error);
     } finally {
       setIsDeleting(false);
     }
-  }, []);
+  }, [model, onDelete]);
 
   return (
     <Card className="bg-card border-border">
@@ -68,7 +76,7 @@ function ModelCard({ model }: { model: Model }) {
             variant="ghost"
             size="icon"
             onClick={handleToggleActive}
-            disabled={isToggling || model.status === 'TRAINING'}
+            disabled={isToggling || model.status === 'TRAINING' || !onToggleActive}
             className="h-9 w-9"
           >
             {model.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -101,7 +109,7 @@ function ModelCard({ model }: { model: Model }) {
               variant="destructive"
               className="flex-1"
               onClick={handleDelete}
-              disabled={isDeleting || model.status === 'TRAINING'}
+              disabled={isDeleting || model.status === 'TRAINING' || !onDelete}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
@@ -123,6 +131,34 @@ function ModelCard({ model }: { model: Model }) {
 }
 
 export function ModelsTab() {
+  const [models, setModels] = useState<Model[]>([]);
+  // Sample model for testing
+  const sampleModel: Model = {
+    id: 1,
+    name: "Sample Model",
+    createdAt: new Date(),
+    isActive: true,
+    status: 'COMPLETED',
+    input: {},
+    config_file: {
+      url: "https://example.com/config.json",
+      file_name: "config.json",
+      file_size: 1234,
+      content_type: "application/json"
+    },
+    diffusers_lora_file: {
+      url: "https://example.com/model.safetensors",
+      file_name: "model.safetensors",
+      file_size: 1234567,
+      content_type: "application/octet-stream"
+    }
+  };
+
+  // Add sample model if none exist
+  if (models.length === 0) {
+    setModels([sampleModel]);
+  }
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
@@ -134,7 +170,20 @@ export function ModelsTab() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Models will be mapped here */}
+        {models.map(model => (
+          <ModelCard 
+            key={model.id} 
+            model={model}
+            onToggleActive={async (model) => {
+              // Toggle logic here
+              console.log('Toggle model:', model.id);
+            }}
+            onDelete={async (model) => {
+              // Delete logic here
+              console.log('Delete model:', model.id);
+            }}
+          />
+        ))}
       </div>
     </div>
   );
