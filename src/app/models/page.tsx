@@ -1,5 +1,5 @@
-import ModelsPage from "@/components/models/models-page"
+import { ModelsTab } from "@/components/models/ModelsTab"
 
 export default function Page() {
-  return <ModelsPage />
+  return <ModelsTab />
 }
