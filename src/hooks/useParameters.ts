@@ -1,13 +1,13 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import type { GenerationParameters } from '@/types';
-import { getUserParameters } from '@/api/parameters';
 
 const defaultParameters: GenerationParameters = {
-  image_size: 'landscape_4_3',
-  num_inference_steps: 28,
-  seed: Math.floor(Math.random() * 1000000),
-  guidance_scale: 3.5,
+  image_size: 'portrait_16_9',
+  num_inference_steps: 48,
+  seed: 334370,
+  guidance_scale: 20,
   num_images: 1,
+  sync_mode: false,
   enable_safety_checker: true,
   output_format: 'jpeg',
   modelPath: 'fal-ai/flux-lora',
@@ -15,35 +15,28 @@ const defaultParameters: GenerationParameters = {
 };
 
 export function useParameters() {
-  const queryClient = useQueryClient();
+  const [parameters, setParameters] = useState<GenerationParameters>(defaultParameters);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['parameters'],
-    queryFn: async () => {
-      try {
-        const response = await getUserParameters();
-        if (response?.params) {
-          // Ensure sync_mode is not included
-          const { sync_mode, ...params } = response.params;
-          return params;
-        }
-        return defaultParameters;
-      } catch (error) {
-        console.error('Error fetching parameters:', error);
-        return defaultParameters;
-      }
-    },
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 60000, // Keep in cache for 1 minute
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    retry: 2
-  });
+  const invalidateParameters = async () => {
+    setIsLoading(true);
+    try {
+      // Add your parameter fetching logic here
+      setParameters(defaultParameters);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch parameters'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
-    parameters: data || defaultParameters,
+    parameters,
+    setParameters,
     isLoading,
     error,
-    invalidateParameters: () => queryClient.invalidateQueries({ queryKey: ['parameters'] })
+    invalidateParameters
   };
 }
