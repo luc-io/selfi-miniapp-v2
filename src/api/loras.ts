@@ -28,9 +28,8 @@ export async function getUserModels(): Promise<Model[]> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`${API_BASE}/loras/user`, {
+  const response = await fetch(`${API_BASE}/loras/user?${webApp.initData}`, {
     headers: {
-      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
       'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
     }
   });
@@ -44,11 +43,10 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public`, {
+  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public?${webApp.initData}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
       'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
     },
     body: JSON.stringify({ isPublic })
@@ -63,10 +61,9 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`${API_BASE}/loras/${modelId}`, {
+  const response = await fetch(`${API_BASE}/loras/${modelId}?${webApp.initData}`, {
     method: 'DELETE',
     headers: {
-      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
       'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
     }
   });
