@@ -1,28 +1,44 @@
-import { useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { SparklesIcon } from 'lucide-react';
-import type { ModelSelectorProps } from './types';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const DEFAULT_MODEL_PATH = 'fal-ai/flux-lora';
+interface ModelSelectorProps {
+  value: string;
+  onChange: (value: string) => void;
+}
 
-export function ModelSelector({ onSelect, defaultValue }: ModelSelectorProps) {
-  // Automatically select default model
-  useEffect(() => {
-    onSelect(defaultValue || DEFAULT_MODEL_PATH);
-  }, [defaultValue, onSelect]);
+const modelOptions = [
+  { label: 'Flux LoRA', value: 'fal-ai/flux-lora' },
+  { label: 'SDXL Base', value: 'stabilityai/stable-diffusion-xl-base-1.0' },
+];
 
+export function ModelSelector({ value, onChange }: ModelSelectorProps) {
   return (
-    <Card className="relative border-none bg-transparent shadow-none">
-      <CardContent className="flex gap-2 p-0">
-        <Button
-          size="sm"
-          variant="default"
-          className="flex items-center gap-1.5"
-        >
-          <SparklesIcon className="h-4 w-4" />
-          Flux
-        </Button>
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="text-sm font-medium">Base Model</CardTitle>
+        <CardDescription className="text-muted-foreground">Select the base model for generation</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <Label htmlFor="model-select">Model</Label>
+          <Select value={value} onValueChange={onChange}>
+            <SelectTrigger id="model-select" className="w-full bg-muted">
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              {modelOptions.map((option) => (
+                <SelectItem 
+                  key={option.value} 
+                  value={option.value}
+                  className="text-foreground hover:bg-muted"
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </CardContent>
     </Card>
   );
