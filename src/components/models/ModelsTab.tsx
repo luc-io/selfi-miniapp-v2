@@ -54,7 +54,7 @@ export function ModelsTab() {
   if (!models?.length) {
     return (
       <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-        <p className="text-gray-500">No models found. Train a model to see it here.</p>
+        <p className="text-gray-400">No models found. Train a model to see it here.</p>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export function ModelsTab() {
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[minmax(250px,2fr),minmax(200px,1fr),120px] px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
+        <div className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
           <div>Model</div>
           <div className="text-center">Status</div>
           <div className="text-right">Actions</div>
@@ -73,7 +73,7 @@ export function ModelsTab() {
         <div className="divide-y">
           {models.map((model) => (
             <div key={model.id} className="text-sm">
-              <div className="grid grid-cols-[minmax(250px,2fr),minmax(200px,1fr),120px] px-4 py-3 items-center">
+              <div className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 items-center">
                 <div>
                   <div className="font-medium font-mono">{model.name}</div>
                   <div className="text-gray-400 text-[11px] mt-0.5">
