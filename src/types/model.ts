@@ -15,13 +15,14 @@ export interface ModelInput {
 }
 
 export interface Model {
-  id: number;
+  id: string;  // Changed from number to string to match Prisma databaseId
   name: string;
-  createdAt: Date;
+  triggerWord: string;
+  weightsUrl?: string;
+  configUrl?: string;
+  isPublic: boolean;
   status: LoraStatus;
+  createdAt: string;
   isActive: boolean;
   input: ModelInput;
-  config_file: ModelFile;
-  diffusers_lora_file: ModelFile;
-  debug_preprocessed_output?: any;
 }
