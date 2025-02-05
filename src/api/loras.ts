@@ -30,14 +30,10 @@ export async function getUserModels(): Promise<Model[]> {
   const userId = webApp.initDataUnsafe?.user?.id?.toString();
   if (!userId) throw new Error('Telegram user ID not available');
 
-  const params = new URLSearchParams({
-    auth_date: webApp.initDataUnsafe?.auth_date || '',
-    hash: webApp.initDataUnsafe?.hash || ''
-  });
-
-  const response = await fetch(`${API_BASE}/loras/user?${params.toString()}`, {
+  const response = await fetch(`${API_BASE}/loras/user`, {
     headers: {
-      'x-telegram-user-id': userId,
+      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
+      'x-telegram-user-id': userId
     }
   });
   
@@ -53,15 +49,11 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
   const userId = webApp.initDataUnsafe?.user?.id?.toString();
   if (!userId) throw new Error('Telegram user ID not available');
 
-  const params = new URLSearchParams({
-    auth_date: webApp.initDataUnsafe?.auth_date || '',
-    hash: webApp.initDataUnsafe?.hash || ''
-  });
-
-  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public?${params.toString()}`, {
+  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
       'x-telegram-user-id': userId
     },
     body: JSON.stringify({ isPublic })
@@ -78,14 +70,10 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const userId = webApp.initDataUnsafe?.user?.id?.toString();
   if (!userId) throw new Error('Telegram user ID not available');
 
-  const params = new URLSearchParams({
-    auth_date: webApp.initDataUnsafe?.auth_date || '',
-    hash: webApp.initDataUnsafe?.hash || ''
-  });
-
-  const response = await fetch(`${API_BASE}/loras/${modelId}?${params.toString()}`, {
+  const response = await fetch(`${API_BASE}/loras/${modelId}`, {
     method: 'DELETE',
     headers: {
+      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
       'x-telegram-user-id': userId
     }
   });
