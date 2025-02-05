@@ -65,7 +65,7 @@ export function ModelsTab() {
         {/* Header */}
         <div className="grid grid-cols-[2fr,1fr,auto] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
           <div>Model</div>
-          <div>Status</div>
+          <div className="pl-2">Status</div>
           <div className="w-24">Actions</div>
         </div>
 
@@ -80,7 +80,7 @@ export function ModelsTab() {
                     {formatDistanceToNow(new Date(model.createdAt))} ago
                   </div>
                 </div>
-                <div>
+                <div className="pl-2">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[model.status].bg} ${STATUS_COLORS[model.status].text}`}>
                     {model.status}
                   </span>
