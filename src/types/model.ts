@@ -1,4 +1,4 @@
-export type LoraStatus = 'training' | 'ready' | 'failed';
+export type LoraStatus = 'TRAINING' | 'COMPLETED' | 'FAILED' | 'PENDING';
 
 export interface Model {
   id: number;
