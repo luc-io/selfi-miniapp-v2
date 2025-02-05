@@ -8,8 +8,10 @@ export interface ModelFile {
 export interface Model {
   id: number;
   name: string;
+  triggerWord: string;
   createdAt: Date;
   isActive: boolean;
   config_file: ModelFile;
   diffusers_lora_file: ModelFile;
+  debug_preprocessed_output?: any;
 }
