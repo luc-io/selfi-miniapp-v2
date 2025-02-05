@@ -27,14 +27,20 @@ export async function getAvailableLoras(): Promise<LoraModel[]> {
 export async function getUserModels(): Promise<Model[]> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
+  const userId = webApp.initDataUnsafe?.user?.id?.toString();
+  if (!userId) throw new Error('Telegram user ID not available');
 
   const params = new URLSearchParams({
-    user_id: webApp.initDataUnsafe?.user?.id?.toString() || '',
     auth_date: webApp.initDataUnsafe?.auth_date || '',
     hash: webApp.initDataUnsafe?.hash || ''
   });
 
-  const response = await fetch(`${API_BASE}/loras/user?${params.toString()}`);
+  const response = await fetch(`${API_BASE}/loras/user?${params.toString()}`, {
+    headers: {
+      'x-telegram-user-id': userId,
+    }
+  });
+  
   if (!response.ok) {
     throw new Error('Failed to fetch user models');
   }
@@ -44,6 +50,8 @@ export async function getUserModels(): Promise<Model[]> {
 export async function toggleModelPublic(modelId: string, isPublic: boolean): Promise<void> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
+  const userId = webApp.initDataUnsafe?.user?.id?.toString();
+  if (!userId) throw new Error('Telegram user ID not available');
 
   const params = new URLSearchParams({
     auth_date: webApp.initDataUnsafe?.auth_date || '',
@@ -54,7 +62,7 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
+      'x-telegram-user-id': userId
     },
     body: JSON.stringify({ isPublic })
   });
@@ -67,6 +75,8 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
 export async function deleteUserModel(modelId: string): Promise<void> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
+  const userId = webApp.initDataUnsafe?.user?.id?.toString();
+  if (!userId) throw new Error('Telegram user ID not available');
 
   const params = new URLSearchParams({
     auth_date: webApp.initDataUnsafe?.auth_date || '',
@@ -76,7 +86,7 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const response = await fetch(`${API_BASE}/loras/${modelId}?${params.toString()}`, {
     method: 'DELETE',
     headers: {
-      'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
+      'x-telegram-user-id': userId
     }
   });
 
