@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Info, Trash2, ChevronRight, Download, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
 import { Model } from '@/types/model';
 import { useModels } from '@/hooks/useModels';
 import { Switch } from '@/components/ui/switch';
@@ -13,16 +13,10 @@ export function ModelsTab() {
     isToggling,
     deleteModel,
     isDeleting,
-    downloadConfig 
   } = useModels();
 
-  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null);
-
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(2)} MB`;
-  };
 
   const handleDelete = async (model: Model) => {
     try {
@@ -57,32 +51,25 @@ export function ModelsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-        <h2 className="text-2xl font-bold">Your Models</h2>
-        <button 
-          className="flex items-center px-4 py-2 text-sm font-medium border rounded-lg hover:bg-gray-50"
-          onClick={() => {
-            window.Telegram?.WebApp?.showPopup({
-              message: 'You can manage your trained models here. Toggle them on/off, view details, or delete them.'
-            });
-          }}
-        >
-          <Info className="w-4 h-4 mr-2" />
-          Help
-        </button>
-      </div>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Header */}
+        <div className="grid grid-cols-[2fr,1fr,1fr,auto,auto] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
+          <div>Name</div>
+          <div>Trigger Word</div>
+          <div>Created</div>
+          <div>Status</div>
+          <div></div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {models.map((model) => (
-          <div key={model.id} className="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-shadow">
-            <div className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-medium">{model.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    Created {formatDistanceToNow(new Date(model.createdAt))} ago
-                  </p>
-                </div>
+        {/* List */}
+        <div className="divide-y">
+          {models.map((model) => (
+            <div key={model.id} className="text-sm">
+              {/* Main Row */}
+              <div className="grid grid-cols-[2fr,1fr,1fr,auto,auto] gap-4 px-4 py-3 items-center">
+                <div className="font-medium">{model.name}</div>
+                <div className="text-gray-600 font-mono">{model.triggerWord}</div>
+                <div className="text-gray-600">{formatDistanceToNow(new Date(model.createdAt))} ago</div>
                 <Switch 
                   checked={model.isActive}
                   onCheckedChange={(checked) => {
@@ -90,63 +77,58 @@ export function ModelsTab() {
                   }}
                   disabled={isToggling}
                 />
+                <button 
+                  onClick={() => setExpandedId(expandedId === model.id ? null : model.id)}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  {expandedId === model.id ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
               </div>
-            </div>
-            <div className="p-4 border-t">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span>Model Size: {formatFileSize(model.diffusers_lora_file.file_size)}</span>
-                  <button 
-                    onClick={() => setSelectedModel(selectedModel?.id === model.id ? null : model)}
-                    className="p-1 hover:bg-gray-100 rounded-full"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="flex space-x-2">
-                  <button 
-                    className="flex items-center justify-center flex-1 px-3 py-2 text-sm font-medium border rounded-md hover:bg-gray-50"
-                    onClick={() => downloadConfig(model.id, model.config_file.file_name)}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Config
-                  </button>
-                  <button 
-                    className="flex items-center justify-center flex-1 px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-                    onClick={() => setModelToDelete(model)}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            {selectedModel?.id === model.id && (
-              <div className="border-t">
-                <div className="p-4">
+              {/* Expanded Details */}
+              {expandedId === model.id && (
+                <div className="px-4 py-3 bg-gray-50">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium mb-2">Configuration File</h4>
-                      <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm">
-                        {JSON.stringify(model.config_file, null, 2)}
-                      </pre>
+                      <h4 className="font-medium mb-2 text-xs uppercase text-gray-500">Model Files</h4>
+                      <div className="bg-white p-4 rounded border text-xs space-y-4">
+                        <div>
+                          <div className="font-medium mb-1">Config File</div>
+                          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                            {JSON.stringify(model.config_file, null, 2)}
+                          </pre>
+                        </div>
+                        <div>
+                          <div className="font-medium mb-1">Model Weights</div>
+                          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                            {JSON.stringify(model.diffusers_lora_file, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Model File</h4>
-                      <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm">
-                        {JSON.stringify(model.diffusers_lora_file, null, 2)}
-                      </pre>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => setModelToDelete(model)}
+                        className="flex items-center px-3 py-1.5 text-xs font-medium text-red-600 rounded border border-red-200 hover:bg-red-50"
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1.5" />
+                        Delete Model
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
+      {/* Delete Confirmation Dialog */}
       {modelToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
