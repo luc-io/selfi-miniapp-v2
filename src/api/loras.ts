@@ -3,7 +3,6 @@ import type { LoraModel } from '@/types/lora';
 
 const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
-// Build Telegram validation data string
 export function buildValidationData(webApp: any): string {
   const {
     query_id,
@@ -49,23 +48,37 @@ export async function getAvailableLoras(): Promise<LoraModel[]> {
 }
 
 export async function getUserModels(): Promise<Model[]> {
-  const webApp = window.Telegram?.WebApp;
-  if (!webApp) throw new Error('Telegram WebApp not available');
-  const userId = webApp.initDataUnsafe?.user?.id?.toString();
-  if (!userId) throw new Error('Telegram user ID not available');
+  try {
+    const webApp = window.Telegram?.WebApp;
+    if (!webApp) throw new Error('Telegram WebApp not available');
+    const userId = webApp.initDataUnsafe?.user?.id?.toString();
+    if (!userId) throw new Error('Telegram user ID not available');
 
-  const response = await fetch(`${API_BASE}/loras/user`, {
-    headers: {
-      'x-telegram-init-data': buildValidationData(webApp),
-      'x-telegram-user-id': userId
+    const validationData = buildValidationData(webApp);
+    console.log('Making request to /loras/user with:', {
+      userId,
+      validationData
+    });
+
+    const response = await fetch(`${API_BASE}/loras/user`, {
+      headers: {
+        'x-telegram-init-data': validationData,
+        'x-telegram-user-id': userId
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
+    
+    if (!response.ok) {
+      throw new Error(responseData.message || 'Failed to fetch user models');
     }
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to fetch user models');
+    return responseData;
+  } catch (error) {
+    console.error('getUserModels error:', error);
+    throw error;
   }
-  return response.json();
 }
 
 export async function toggleModelPublic(modelId: string, isPublic: boolean): Promise<void> {
