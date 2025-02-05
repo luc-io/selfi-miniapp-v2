@@ -4,7 +4,8 @@ import type { LoraModel } from '@/types/lora';
 const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
 export function buildValidationData(webApp: any): string {
-  return encodeURIComponent(webApp.initData);
+  // Use raw initData directly - no encoding needed as it's already in the correct format
+  return webApp.initData;
 }
 
 export async function getAvailableLoras(): Promise<LoraModel[]> {
