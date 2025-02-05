@@ -7,6 +7,7 @@ const mockModels: Model[] = [
     name: "Beach Landscape",
     triggerWord: "<beach>",
     createdAt: new Date('2024-02-04'),
+    status: 'COMPLETED',
     isActive: true,
     config_file: {
       url: "https://v3.fal.media/files/panda/X1qP-fJhUlclTMJDLG0VR_config.json",
@@ -26,6 +27,7 @@ const mockModels: Model[] = [
     name: "Portrait Style",
     triggerWord: "<portrait>",
     createdAt: new Date('2024-02-03'),
+    status: 'TRAINING',
     isActive: false,
     config_file: {
       url: "https://v3.fal.media/files/panda/Y2qP-gKhVmclTMJDLG0VR_config.json",
