@@ -1,7 +1,4 @@
-import axios from 'axios';
 import { Model } from '@/types/model';
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 // Mock data for development
 const mockModels: Model[] = [
@@ -46,35 +43,25 @@ const mockModels: Model[] = [
 export async function getModels(): Promise<Model[]> {
   // For development, return mock data
   return Promise.resolve(mockModels);
-  
-  // When backend is ready:
-  // const response = await axios.get(`${API_URL}/api/models`);
-  // return response.data;
 }
 
 export async function toggleModelActivation(modelId: number, isActive: boolean): Promise<void> {
   // For development, just log
   console.log('Toggling model', modelId, 'to', isActive);
   
-  // When backend is ready:
-  // await axios.patch(`${API_URL}/api/models/${modelId}/active`, { isActive });
+  // Mock successful response
+  return Promise.resolve();
 }
 
 export async function deleteModel(modelId: number): Promise<void> {
   // For development, just log
   console.log('Deleting model', modelId);
   
-  // When backend is ready:
-  // await axios.delete(`${API_URL}/api/models/${modelId}`);
+  // Mock successful response
+  return Promise.resolve();
 }
 
-export async function downloadModelConfig(modelId: number): Promise<Blob> {
-  // For development, return empty blob
-  return new Blob(['{"test": "config"}'], { type: 'application/json' });
-  
-  // When backend is ready:
-  // const response = await axios.get(`${API_URL}/api/models/${modelId}/config`, {
-  //   responseType: 'blob'
-  // });
-  // return response.data;
+export async function downloadModelConfig(_modelId: number): Promise<Blob> {
+  // For development, return mock config blob
+  return Promise.resolve(new Blob(['{"test": "config"}'], { type: 'application/json' }));
 }
