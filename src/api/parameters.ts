@@ -10,7 +10,7 @@ export async function getUserParameters(): Promise<UserParametersResponse | null
   if (!user?.id) return null;
 
   try {
-    return await apiRequest<UserParametersResponse>(`/api/params/${user.id}`, {}, user);
+    return await apiRequest<UserParametersResponse>(`/api/params/${user.id}`);
   } catch (error) {
     console.error('Error fetching user parameters:', error);
     return null;
@@ -33,6 +33,6 @@ export async function saveUserParameters(params: GenerationParameters): Promise<
 
   return await apiRequest<UserParametersResponse>('/api/params', {
     method: 'POST',
-    body: JSON.stringify(requestData)
-  }, user);
+    body: requestData
+  });
 }

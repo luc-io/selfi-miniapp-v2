@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Loader2, Upload, X, Edit2 } from 'lucide-react';
+import { startTraining, getTrainingProgress, type TrainingProgress } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import type { Query } from '@tanstack/react-query';
 
 interface TrainingImage {
   file: File;
@@ -28,14 +31,43 @@ const DEFAULT_STATE: TrainingState = {
 export function TrainTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState<TrainingState>(DEFAULT_STATE);
-  const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
 
-  const totalSize = state.images.reduce((acc, img) => acc + img.file.size, 0);
+  const totalSize = state.images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
   const maxSize = 50 * 1024 * 1024; // 50MB
 
-  const handleFiles = (files: FileList | null) => {
+  // Query for training progress
+  const { data: progressData } = useQuery({
+    queryKey: ['training-progress', requestId],
+    queryFn: () => getTrainingProgress(requestId),
+    enabled: !!requestId && !isLoading,
+    refetchInterval: (query: Query<TrainingProgress | null, Error>) => {
+      const data = query.state.data;
+      if (!data || data.status === 'completed' || data.status === 'failed') {
+        return false;
+      }
+      return 1000; // Poll every second while training
+    },
+  });
+
+  // Reset request ID when training completes or fails
+  useEffect(() => {
+    if (progressData?.status === 'completed' || progressData?.status === 'failed') {
+      setRequestId(null);
+      setIsLoading(false);
+      
+      // Show completion message
+      window.Telegram?.WebApp?.showPopup({
+        message: progressData.status === 'completed' 
+          ? 'Training completed successfully!' 
+          : 'Training failed. Please try again.'
+      });
+    }
+  }, [progressData?.status]);
+
+  const handleFiles = useCallback((files: FileList | null) => {
     if (!files) return;
 
     const imageFiles = Array.from(files);
@@ -57,7 +89,7 @@ export function TrainTab() {
       ...prev,
       images: [...prev.images, ...newImages]
     }));
-  };
+  }, [totalSize, maxSize]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFiles(e.target.files);
@@ -113,10 +145,27 @@ export function TrainTab() {
 
     try {
       setIsLoading(true);
-      // Training implementation will be handled by backend
+
+      // Prepare captions map
+      const captions: Record<string, string> = {};
+      state.images.forEach(img => {
+        captions[img.file.name] = img.caption;
+      });
+
+      // Start training
+      const newRequestId = await startTraining({
+        steps: state.steps,
+        isStyle: state.isStyle,
+        createMasks: state.createMasks,
+        triggerWord: state.triggerWord,
+        images: state.images.map(img => img.file),
+        captions,
+      });
+
+      setRequestId(newRequestId);
 
       window.Telegram?.WebApp?.showPopup({
-        message: 'Training completed successfully!'
+        message: 'Training started successfully!'
       });
 
     } catch (error) {
@@ -124,11 +173,11 @@ export function TrainTab() {
       window.Telegram?.WebApp?.showPopup({
         message: 'Training failed. Please try again.'
       });
-    } finally {
       setIsLoading(false);
-      setProgress(0);
     }
   };
+
+  const progress = progressData?.progress ?? 0;
 
   return (
     <Card className="bg-white rounded-lg shadow-md">
@@ -298,6 +347,9 @@ export function TrainTab() {
                   style={{ width: `${progress}%` }}
                 />
               </div>
+              {progressData?.message && (
+                <p className="text-sm text-gray-600">{progressData.message}</p>
+              )}
             </div>
           )}
 
