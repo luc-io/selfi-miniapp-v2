@@ -10,8 +10,6 @@ interface TrainingState {
   createMasks: boolean;
   steps: number;
   isStyle: boolean;
-  isPreprocessed: boolean;
-  progress: number;
 }
 
 const DEFAULT_STATE: TrainingState = {
@@ -20,13 +18,12 @@ const DEFAULT_STATE: TrainingState = {
   createMasks: true,
   steps: 1000,
   isStyle: false,
-  isPreprocessed: false,
-  progress: 0
 };
 
 export function TrainTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState<TrainingState>(DEFAULT_STATE);
+  const [progress, setProgress] = useState(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,7 +66,7 @@ export function TrainTab() {
       });
     } finally {
       setIsLoading(false);
-      setState(prev => ({ ...prev, progress: 0 }));
+      setProgress(0);
     }
   };
 
@@ -170,30 +167,19 @@ export function TrainTab() {
                 }))}
               />
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <label className="block text-sm font-medium text-gray-700">Pre-processed Input</label>
-                <p className="text-sm text-gray-500">Input is already preprocessed</p>
-              </div>
-              <Switch
-                checked={state.isPreprocessed}
-                onCheckedChange={checked => setState(prev => ({ ...prev, isPreprocessed: checked }))}
-              />
-            </div>
           </div>
 
           {/* Progress Bar */}
-          {state.progress > 0 && (
+          {progress > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Training Progress</span>
-                <span>{state.progress}%</span>
+                <span>{progress}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${state.progress}%` }}
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
