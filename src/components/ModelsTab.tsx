@@ -3,24 +3,27 @@ import { formatDistanceToNow } from 'date-fns';
 import { Info, Trash2, ChevronRight, Download } from 'lucide-react';
 import { Model } from '../types/model';
 
-// Sample data - replace with actual data from your API
-const sampleModel: Model = {
-  id: 1,
-  name: "Model #1",
-  createdAt: new Date('2024-02-04'),
-  isActive: true,
-  status: "ready",
-  input: {}, // Add appropriate input data structure
-  config_file: {
-    url: "https://v3.fal.media/files/panda/X1qP-fJhUlclTMJDLG0VR_config.json",
-    file_name: "config.json",
-    file_size: 1347,
-    content_type: "application/octet-stream"
-  },
-  diffusers_lora_file: {
-    url: "https://v3.fal.media/files/lion/wh1mXu5G7cNTAz01NnbG9_pytorch_lora_weights.safetensors",
-    file_name: "pytorch_lora_weights.safetensors",
-    file_size: 89745224,
-    content_type: "application/octet-stream"
-  }
-};
+export function ModelsTab() {
+  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+
+  const formatFileSize = (bytes: number) => {
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(2)} MB`;
+  };
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-foreground">Your Models</h2>
+        <button className="flex items-center px-4 py-2 text-sm font-medium border rounded-lg bg-background hover:bg-muted">
+          <Info className="w-4 h-4 mr-2" />
+          Help
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Models will be rendered here */}
+      </div>
+    </div>
+  );
+}
