@@ -5,25 +5,19 @@ const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
 export function buildValidationData(webApp: any): string {
   const {
+    auth_date,
     query_id,
     user,
-    auth_date,
     hash,
     ...rest
   } = webApp.initDataUnsafe;
 
-  const sorted = Object.entries({
+  return btoa(JSON.stringify({
     auth_date,
     query_id,
-    user: JSON.stringify(user),
+    user: typeof user === 'string' ? user : JSON.stringify(user),
     ...rest
-  })
-    .filter(([_, v]) => v !== undefined)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${k}=${v}`)
-    .join('\n');
-
-  return sorted;
+  }));
 }
 
 export async function getAvailableLoras(): Promise<LoraModel[]> {
@@ -63,7 +57,8 @@ export async function getUserModels(): Promise<Model[]> {
     const response = await fetch(`${API_BASE}/loras/user`, {
       headers: {
         'x-telegram-init-data': validationData,
-        'x-telegram-user-id': userId
+        'x-telegram-user-id': userId,
+        'Content-Type': 'application/json'
       }
     });
     
