@@ -65,8 +65,8 @@ export function ModelsTab() {
         {/* Header */}
         <div className="grid grid-cols-[2fr,1fr,auto] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
           <div>Model</div>
-          <div className="pl-2">Status</div>
-          <div className="w-24">Actions</div>
+          <div>Status</div>
+          <div className="w-24 text-right pr-2">Actions</div>
         </div>
 
         {/* List */}
@@ -77,15 +77,15 @@ export function ModelsTab() {
                 <div>
                   <div className="font-medium font-mono">{model.name}</div>
                   <div className="text-gray-400 text-[11px] mt-0.5">
-                    {formatDistanceToNow(new Date(model.createdAt))} ago
+                    about {formatDistanceToNow(new Date(model.createdAt))} ago
                   </div>
                 </div>
-                <div className="pl-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[model.status].bg} ${STATUS_COLORS[model.status].text}`}>
+                <div>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[model.status].bg} ${STATUS_COLORS[model.status].text}`}>
                     {model.status}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-end space-x-2">
                   <Switch 
                     checked={model.isActive}
                     onCheckedChange={(checked) => {
