@@ -4,7 +4,7 @@ import type { LoraModel } from '@/types/lora';
 const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
 // Build Telegram validation data string
-function buildValidationData(webApp: any): string {
+export function buildValidationData(webApp: any): string {
   const {
     query_id,
     user,
