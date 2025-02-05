@@ -63,24 +63,24 @@ export function ModelsTab() {
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[2fr,1fr,auto] gap-4 px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
+        <div className="grid grid-cols-[minmax(250px,2fr),minmax(200px,1fr),120px] px-4 py-3 bg-gray-50 font-medium text-sm text-gray-700">
           <div>Model</div>
-          <div>Status</div>
-          <div className="w-24 text-right pr-2">Actions</div>
+          <div className="text-center">Status</div>
+          <div className="text-right">Actions</div>
         </div>
 
         {/* List */}
         <div className="divide-y">
           {models.map((model) => (
             <div key={model.id} className="text-sm">
-              <div className="grid grid-cols-[2fr,1fr,auto] gap-4 px-4 py-3 items-center">
+              <div className="grid grid-cols-[minmax(250px,2fr),minmax(200px,1fr),120px] px-4 py-3 items-center">
                 <div>
                   <div className="font-medium font-mono">{model.name}</div>
                   <div className="text-gray-400 text-[11px] mt-0.5">
                     about {formatDistanceToNow(new Date(model.createdAt))} ago
                   </div>
                 </div>
-                <div>
+                <div className="flex justify-center">
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[model.status].bg} ${STATUS_COLORS[model.status].text}`}>
                     {model.status}
                   </span>
