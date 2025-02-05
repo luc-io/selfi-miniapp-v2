@@ -1,35 +1,15 @@
-import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server'
+
+const BOT_API_URL = process.env.NEXT_PUBLIC_BOT_API_URL
 
 export async function GET() {
   try {
-    const models = await prisma.loraModel.findMany({
-      where: {
-        isPublic: true,
-      },
-      include: {
-        baseModel: true,
-        user: {
-          select: {
-            username: true,
-          },
-        },
-      },
-    })
-
-    const formattedModels = models.map((model) => ({
-      databaseId: model.databaseId,
-      name: model.name,
-      triggerWord: model.triggerWord,
-      status: model.status,
-      isPublic: model.isPublic,
-      starsRequired: model.starsRequired,
-      baseModelPath: model.baseModel.modelPath,
-      creatorUsername: model.user.username,
-      previewImageUrl: model.previewImageUrl,
-    }))
-
-    return NextResponse.json(formattedModels)
+    const response = await fetch(`${BOT_API_URL}/models/public`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch models from bot API')
+    }
+    const models = await response.json()
+    return NextResponse.json(models)
   } catch (error) {
     console.error('Error fetching models:', error)
     return new NextResponse('Internal Server Error', { status: 500 })
