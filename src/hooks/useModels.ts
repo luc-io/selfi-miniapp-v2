@@ -7,7 +7,16 @@ export function useModels() {
   
   const { data: models = [], isLoading, error } = useQuery<Model[]>({
     queryKey: ['models', 'user'],
-    queryFn: getUserModels,
+    queryFn: async () => {
+      console.log('Fetching user models...');
+      console.log('Telegram data:', {
+        userId: window.Telegram?.WebApp?.initDataUnsafe?.user?.id,
+        validationData: window.Telegram?.WebApp ? buildValidationData(window.Telegram.WebApp) : null
+      });
+      const data = await getUserModels();
+      console.log('User models response:', data);
+      return data;
+    },
   });
 
   const toggleActivation = useMutation({
