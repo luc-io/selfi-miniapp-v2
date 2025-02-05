@@ -23,10 +23,13 @@ export async function getAvailableLoras(): Promise<LoraModel[]> {
 }
 
 export async function getUserModels(): Promise<Model[]> {
+  const webApp = window.Telegram?.WebApp;
+  if (!webApp) throw new Error('Telegram WebApp not available');
+
   const response = await fetch('http://localhost:3001/api/loras/user', {
     headers: {
-      'x-telegram-init-data': window.Telegram?.WebApp?.initData || '',
-      'x-telegram-user-id': window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || ''
+      'x-telegram-init-data': webApp.initDataUnsafe?.query_id || '',
+      'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
     }
   });
   if (!response.ok) {
@@ -36,12 +39,15 @@ export async function getUserModels(): Promise<Model[]> {
 }
 
 export async function toggleModelPublic(modelId: string, isPublic: boolean): Promise<void> {
+  const webApp = window.Telegram?.WebApp;
+  if (!webApp) throw new Error('Telegram WebApp not available');
+
   const response = await fetch(`http://localhost:3001/api/loras/${modelId}/toggle-public`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-telegram-init-data': window.Telegram?.WebApp?.initData || '',
-      'x-telegram-user-id': window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || ''
+      'x-telegram-init-data': webApp.initDataUnsafe?.query_id || '',
+      'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
     },
     body: JSON.stringify({ isPublic })
   });
@@ -52,11 +58,14 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
 }
 
 export async function deleteUserModel(modelId: string): Promise<void> {
+  const webApp = window.Telegram?.WebApp;
+  if (!webApp) throw new Error('Telegram WebApp not available');
+
   const response = await fetch(`http://localhost:3001/api/loras/${modelId}`, {
     method: 'DELETE',
     headers: {
-      'x-telegram-init-data': window.Telegram?.WebApp?.initData || '',
-      'x-telegram-user-id': window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || ''
+      'x-telegram-init-data': webApp.initDataUnsafe?.query_id || '',
+      'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
     }
   });
 
