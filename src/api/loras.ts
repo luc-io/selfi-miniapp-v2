@@ -1,8 +1,10 @@
 import type { Model } from '@/types/model';
 import type { LoraModel } from '@/types/lora';
 
+const API_BASE = 'https://selfi-dev.blackiris.art/api';
+
 export async function getAvailableLoras(): Promise<LoraModel[]> {
-  const response = await fetch('http://localhost:3001/api/loras/available');
+  const response = await fetch(`${API_BASE}/loras/available`);
   if (!response.ok) {
     throw new Error('Failed to fetch available LoRAs');
   }
@@ -26,7 +28,7 @@ export async function getUserModels(): Promise<Model[]> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch('http://localhost:3001/api/loras/user', {
+  const response = await fetch(`${API_BASE}/loras/user`, {
     headers: {
       'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
       'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
@@ -42,7 +44,7 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`http://localhost:3001/api/loras/${modelId}/toggle-public`, {
+  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`http://localhost:3001/api/loras/${modelId}`, {
+  const response = await fetch(`${API_BASE}/loras/${modelId}`, {
     method: 'DELETE',
     headers: {
       'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
