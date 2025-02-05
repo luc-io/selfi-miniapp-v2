@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { fal } from '@fal-ai/client';
 import { Card } from '../ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Loader2, Upload } from 'lucide-react';
+
+interface QueueUpdate {
+  status: string;
+  logs?: string;
+}
 
 interface TrainingState {
   images: File | null;
@@ -45,9 +49,11 @@ export function TrainTab() {
 
     try {
       setIsLoading(true);
+      // Temporarily commented out until fal-ai client is installed
+      /*
       const imageUrl = await fal.storage.upload(state.images);
 
-      const response = await fal.client.subscribe('luc-io/train', {
+      await fal.client.subscribe('luc-io/train', {
         input: {
           images_data_url: imageUrl,
           trigger_word: state.triggerWord,
@@ -56,7 +62,7 @@ export function TrainTab() {
           is_style: state.isStyle,
           is_input_format_already_preprocessed: state.isPreprocessed,
         },
-        onQueueUpdate: (update) => {
+        onQueueUpdate: (update: QueueUpdate) => {
           if (update.status === 'IN_PROGRESS' && update.logs) {
             const match = update.logs.match(/(\d+)%/);
             if (match) {
@@ -65,6 +71,7 @@ export function TrainTab() {
           }
         }
       });
+      */
 
       window.Telegram?.WebApp?.showPopup({
         message: 'Training completed successfully!'
@@ -119,7 +126,8 @@ export function TrainTab() {
             <Input
               id="triggerWord"
               value={state.triggerWord}
-              onChange={e => setState(prev => ({ ...prev, triggerWord: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                setState(prev => ({ ...prev, triggerWord: e.target.value }))}
               placeholder="Enter a trigger word"
             />
           </div>
