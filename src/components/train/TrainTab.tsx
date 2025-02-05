@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Loader2, Upload } from 'lucide-react';
@@ -77,29 +74,27 @@ export function TrainTab() {
   };
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit}>
-        <CardHeader>
-          <CardTitle>Train Model</CardTitle>
-        </CardHeader>
+    <Card className="bg-white rounded-lg shadow-md">
+      <form onSubmit={handleSubmit} className="p-6 space-y-8">
+        <h2 className="text-xl font-semibold text-gray-800">Train Model</h2>
         
-        <CardContent className="space-y-6">
+        <div className="space-y-6">
           {/* File Upload */}
           <div className="space-y-2">
-            <Label htmlFor="images">Training Images (ZIP)</Label>
+            <label className="block text-sm font-medium text-gray-700">Training Images (ZIP)</label>
             <div className="mt-1">
               <label 
-                className={`flex justify-center w-full h-32 px-4 transition bg-card border-2 border-input border-dashed rounded-md appearance-none cursor-pointer hover:border-primary focus:outline-none ${
+                className={`flex justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none ${
                   state.images ? 'border-green-500' : ''
                 }`}
               >
                 <div className="flex flex-col items-center justify-center">
-                  <Upload className={`w-8 h-8 ${state.images ? 'text-green-500' : 'text-muted-foreground'}`} />
-                  <span className="mt-2 text-sm text-muted-foreground">
+                  <Upload className={`w-8 h-8 ${state.images ? 'text-green-500' : 'text-gray-400'}`} />
+                  <span className="mt-2 text-sm text-gray-600">
                     {state.images ? state.images.name : 'Drop your ZIP file here or click to browse'}
                   </span>
                 </div>
-                <Input
+                <input
                   id="images"
                   type="file"
                   accept=".zip"
@@ -107,7 +102,7 @@ export function TrainTab() {
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-gray-500 mt-2">
                 Maximum file size: 50MB
               </p>
             </div>
@@ -115,22 +110,26 @@ export function TrainTab() {
 
           {/* Trigger Word */}
           <div className="space-y-2">
-            <Label htmlFor="triggerWord">Trigger Word</Label>
-            <Input
+            <label className="block text-sm font-medium text-gray-700" htmlFor="triggerWord">
+              Trigger Word
+            </label>
+            <input
               id="triggerWord"
+              type="text"
               value={state.triggerWord}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
                 setState(prev => ({ ...prev, triggerWord: e.target.value }))}
               placeholder="Enter a trigger word"
               disabled={state.isStyle}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
             />
           </div>
 
           {/* Training Steps */}
           <div className="space-y-4">
             <div className="flex justify-between">
-              <Label>Training Steps</Label>
-              <span className="text-sm text-muted-foreground">{state.steps}</span>
+              <label className="block text-sm font-medium text-gray-700">Training Steps</label>
+              <span className="text-sm text-gray-500">{state.steps}</span>
             </div>
             <Slider 
               value={[state.steps]}
@@ -146,11 +145,10 @@ export function TrainTab() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="createMasks">Create Masks</Label>
-                <p className="text-sm text-muted-foreground">Use segmentation masks in training</p>
+                <label className="block text-sm font-medium text-gray-700">Create Masks</label>
+                <p className="text-sm text-gray-500">Use segmentation masks in training</p>
               </div>
               <Switch
-                id="createMasks"
                 checked={state.createMasks}
                 onCheckedChange={checked => setState(prev => ({ ...prev, createMasks: checked }))}
                 disabled={state.isStyle}
@@ -159,11 +157,10 @@ export function TrainTab() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="isStyle">Style Training</Label>
-                <p className="text-sm text-muted-foreground">Train for style instead of subject</p>
+                <label className="block text-sm font-medium text-gray-700">Style Training</label>
+                <p className="text-sm text-gray-500">Train for style instead of subject</p>
               </div>
               <Switch
-                id="isStyle"
                 checked={state.isStyle}
                 onCheckedChange={checked => setState(prev => ({ 
                   ...prev, 
@@ -176,11 +173,10 @@ export function TrainTab() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="isPreprocessed">Pre-processed Input</Label>
-                <p className="text-sm text-muted-foreground">Input is already preprocessed</p>
+                <label className="block text-sm font-medium text-gray-700">Pre-processed Input</label>
+                <p className="text-sm text-gray-500">Input is already preprocessed</p>
               </div>
               <Switch
-                id="isPreprocessed"
                 checked={state.isPreprocessed}
                 onCheckedChange={checked => setState(prev => ({ ...prev, isPreprocessed: checked }))}
               />
@@ -194,18 +190,18 @@ export function TrainTab() {
                 <span>Training Progress</span>
                 <span>{state.progress}%</span>
               </div>
-              <div className="w-full bg-secondary rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${state.progress}%` }}
                 />
               </div>
             </div>
           )}
 
-          <Button 
+          <button 
             type="submit" 
-            className="w-full"
+            className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
             disabled={isLoading || !state.images}
           >
             {isLoading ? (
@@ -216,8 +212,8 @@ export function TrainTab() {
             ) : (
               'Start Training'
             )}
-          </Button>
-        </CardContent>
+          </button>
+        </div>
       </form>
     </Card>
   );
