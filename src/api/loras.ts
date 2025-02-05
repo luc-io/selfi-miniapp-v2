@@ -28,11 +28,13 @@ export async function getUserModels(): Promise<Model[]> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`${API_BASE}/loras/user?${webApp.initData}`, {
-    headers: {
-      'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
-    }
+  const params = new URLSearchParams({
+    user_id: webApp.initDataUnsafe?.user?.id?.toString() || '',
+    auth_date: webApp.initDataUnsafe?.auth_date || '',
+    hash: webApp.initDataUnsafe?.hash || ''
   });
+
+  const response = await fetch(`${API_BASE}/loras/user?${params.toString()}`);
   if (!response.ok) {
     throw new Error('Failed to fetch user models');
   }
@@ -43,7 +45,12 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public?${webApp.initData}`, {
+  const params = new URLSearchParams({
+    auth_date: webApp.initDataUnsafe?.auth_date || '',
+    hash: webApp.initDataUnsafe?.hash || ''
+  });
+
+  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public?${params.toString()}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +68,12 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
 
-  const response = await fetch(`${API_BASE}/loras/${modelId}?${webApp.initData}`, {
+  const params = new URLSearchParams({
+    auth_date: webApp.initDataUnsafe?.auth_date || '',
+    hash: webApp.initDataUnsafe?.hash || ''
+  });
+
+  const response = await fetch(`${API_BASE}/loras/${modelId}?${params.toString()}`, {
     method: 'DELETE',
     headers: {
       'x-telegram-user-id': webApp.initDataUnsafe?.user?.id?.toString() || ''
