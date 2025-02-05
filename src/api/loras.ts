@@ -5,19 +5,26 @@ const API_BASE = 'https://selfi-dev.blackiris.art/api';
 
 export function buildValidationData(webApp: any): string {
   const {
-    auth_date,
     query_id,
     user,
+    auth_date,
     hash,
     ...rest
   } = webApp.initDataUnsafe;
 
-  return btoa(JSON.stringify({
-    auth_date,
-    query_id,
+  // Convert to URLSearchParams
+  const params = new URLSearchParams({
+    auth_date: auth_date.toString(),
+    query_id: query_id.toString(),
     user: typeof user === 'string' ? user : JSON.stringify(user),
     ...rest
-  }));
+  });
+
+  // Sort and format
+  return Array.from(params.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
 }
 
 export async function getAvailableLoras(): Promise<LoraModel[]> {
@@ -67,7 +74,7 @@ export async function getUserModels(): Promise<Model[]> {
     console.log('Response data:', responseData);
     
     if (!response.ok) {
-      throw new Error(responseData.message || 'Failed to fetch user models');
+      throw new Error(responseData.error || 'Failed to fetch user models');
     }
     return responseData;
   } catch (error) {
