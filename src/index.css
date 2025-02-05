@@ -3,18 +3,50 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 215 22% 15%; /* #17212B */
+    --foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --card: 215 24% 18%; /* #232E3C */
+    --card-foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --popover: 215 24% 18%; /* #232E3C */
+    --popover-foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --primary: 207 54% 50%; /* #3B88C3 */
+    --primary-foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --secondary: 215 24% 18%; /* #232E3C */
+    --secondary-foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --muted: 215 20% 25%; /* #2B3B4B */
+    --muted-foreground: 215 14% 65%; /* #A3ABB7 */
+    
+    --accent: 215 24% 18%; /* #232E3C */
+    --accent-foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --destructive: 0 84% 60%; /* #E06C75 */
+    --destructive-foreground: 220 13% 95%; /* #E5E9F0 */
+    
+    --border: 215 20% 25%; /* #2B3B4B */
+    --input: 215 20% 25%; /* #2B3B4B */
+    --ring: 207 54% 50%; /* #3B88C3 */
+    
+    --radius: 0.5rem;
+  }
+
   body {
-    @apply bg-gray-50;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
   .hover-bg {
-    @apply hover:bg-gray-50 transition-colors;
+    @apply hover:bg-muted transition-colors;
   }
 
   .interactive {
-    @apply hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer;
+    @apply hover:bg-muted active:bg-muted/80 transition-colors cursor-pointer;
   }
 }
