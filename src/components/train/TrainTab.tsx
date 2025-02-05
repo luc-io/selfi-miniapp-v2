@@ -40,10 +40,10 @@ export function TrainTab() {
   // Query for training progress
   const { data: progressData } = useQuery({
     queryKey: ['training-progress', requestId],
-    queryFn: () => requestId ? getTrainingProgress(requestId) : null,
+    queryFn: () => getTrainingProgress(requestId),
     enabled: !!requestId && !isLoading,
     refetchInterval: (data) => {
-      if (!data || data.status === 'completed' || data.status === 'failed') {
+      if (!data || data?.status === 'completed' || data?.status === 'failed') {
         return false;
       }
       return 1000; // Poll every second while training
