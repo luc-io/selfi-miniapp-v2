@@ -1,22 +1,17 @@
-import type { LoraParameter } from './lora';
-
-export type ImageSize = 
-  | 'landscape_4_3' 
-  | 'landscape_16_9' 
-  | 'square_hd' 
-  | 'square' 
-  | 'portrait_4_3' 
-  | 'portrait_16_9';
+export interface LoraConfig {
+  path: string;
+  scale: number;
+}
 
 export interface GenerationParameters {
-  image_size: ImageSize;
+  image_size: string;
   num_inference_steps: number;
   seed: number;
   guidance_scale: number;
   num_images: number;
+  sync_mode: boolean;
   enable_safety_checker: boolean;
-  output_format: 'jpeg' | 'png';
+  output_format: string;
   modelPath: string;
-  loras?: LoraParameter[];
-  sync_mode?: boolean; // Made optional
+  loras: LoraConfig[];
 }
