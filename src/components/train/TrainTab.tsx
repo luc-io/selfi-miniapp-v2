@@ -2,10 +2,15 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Loader2, Upload, X } from 'lucide-react';
+import { Loader2, Upload, X, Edit2 } from 'lucide-react';
+
+interface TrainingImage {
+  file: File;
+  caption: string;
+}
 
 interface TrainingState {
-  images: File[];
+  images: TrainingImage[];
   triggerWord: string;
   createMasks: boolean;
   steps: number;
@@ -25,8 +30,9 @@ export function TrainTab() {
   const [state, setState] = useState<TrainingState>(DEFAULT_STATE);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  const totalSize = state.images.reduce((acc, file) => acc + file.size, 0);
+  const totalSize = state.images.reduce((acc, img) => acc + img.file.size, 0);
   const maxSize = 50 * 1024 * 1024; // 50MB
 
   const handleFiles = (files: FileList | null) => {
@@ -42,9 +48,14 @@ export function TrainTab() {
       return;
     }
 
+    const newImages = imageFiles.map(file => ({
+      file,
+      caption: file.name.replace(/\.[^/.]+$/, '') // Remove extension
+    }));
+
     setState(prev => ({
       ...prev,
-      images: [...prev.images, ...imageFiles]
+      images: [...prev.images, ...newImages]
     }));
   };
 
@@ -76,6 +87,16 @@ export function TrainTab() {
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+  const updateCaption = (index: number, caption: string) => {
+    setState(prev => ({
+      ...prev,
+      images: prev.images.map((img, i) => 
+        i === index ? { ...img, caption } : img
+      )
+    }));
+    setEditingIndex(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -150,27 +171,54 @@ export function TrainTab() {
             {/* Image Previews */}
             {state.images.length > 0 && (
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {state.images.map((file, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={`Upload ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-md"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-4 h-4 text-gray-500" />
-                    </button>
-                    <span className="block mt-1 text-xs text-gray-500 truncate">
-                      {file.name}
-                    </span>
+                {state.images.map((img, index) => (
+                  <div key={index} className="relative group space-y-1">
+                    <div className="relative">
+                      <img
+                        src={URL.createObjectURL(img.file)}
+                        alt={`Upload ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4 text-gray-500" />
+                      </button>
+                    </div>
+
+                    {editingIndex === index ? (
+                      <div className="flex space-x-1">
+                        <input
+                          type="text"
+                          value={img.caption}
+                          onChange={(e) => updateCaption(index, e.target.value)}
+                          onBlur={() => setEditingIndex(null)}
+                          onKeyDown={(e) => e.key === 'Enter' && setEditingIndex(null)}
+                          autoFocus
+                          className="w-full text-xs px-1 py-0.5 border rounded"
+                        />
+                      </div>
+                    ) : (
+                      <div 
+                        className="flex items-center space-x-1 group/caption cursor-pointer"
+                        onClick={() => setEditingIndex(index)}
+                      >
+                        <p className="text-xs text-gray-500 truncate flex-1">
+                          {img.caption}
+                        </p>
+                        <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover/caption:opacity-100 transition-opacity" />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
+
+            <p className="text-xs text-gray-500 mt-2">
+              Click on the caption below each image to edit
+            </p>
           </div>
 
           {/* Trigger Word */}
