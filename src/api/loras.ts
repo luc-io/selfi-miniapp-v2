@@ -1,57 +1,70 @@
 import type { Model } from '@/types/model';
 import type { LoraModel } from '@/types/lora';
 
+// Mock data for testing
+const MOCK_MODELS: Model[] = [
+  {
+    id: '1',
+    name: 'Style Model 1',
+    triggerWord: "style_01",
+    status: 'COMPLETED',
+    isPublic: true,
+    isActive: true,
+    createdAt: '2024-02-04T00:00:00Z',
+    input: {
+      steps: 100,
+      is_style: true,
+      create_masks: false,
+      trigger_word: 'style_01'
+    }
+  },
+  {
+    id: '2',
+    name: 'Training Model',
+    triggerWord: "portrait_02",
+    status: 'TRAINING',
+    isPublic: false,
+    isActive: false,
+    createdAt: '2024-02-05T00:00:00Z',
+    input: {
+      steps: 200,
+      is_style: false,
+      create_masks: true,
+      trigger_word: 'portrait_02'
+    }
+  }
+];
+
 const API_BASE = '/api';
 
 export async function getAvailableLoras(): Promise<LoraModel[]> {
-  const response = await fetch(`${API_BASE}/loras/available`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch available LoRAs');
-  }
-  const models = await response.json();
-  return models.map((model: Model) => ({
+  // Return mock data transformed to LoraModel
+  return MOCK_MODELS.map(model => ({
     databaseId: model.id,
     name: model.name,
     triggerWord: model.triggerWord,
-    weightsUrl: model.weightsUrl,
-    configUrl: model.configUrl,
-    baseModelId: '',  // Added in server response
+    baseModelId: 'mock-base-id',
     status: model.status,
     previewImageUrl: null,
     isPublic: model.isPublic,
-    starsRequired: 0,  // Added in server response
-    userDatabaseId: '',  // Added in server response
+    starsRequired: 0,
+    userDatabaseId: 'mock-user-id',
     createdAt: model.createdAt,
-    updatedAt: model.createdAt,
+    updatedAt: model.createdAt
   }));
 }
 
 export async function getUserModels(): Promise<Model[]> {
-  const response = await fetch(`${API_BASE}/loras/user`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch user models');
-  }
-  return response.json();
+  // Return mock data directly
+  return Promise.resolve(MOCK_MODELS);
 }
 
 export async function toggleModelPublic(modelId: string, isPublic: boolean): Promise<void> {
-  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ isPublic })
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to toggle model visibility');
-  }
+  console.log('Toggle model', modelId, 'to', isPublic);
+  return Promise.resolve();
 }
 
 export async function deleteUserModel(modelId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/loras/${modelId}`, {
-    method: 'DELETE'
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to delete model');
-  }
+  console.log('Delete model', modelId);
+  return Promise.resolve();
 }
