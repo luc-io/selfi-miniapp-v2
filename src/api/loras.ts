@@ -1,7 +1,6 @@
 import type { Model } from '@/types/model';
 import type { LoraModel } from '@/types/lora';
 
-// Mock data for testing
 const MOCK_MODELS: Model[] = [
   {
     id: '1',
@@ -35,10 +34,7 @@ const MOCK_MODELS: Model[] = [
   }
 ];
 
-const API_BASE = '/api';
-
 export async function getAvailableLoras(): Promise<LoraModel[]> {
-  // Return mock data transformed to LoraModel
   return MOCK_MODELS.map(model => ({
     databaseId: model.id,
     name: model.name,
@@ -55,7 +51,6 @@ export async function getAvailableLoras(): Promise<LoraModel[]> {
 }
 
 export async function getUserModels(): Promise<Model[]> {
-  // Return mock data directly
   return Promise.resolve(MOCK_MODELS);
 }
 
