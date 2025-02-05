@@ -24,10 +24,10 @@ const defaultParameters: GenerationParameters = {
 };
 
 export function GenerateTab() {
-  const { parameters, isLoading } = useParameters();
+  const { parameters, setParameters } = useParameters();
   const { generateImage, isPending } = useGenerate();
   
-  if (isLoading) {
+  if (!parameters) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
@@ -39,6 +39,10 @@ export function GenerateTab() {
 
   const handleGenerate = () => {
     generateImage(activeParams);
+  };
+
+  const updateParameters = (updates: Partial<GenerationParameters>) => {
+    setParameters({ ...activeParams, ...updates });
   };
 
   return (
@@ -69,23 +73,17 @@ export function GenerateTab() {
 
           <ModelSelector
             value={activeParams.modelPath}
-            onChange={(e) => {
-              // Update model
-            }}
+            onChange={(value) => updateParameters({ modelPath: value })}
           />
 
           <LoraSelector
             loras={activeParams.loras}
-            onChange={(loras) => {
-              // Update loras
-            }}
+            onChange={(loras) => updateParameters({ loras })}
           />
 
           <AdvancedOptions
             parameters={activeParams}
-            onChange={(params) => {
-              // Update parameters
-            }}
+            onChange={(params) => updateParameters(params)}
           />
 
           <Button 
