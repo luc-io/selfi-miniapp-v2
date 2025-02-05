@@ -32,7 +32,7 @@ export async function getUserModels(): Promise<Model[]> {
 
   const response = await fetch(`${API_BASE}/loras/user`, {
     headers: {
-      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
+      'x-telegram-init-data': webApp.initData,
       'x-telegram-user-id': userId
     }
   });
@@ -53,7 +53,7 @@ export async function toggleModelPublic(modelId: string, isPublic: boolean): Pro
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
+      'x-telegram-init-data': webApp.initData,
       'x-telegram-user-id': userId
     },
     body: JSON.stringify({ isPublic })
@@ -73,7 +73,7 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const response = await fetch(`${API_BASE}/loras/${modelId}`, {
     method: 'DELETE',
     headers: {
-      'x-telegram-init-data': webApp.initDataUnsafe?.hash || '',
+      'x-telegram-init-data': webApp.initData,
       'x-telegram-user-id': userId
     }
   });
