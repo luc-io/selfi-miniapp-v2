@@ -24,7 +24,7 @@ export function ModelsTab() {
     isDeleting,
   } = useModels();
 
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null);
   const [activeTab, setActiveTab] = useState<DetailsTab>('input');
 
@@ -150,18 +150,22 @@ export function ModelsTab() {
                         </div>
                       ) : (
                         <div className="bg-white p-4 rounded border text-xs space-y-4">
-                          <div>
-                            <div className="font-medium mb-1">Config File</div>
-                            <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                              {JSON.stringify(model.config_file, null, 2)}
-                            </pre>
-                          </div>
-                          <div>
-                            <div className="font-medium mb-1">Model Weights</div>
-                            <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                              {JSON.stringify(model.diffusers_lora_file, null, 2)}
-                            </pre>
-                          </div>
+                          {model.config_file && (
+                            <div>
+                              <div className="font-medium mb-1">Config File</div>
+                              <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                                {JSON.stringify(model.config_file, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                          {model.diffusers_lora_file && (
+                            <div>
+                              <div className="font-medium mb-1">Model Weights</div>
+                              <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                                {JSON.stringify(model.diffusers_lora_file, null, 2)}
+                              </pre>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -190,7 +194,7 @@ export function ModelsTab() {
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-medium mb-2">Delete Model</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to delete &quot;{modelToDelete.name}&quot;? This action cannot be undone.
+              Are you sure you want to delete "{modelToDelete.name}"? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
