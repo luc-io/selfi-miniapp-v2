@@ -69,10 +69,12 @@ export function ModelsTab() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold">{model.name}</h2>
-                  <Badge variant="secondary">
-                    <Star className="w-4 h-4 mr-1" />
-                    {model.starsRequired}
-                  </Badge>
+                  {model.starsRequired != null && (
+                    <Badge variant="secondary">
+                      <Star className="w-4 h-4 mr-1" />
+                      {model.starsRequired}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Trigger word: <code className="bg-muted px-1 rounded">{model.triggerWord}</code>
@@ -80,6 +82,11 @@ export function ModelsTab() {
                 {model.user?.username && (
                   <p className="text-sm text-muted-foreground">
                     Created by: {model.user.username}
+                  </p>
+                )}
+                {model.baseModel?.modelPath && (
+                  <p className="text-sm text-muted-foreground">
+                    Base model: {model.baseModel.modelPath}
                   </p>
                 )}
                 <Badge 
