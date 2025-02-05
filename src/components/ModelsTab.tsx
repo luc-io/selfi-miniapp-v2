@@ -1,16 +1,8 @@
 import { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { Info, Trash2, ChevronRight, Download } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Model } from '../types/model';
 
 export function ModelsTab() {
-  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
-
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(2)} MB`;
-  };
-
   return (
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
