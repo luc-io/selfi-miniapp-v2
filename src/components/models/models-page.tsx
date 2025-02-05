@@ -19,18 +19,16 @@ interface LoraModel {
   creatorUsername: string | null
 }
 
-async function fetchModels(): Promise<LoraModel[]> {
-  const response = await fetch('/api/models')
-  if (!response.ok) {
-    throw new Error('Failed to fetch models')
-  }
-  return response.json()
-}
-
-export function ModelsPage() {
+function ModelsPage() {
   const { data: models, isLoading, error } = useQuery<LoraModel[]>({
     queryKey: ['models'],
-    queryFn: fetchModels,
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_BOT_API_URL}/models/public`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch models')
+      }
+      return response.json()
+    }
   })
 
   if (isLoading) return <div className="p-4">Loading models...</div>
@@ -82,3 +80,5 @@ export function ModelsPage() {
     </div>
   )
 }
+
+export default ModelsPage
