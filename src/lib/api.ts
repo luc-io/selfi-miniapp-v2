@@ -23,6 +23,12 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     method,
     headers,
     bodyType: body instanceof FormData ? 'FormData' : typeof body,
+    bodySize: body instanceof FormData ? 
+      Array.from(body.entries()).reduce((size, [_, value]) => {
+        if (value instanceof File) return size + value.size;
+        return size + new Blob([String(value)]).size;
+      }, 0) : 
+      body ? new Blob([JSON.stringify(body)]).size : 0,
     user
   });
 
@@ -117,14 +123,25 @@ export interface TrainingProgress {
 }
 
 export async function uploadTrainingFiles(formData: FormData) {
-  return apiRequest<{ images_data_url: string }>('/training/upload', {
+  // Let's check the total size before sending
+  const totalSize = Array.from(formData.entries()).reduce((size, [_, value]) => {
+    if (value instanceof File) return size + value.size;
+    return size + new Blob([String(value)]).size;
+  }, 0);
+
+  console.log('Total upload size:', {
+    bytes: totalSize,
+    mb: (totalSize / (1024 * 1024)).toFixed(2) + ' MB'
+  });
+
+  return apiRequest<{ images_data_url: string }>('/api/training/upload', {
     method: 'POST',
     body: formData
   });
 }
 
 export async function startTraining(params: TrainingParams): Promise<TrainingResult> {
-  return apiRequest<TrainingResult>('/training/start', {
+  return apiRequest<TrainingResult>('/api/training/start', {
     method: 'POST',
     body: params
   });
@@ -132,5 +149,5 @@ export async function startTraining(params: TrainingParams): Promise<TrainingRes
 
 export async function getTrainingProgress(id: string | null): Promise<TrainingProgress | null> {  
   if (!id) return null;
-  return apiRequest<TrainingProgress>(`/training/${id}/status`);
+  return apiRequest<TrainingProgress>(`/api/training/${id}/status`);
 }
