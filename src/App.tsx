@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Tab } from '@headlessui/react';
 import TrainTab from './components/train/TrainTab';
 
 function App() {
