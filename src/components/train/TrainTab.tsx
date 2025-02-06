@@ -68,6 +68,13 @@ const TrainTab: React.FC = () => {
 
     try {
       setIsLoading(true);
+      console.log('Starting training process with state:', {
+        steps: state.steps,
+        isStyle: state.isStyle,
+        createMasks: state.createMasks,
+        triggerWord: state.triggerWord,
+        imagesCount: state.images.length
+      });
 
       // Upload images first
       const formData = new FormData();
@@ -76,16 +83,36 @@ const TrainTab: React.FC = () => {
         formData.append(`captions[${img.file.name}]`, img.caption);
       });
 
-      const { images_data_url } = await uploadTrainingFiles(formData);
+      console.log('Uploading files...');
+      const { images_data_url } = await uploadTrainingFiles(formData)
+        .catch(error => {
+          console.error('File upload failed:', error);
+          throw new Error('File upload failed: ' + (error.message || 'Unknown error'));
+        });
+
+      console.log('Files uploaded successfully, URL:', images_data_url);
 
       // Start training
-      await startTraining({
+      console.log('Starting training with params:', {
         steps: state.steps,
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
         images_data_url
       });
+
+      const trainingResult = await startTraining({
+        steps: state.steps,
+        isStyle: state.isStyle,
+        createMasks: state.createMasks,
+        triggerWord: state.triggerWord,
+        images_data_url
+      }).catch(error => {
+        console.error('Training start failed:', error);
+        throw new Error('Training start failed: ' + (error.message || 'Unknown error'));
+      });
+
+      console.log('Training started successfully:', trainingResult);
 
       window.Telegram?.WebApp?.showPopup({
         message: 'Training started successfully!'
@@ -96,9 +123,19 @@ const TrainTab: React.FC = () => {
       setIsLoading(false);
 
     } catch (error) {
-      console.error('Training error:', error);
+      console.error('Training process failed:', error);
+      let errorMessage = 'Training failed: ';
+      
+      if (error instanceof Error) {
+        errorMessage += error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage += JSON.stringify(error);
+      } else {
+        errorMessage += 'Unknown error occurred';
+      }
+
       window.Telegram?.WebApp?.showPopup({
-        message: 'Training failed. Please try again.'
+        message: errorMessage
       });
       setIsLoading(false);
     }
