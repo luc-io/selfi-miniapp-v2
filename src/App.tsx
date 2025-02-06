@@ -2,4 +2,12 @@ import { useState } from 'react';
 import { Tab } from '@headlessui/react';
 import TrainTab from './components/train/TrainTab';
 
-// Rest of App.tsx code...
+function App() {
+  return (
+    <div className="container max-w-3xl mx-auto py-8 px-4">
+      <TrainTab />
+    </div>
+  );
+}
+
+export default App;
