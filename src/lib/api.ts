@@ -116,86 +116,15 @@ export interface TrainingProgress {
   message?: string;
 }
 
-export interface UploadResponse {
-  upload_id?: string;
-  chunk_size?: number;
-  total_chunks?: number;
-  images_data_url?: string;
-}
-
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
-
 export async function uploadTrainingFiles(formData: FormData) {
-  const images = formData.getAll('images') as File[];
-  const captions = Array.from(formData.entries())
-    .filter(([key]) => key.startsWith('captions['))
-    .reduce((acc, [key, value]) => ({
-      ...acc,
-      [key.match(/\[(.*?)\]/)?.[1] ?? '']: value
-    }), {});
-
-  // If total size is small enough, use direct upload
-  const totalSize = images.reduce((acc, file) => acc + file.size, 0);
-  if (totalSize <= CHUNK_SIZE) {
-    return apiRequest<{ images_data_url: string }>('/api/training/upload', {
-      method: 'POST',
-      body: formData
-    });
-  }
-
-  // Initialize chunked upload
-  const initResponse = await apiRequest<UploadResponse>('/api/training/upload/init', {
+  return apiRequest<{ images_data_url: string }>('/training/upload', {
     method: 'POST',
-    body: JSON.stringify({
-      total_size: totalSize,
-      file_count: images.length,
-      captions
-    })
+    body: formData
   });
-
-  if (!initResponse.upload_id) {
-    throw new Error('Failed to initialize chunked upload');
-  }
-
-  // Upload chunks
-  const uploadId = initResponse.upload_id;
-  const chunkSize = initResponse.chunk_size || CHUNK_SIZE;
-  let currentChunk = 0;
-
-  for (const image of images) {
-    const chunks = Math.ceil(image.size / chunkSize);
-    
-    for (let i = 0; i < chunks; i++) {
-      const start = i * chunkSize;
-      const end = Math.min(start + chunkSize, image.size);
-      const chunk = image.slice(start, end);
-
-      const chunkFormData = new FormData();
-      chunkFormData.append('chunk', chunk);
-      chunkFormData.append('upload_id', uploadId);
-      chunkFormData.append('chunk_index', currentChunk.toString());
-      chunkFormData.append('file_name', image.name);
-
-      await apiRequest<void>('/api/training/upload/chunk', {
-        method: 'POST',
-        body: chunkFormData
-      });
-
-      currentChunk++;
-    }
-  }
-
-  // Complete upload
-  const finalResponse = await apiRequest<{ images_data_url: string }>('/api/training/upload/complete', {
-    method: 'POST',
-    body: JSON.stringify({ upload_id: uploadId })
-  });
-
-  return finalResponse;
 }
 
 export async function startTraining(params: TrainingParams): Promise<TrainingResult> {
-  return apiRequest<TrainingResult>('/api/training/start', {
+  return apiRequest<TrainingResult>('/training/start', {
     method: 'POST',
     body: params
   });
@@ -203,5 +132,5 @@ export async function startTraining(params: TrainingParams): Promise<TrainingRes
 
 export async function getTrainingProgress(id: string | null): Promise<TrainingProgress | null> {  
   if (!id) return null;
-  return apiRequest<TrainingProgress>(`/api/training/${id}/status`);
+  return apiRequest<TrainingProgress>(`/training/${id}/status`);
 }
