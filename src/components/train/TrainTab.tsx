@@ -1,156 +1,54 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { Loader2, Upload, X, Edit2 } from 'lucide-react';
-import { startTraining, getTrainingProgress, type TrainingProgress, uploadTrainingFiles } from '@/lib/api';
-import { useQuery } from '@tanstack/react-query';
-import type { Query } from '@tanstack/react-query';
+                <label className="block text-sm font-medium text-gray-700">Style Training</label>
+                <p className="text-sm text-gray-500">Train for style instead of subject</p>
+              </div>
+              <Switch
+                checked={state.isStyle}
+                onCheckedChange={checked => setState(prev => ({ 
+                  ...prev, 
+                  isStyle: checked,
+                  createMasks: checked ? false : prev.createMasks,
+                  triggerWord: checked ? '' : prev.triggerWord
+                }))}
+              />
+            </div>
+          </div>
 
-interface TrainingImage {
-  file: File;
-  caption: string;
-}
+          {/* Progress Bar */}
+          {progressData && progressData.status !== 'COMPLETED' && progressData.status !== 'FAILED' && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Training Progress</span>
+                <span>{progressData.status === 'TRAINING' ? 'In Progress' : 'Starting...'}</span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all duration-300"
+                  style={{ 
+                    width: progressData.status === 'TRAINING' ? '50%' : '10%'
+                  }}
+                />
+              </div>
+              {progressData.message && (
+                <p className="text-sm text-gray-600">{progressData.message}</p>
+              )}
+            </div>
+          )}
 
-interface TrainingState {
-  images: TrainingImage[];
-  triggerWord: string;
-  createMasks: boolean;
-  steps: number;
-  isStyle: boolean;
-}
-
-interface TrainingResponse {
-  id: string;
-  trainingId: string;
-}
-
-const DEFAULT_STATE: TrainingState = {
-  images: [],
-  triggerWord: '',
-  createMasks: false,
-  steps: 1000,
-  isStyle: true,
-};
-
-export function TrainTab() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [state, setState] = useState<TrainingState>(DEFAULT_STATE);
-  const [dragActive, setDragActive] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [requestId, setRequestId] = useState<string | null>(null);
-
-  const totalSize = state.images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
-  const maxSize = 50 * 1024 * 1024; // 50MB
-
-  // Query for training progress
-  const { data: progressData } = useQuery({
-    queryKey: ['training-progress', requestId],
-    queryFn: () => getTrainingProgress(requestId),
-    enabled: !!requestId && !isLoading,
-    refetchInterval: (query: Query<TrainingProgress | null, Error>) => {
-      const data = query.state.data;
-      if (!data || data.status === 'COMPLETED' || data.status === 'FAILED') {
-        return false;
-      }
-      return 1000; // Poll every second while training
-    },
-  });
-
-  // Reset request ID when training completes or fails
-  useEffect(() => {
-    if (progressData?.status === 'COMPLETED' || progressData?.status === 'FAILED') {
-      setRequestId(null);
-      setIsLoading(false);
-      
-      // Show completion message
-      window.Telegram?.WebApp?.showPopup({
-        message: progressData.status === 'COMPLETED' 
-          ? 'Training completed successfully!' 
-          : 'Training failed. Please try again.'
-      });
-    }
-  }, [progressData?.status]);
-
-  const handleFiles = useCallback((files: FileList | null) => {
-    if (!files) return;
-
-    const imageFiles = Array.from(files);
-    const newTotalSize = totalSize + imageFiles.reduce((acc, file) => acc + file.size, 0);
-
-    if (newTotalSize > maxSize) {
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Total file size must be less than 50MB'
-      });
-      return;
-    }
-
-    const newImages = imageFiles.map(file => ({
-      file,
-      caption: file.name.replace(/\.[^/.]+$/, '') // Remove extension
-    }));
-
-    setState(prev => ({
-      ...prev,
-      images: [...prev.images, ...newImages]
-    }));
-  }, [totalSize, maxSize]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (state.images.length === 0) return;
-
-    // Validate trigger word
-    if (!state.triggerWord.trim() && !state.isStyle) {
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Please enter a trigger word'
-      });
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      // Upload images first
-      const formData = new FormData();
-      state.images.forEach((img, index) => {
-        formData.append('images', img.file);
-        formData.append(`captions[${img.file.name}]`, img.caption);
-      });
-
-      const { images_data_url } = await uploadTrainingFiles(formData);
-
-      // Start training
-      const { id } = await startTraining({
-        steps: state.steps,
-        is_style: state.isStyle,
-        create_masks: state.createMasks,
-        trigger_word: state.triggerWord,
-        images_data_url
-      });
-
-      setRequestId(id);
-
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Training started successfully!'
-      });
-
-    } catch (error) {
-      console.error('Training error:', error);
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Training failed. Please try again.'
-      });
-      setIsLoading(false);
-    }
-  };
-
-  // Rest of the component remains the same...
-  // (UI rendering code)
-
-  return (
-    <Card className="bg-white rounded-lg shadow-md">
-      <form onSubmit={handleSubmit} className="p-6 space-y-8">
-        {/* Component UI remains the same */}
+          <button 
+            type="submit" 
+            className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+            disabled={isLoading || state.images.length === 0}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Training Model...
+              </div>
+            ) : (
+              'Start Training'
+            )}
+          </button>
+        </div>
       </form>
     </Card>
   );
