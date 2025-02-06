@@ -1,16 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Loader2, Upload, X, Edit2 } from 'lucide-react';
 import { 
   startTraining, 
-  getTrainingProgress, 
-  uploadTrainingFiles,
-  type TrainingProgress 
+  uploadTrainingFiles
 } from '@/lib/api';
-import { useQuery } from '@tanstack/react-query';
-import type { Query } from '@tanstack/react-query';
 
 interface TrainingImage {
   file: File;
@@ -38,7 +34,6 @@ const TrainTab: React.FC = () => {
   const [state, setState] = useState<TrainingState>(DEFAULT_STATE);
   const [dragActive, setDragActive] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [requestId, setRequestId] = useState<string | null>(null);
 
   const totalSize = state.images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
   const maxSize = 50 * 1024 * 1024; // 50MB
@@ -84,7 +79,7 @@ const TrainTab: React.FC = () => {
       const { images_data_url } = await uploadTrainingFiles(formData);
 
       // Start training
-      const response = await startTraining({
+      await startTraining({
         steps: state.steps,
         isStyle: state.isStyle,
         createMasks: state.createMasks,
@@ -92,11 +87,13 @@ const TrainTab: React.FC = () => {
         images_data_url
       });
 
-      setRequestId(response.id);
-
       window.Telegram?.WebApp?.showPopup({
         message: 'Training started successfully!'
       });
+
+      // Reset form
+      setState(DEFAULT_STATE);
+      setIsLoading(false);
 
     } catch (error) {
       console.error('Training error:', error);
