@@ -18,6 +18,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const { method = 'GET', headers = {}, body } = options;
   const user = window.Telegram?.WebApp?.initDataUnsafe.user as TelegramUser | undefined;
 
+  // Log request details
+  console.log(`API Request to ${path}:`, {
+    method,
+    headers,
+    bodyType: body instanceof FormData ? 'FormData' : typeof body,
+    user
+  });
+
   // Prepare headers
   const requestHeaders: Record<string, string> = {
     ...headers,
@@ -32,18 +40,62 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     requestHeaders['X-Telegram-Last-Name'] = user.last_name || '';
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: requestHeaders,
-    credentials: 'include',
-    body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: requestHeaders,
+      credentials: 'include',
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+    });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`);
+    // Log response status
+    console.log(`API Response from ${path}:`, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
+    if (!response.ok) {
+      let errorMessage = `API request failed: ${response.statusText}`;
+      let errorDetails = {};
+
+      try {
+        // Try to parse error response
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorDetails = errorData;
+      } catch (e) {
+        // If error response is not JSON, try to get text
+        try {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        } catch (e2) {
+          // If we can't get text, use original error message
+        }
+      }
+
+      console.error('API Error Details:', {
+        path,
+        status: response.status,
+        message: errorMessage,
+        details: errorDetails
+      });
+
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    console.log(`API Success from ${path}:`, data);
+    return data;
+
+  } catch (error) {
+    console.error('API Request Failed:', {
+      path,
+      error,
+      body: body instanceof FormData ? 'FormData content' : body
+    });
+    throw error;
   }
-
-  return response.json();
 }
 
 // Training Types
