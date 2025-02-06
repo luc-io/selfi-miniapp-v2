@@ -33,4 +33,14 @@ const DEFAULT_STATE: TrainingState = {
   isStyle: true,
 };
 
-// Rest of the component remains the same...
+const TrainTab = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [state, setState] = useState<TrainingState>(DEFAULT_STATE);
+  const [dragActive, setDragActive] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
+
+  // Rest of component code...
+}
+
+export default TrainTab;
