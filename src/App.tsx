@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GenerateTab } from './components/generate/GenerateTab';
-import { TrainTab } from './components/train/TrainTab';
+import TrainTab from './components/train/TrainTab';
 import { ModelsTab } from './components/models/ModelsTab';
 
 const TABS = {

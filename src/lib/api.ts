@@ -18,6 +18,20 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const { method = 'GET', headers = {}, body } = options;
   const user = window.Telegram?.WebApp?.initDataUnsafe.user as TelegramUser | undefined;
 
+  // Log request details
+  console.log(`API Request to ${path}:`, {
+    method,
+    headers,
+    bodyType: body instanceof FormData ? 'FormData' : typeof body,
+    bodySize: body instanceof FormData ? 
+      Array.from(body.entries()).reduce((size, [_, value]) => {
+        if (value instanceof File) return size + value.size;
+        return size + new Blob([String(value)]).size;
+      }, 0) : 
+      body ? new Blob([JSON.stringify(body)]).size : 0,
+    user
+  });
+
   // Prepare headers
   const requestHeaders: Record<string, string> = {
     ...headers,
@@ -32,18 +46,61 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     requestHeaders['X-Telegram-Last-Name'] = user.last_name || '';
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: requestHeaders,
-    credentials: 'include',
-    body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: requestHeaders,
+      credentials: 'include',
+      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+    });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`);
+    // Log response status
+    console.log(`API Response from ${path}:`, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
+    if (!response.ok) {
+      let errorMessage = `API request failed: ${response.statusText}`;
+      let errorDetails = {};
+
+      try {
+        // Try to parse error response
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorDetails = errorData;
+      } catch (e) {
+        // If error response is not JSON, try to get text
+        try {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        } catch (e2) {
+          // If we can't get text, use original error message
+        }
+      }
+
+      console.error('API Error Details:', {
+        path,
+        status: response.status,
+        message: errorMessage,
+        details: errorDetails
+      });
+
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    console.log(`API Success from ${path}:`, data);
+    return data;
+  } catch (error) {
+    console.error('API Request Failed:', {
+      path,
+      error,
+      body: body instanceof FormData ? 'FormData content' : body
+    });
+    throw error;
   }
-
-  return response.json();
 }
 
 // Training Types
@@ -52,53 +109,45 @@ export interface TrainingParams {
   isStyle: boolean;
   createMasks: boolean;
   triggerWord: string;
-  images: File[];
-  captions: Record<string, string>;
+  images_data_url: string;
 }
 
 export interface TrainingResult {
-  requestId: string;
-  loraUrl: string;
-  configUrl: string;
+  id: string;
+  trainingId: string;
 }
 
 export interface TrainingProgress {
-  status: 'pending' | 'training' | 'completed' | 'failed';
-  progress: number;
+  status: 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
   message?: string;
 }
 
-export async function startTraining(params: TrainingParams): Promise<string> {
-  const formData = new FormData();
-  
-  // Add each image to form data
-  params.images.forEach((image) => {
-    formData.append('images', image);
+export async function uploadTrainingFiles(formData: FormData) {
+  // Let's check the total size before sending
+  const totalSize = Array.from(formData.entries()).reduce((size, [_, value]) => {
+    if (value instanceof File) return size + value.size;
+    return size + new Blob([String(value)]).size;
+  }, 0);
+
+  console.log('Total upload size:', {
+    bytes: totalSize,
+    mb: (totalSize / (1024 * 1024)).toFixed(2) + ' MB'
   });
 
-  // Add captions as JSON
-  formData.append('captions', JSON.stringify(params.captions));
-  
-  // Add other parameters
-  formData.append('steps', params.steps.toString());
-  formData.append('isStyle', params.isStyle.toString());
-  formData.append('createMasks', params.createMasks.toString());
-  formData.append('triggerWord', params.triggerWord);
-
-  const result = await apiRequest<{ requestId: string }>('/training/start', {
+  return apiRequest<{ images_data_url: string }>('/api/training/upload', {
     method: 'POST',
-    body: formData,
+    body: formData
   });
-
-  return result.requestId;
 }
 
-export async function getTrainingProgress(requestId: string | null): Promise<TrainingProgress | null> {  
-  if (!requestId) return null;
-  
-  return apiRequest<TrainingProgress>(`/training/${requestId}/progress`);
+export async function startTraining(params: TrainingParams): Promise<TrainingResult> {
+  return apiRequest<TrainingResult>('/api/training/start', {
+    method: 'POST',
+    body: params
+  });
 }
 
-export async function getTrainingResult(requestId: string): Promise<TrainingResult> {
-  return apiRequest<TrainingResult>(`/training/${requestId}/result`);
+export async function getTrainingProgress(id: string | null): Promise<TrainingProgress | null> {  
+  if (!id) return null;
+  return apiRequest<TrainingProgress>(`/api/training/${id}/status`);
 }
