@@ -36,9 +36,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     
-    /* Border and input colors */
-    --border: 240 15% 12%;
-    --input: 240 15% 12%;
+    /* Border and input colors - made more prominent */
+    --border: 240 15% 25%;
+    --input: 240 15% 25%;
     --ring: 262 72% 54%;
     
     /* Border radius */
