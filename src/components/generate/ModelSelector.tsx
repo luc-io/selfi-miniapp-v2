@@ -16,9 +16,8 @@ export function ModelSelector({ onSelect, defaultValue }: ModelSelectorProps) {
     <Card className="relative border-none bg-transparent shadow-none">
       <CardContent className="flex gap-2 p-0">
         <Button
-          size="sm"
           variant="default"
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1.5 py-2 px-3 h-8 text-xs"
         >
           <SparklesIcon className="h-4 w-4" />
           Flux
