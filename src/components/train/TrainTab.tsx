@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { startTraining, uploadTrainingFiles } from '@/lib/api';
+import { startTraining } from '@/lib/api';
 import { 
   FileUpload,
   ImagePreviews,
@@ -33,40 +33,21 @@ const TrainTab: React.FC = () => {
         imagesCount: state.images.length
       });
 
-      // Upload images first
-      const formData = new FormData();
-      state.images.forEach(img => {
-        formData.append('images', img.file);
-        formData.append(`captions[${img.file.name}]`, img.caption);
-      });
-
-      console.log('Uploading files...');
-      const { images_data_url } = await uploadTrainingFiles(formData)
-        .catch(error => {
-          console.error('File upload failed:', error);
-          throw new Error('File upload failed: ' + (error.message || 'Unknown error'));
-        });
-
-      console.log('Files uploaded successfully, URL:', images_data_url);
-
-      // Start training
-      console.log('Starting training with params:', {
-        steps: state.steps,
-        isStyle: state.isStyle,
-        createMasks: state.createMasks,
-        triggerWord: state.triggerWord,
-        images_data_url
-      });
+      // Extract files and captions
+      const files = state.images.map(img => img.file);
+      const captions = state.images.reduce((acc, img) => {
+        acc[img.file.name] = img.caption;
+        return acc;
+      }, {} as Record<string, string>);
 
       const trainingResult = await startTraining({
         steps: state.steps,
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
-        images_data_url
-      }).catch(error => {
-        console.error('Training start failed:', error);
-        throw new Error('Training start failed: ' + (error.message || 'Unknown error'));
+      }, files, captions).catch(error => {
+        console.error('Training failed:', error);
+        throw new Error('Training failed: ' + (error.message || 'Unknown error'));
       });
 
       console.log('Training started successfully:', trainingResult);
