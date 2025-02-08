@@ -103,6 +103,17 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 }
 
+// User Types
+export interface UserInfo {
+  stars: number;
+  totalSpentStars: number;
+  totalBoughtStars: number;
+}
+
+export async function getUserInfo(): Promise<UserInfo> {
+  return apiRequest<UserInfo>('/api/user/info');
+}
+
 // Training Types
 export interface TrainingParams {
   steps: number;
