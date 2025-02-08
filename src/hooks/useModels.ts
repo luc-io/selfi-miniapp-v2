@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserModels, toggleModelPublic, deleteUserModel, buildValidationData } from '@/api/loras';
+import { getUserModels, toggleModelPublic, deleteModel, buildValidationData } from '@/api/loras';
 import type { Model } from '@/types/model';
 
 export function useModels() {
@@ -28,7 +28,7 @@ export function useModels() {
   });
 
   const deleteModelMutation = useMutation({
-    mutationFn: deleteUserModel,
+    mutationFn: deleteModel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
     },
