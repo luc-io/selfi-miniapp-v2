@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Slider } from '../ui/slider';
 import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';
@@ -14,39 +13,19 @@ interface LoraSelectorProps {
 }
 
 export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleChange }: LoraSelectorProps) {
-  const [selectedPath, setSelectedPath] = useState<string>('');
-
-  const handleAdd = () => {
-    if (selectedPath) {
-      onAdd({ path: selectedPath, scale: 1.0 });
-      setSelectedPath('');
+  // Helper function to check if a LoRA is selected
+  const isLoraSelected = (path: string) => loras.some(lora => lora.path === path);
+  
+  // Helper function to handle LoRA click
+  const handleLoraClick = (path: string) => {
+    if (!isLoraSelected(path) && loras.length < 5) {
+      onAdd({ path, scale: 1.0 });
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Select value={selectedPath} onValueChange={setSelectedPath}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a LoRA" />
-          </SelectTrigger>
-          <SelectContent>
-            {availableLoras.map((lora) => (
-              <SelectItem key={lora.path} value={lora.path}>
-                {lora.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button 
-          onClick={handleAdd} 
-          disabled={!selectedPath || loras.length >= 5}
-          className="whitespace-nowrap"
-        >
-          Add LoRA
-        </Button>
-      </div>
-
+      {/* Selected LoRAs with scale adjustment */}
       {loras.map((lora, index) => (
         <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
           <div className="flex-grow space-y-2">
@@ -77,6 +56,32 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
           </Button>
         </div>
       ))}
+
+      {/* Available LoRAs grid */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+        {availableLoras.map((lora) => {
+          const selected = isLoraSelected(lora.path);
+          return (
+            <button
+              key={lora.path}
+              onClick={() => handleLoraClick(lora.path)}
+              disabled={selected || loras.length >= 5}
+              className={`
+                p-3 rounded-lg text-left transition-colors
+                ${selected 
+                  ? 'bg-blue-100 text-blue-900 cursor-default' 
+                  : loras.length >= 5 
+                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    : 'bg-white hover:bg-gray-50 border border-gray-200'
+                }
+              `}
+            >
+              <span className="block font-medium truncate">
+                {lora.name}
+              </span>
+            </button>
+          );
+        })}      </div>
     </div>
   );
 }
