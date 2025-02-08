@@ -129,7 +129,8 @@ export function GenerateTab() {
             loras={params.loras || []}
             availableLoras={availableLoras.map(lora => ({
               path: lora.databaseId,
-              name: `${lora.name} (${lora.triggerWord})`
+              name: lora.name,
+              triggerWord: lora.triggerWord
             }))}
             onAdd={handleAddLora}
             onRemove={handleRemoveLora}
