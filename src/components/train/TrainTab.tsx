@@ -1,32 +1,178 @@
-          {/* Trigger Word */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <label className="block text-sm font-medium text-gray-700" htmlFor="triggerWord">
-                Trigger Word
-              </label>
-              <div className="group relative">
-                <InfoIcon className="w-4 h-4 text-gray-400" />
-                <div className="absolute left-0 bottom-6 w-64 p-2 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  {state.isStyle 
-                    ? "Choose a trigger word that represents your style (e.g., 'anime_style', 'watercolor'). This word activates your style during generation."
-                    : "Choose a trigger word that represents your subject (e.g., 'my_cat', 'my_house'). This word will be used to generate images of your subject."}
-                </div>
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import { startTraining, uploadTrainingFiles } from '@/lib/api';
+import { 
+  FileUpload,
+  ImagePreviews,
+  TriggerWordInput,
+  TrainingSteps,
+  TrainingToggles 
+} from './components';
+import { DEFAULT_STATE, type TrainingImage } from './types/training';
+
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+const TrainTab: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [state, setState] = useState(DEFAULT_STATE);
+
+  const totalSize = state.images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (state.images.length === 0 || !state.triggerWord.trim()) return;
+
+    try {
+      setIsLoading(true);
+      console.log('Starting training process with state:', {
+        steps: state.steps,
+        isStyle: state.isStyle,
+        createMasks: state.createMasks,
+        triggerWord: state.triggerWord,
+        imagesCount: state.images.length
+      });
+
+      // Upload images first
+      const formData = new FormData();
+      state.images.forEach(img => {
+        formData.append('images', img.file);
+        formData.append(`captions[${img.file.name}]`, img.caption);
+      });
+
+      console.log('Uploading files...');
+      const { images_data_url } = await uploadTrainingFiles(formData)
+        .catch(error => {
+          console.error('File upload failed:', error);
+          throw new Error('File upload failed: ' + (error.message || 'Unknown error'));
+        });
+
+      console.log('Files uploaded successfully, URL:', images_data_url);
+
+      // Start training
+      console.log('Starting training with params:', {
+        steps: state.steps,
+        isStyle: state.isStyle,
+        createMasks: state.createMasks,
+        triggerWord: state.triggerWord,
+        images_data_url
+      });
+
+      const trainingResult = await startTraining({
+        steps: state.steps,
+        isStyle: state.isStyle,
+        createMasks: state.createMasks,
+        triggerWord: state.triggerWord,
+        images_data_url
+      }).catch(error => {
+        console.error('Training start failed:', error);
+        throw new Error('Training start failed: ' + (error.message || 'Unknown error'));
+      });
+
+      console.log('Training started successfully:', trainingResult);
+
+      window.Telegram?.WebApp?.showPopup({
+        message: 'Training started successfully!'
+      });
+
+      // Reset form
+      setState(DEFAULT_STATE);
+      setIsLoading(false);
+
+    } catch (error) {
+      console.error('Training process failed:', error);
+      let errorMessage = 'Training failed: ';
+      
+      if (error instanceof Error) {
+        errorMessage += error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage += JSON.stringify(error);
+      } else {
+        errorMessage += 'Unknown error occurred';
+      }
+
+      window.Telegram?.WebApp?.showPopup({
+        message: errorMessage
+      });
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card className="bg-white rounded-lg shadow-md">
+      <form onSubmit={handleSubmit} className="p-6 space-y-8">
+        <h2 className="text-xl font-semibold text-gray-800">Train Model</h2>
+        
+        <div className="space-y-6">
+          <FileUpload
+            totalSize={totalSize}
+            maxSize={MAX_SIZE}
+            onFilesSelected={newImages => 
+              setState(prev => ({ 
+                ...prev, 
+                images: [...prev.images, ...newImages] 
+              }))
+            }
+          />
+
+          <ImagePreviews
+            images={state.images}
+            onImageRemove={index => 
+              setState(prev => ({
+                ...prev,
+                images: prev.images.filter((_, i) => i !== index)
+              }))
+            }
+            onCaptionUpdate={(index, caption) =>
+              setState(prev => ({
+                ...prev,
+                images: prev.images.map((img, i) => 
+                  i === index ? { ...img, caption } : img
+                )
+              }))
+            }
+          />
+
+          <TriggerWordInput
+            value={state.triggerWord}
+            isStyle={state.isStyle}
+            onChange={triggerWord => setState(prev => ({ ...prev, triggerWord }))}
+          />
+
+          <TrainingSteps
+            value={state.steps}
+            onChange={steps => setState(prev => ({ ...prev, steps }))}
+          />
+
+          <TrainingToggles
+            isStyle={state.isStyle}
+            createMasks={state.createMasks}
+            onStyleChange={isStyle => setState(prev => ({ 
+              ...prev, 
+              isStyle,
+              createMasks: isStyle ? false : prev.createMasks
+            }))}
+            onMasksChange={createMasks => setState(prev => ({ ...prev, createMasks }))}
+          />
+
+          <button 
+            type="submit" 
+            className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+            disabled={isLoading || state.images.length === 0 || !state.triggerWord.trim()}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Training Model...
               </div>
-            </div>
-            <input
-              id="triggerWord"
-              type="text"
-              value={state.triggerWord}
-              onChange={(e) => setState(prev => ({ ...prev, triggerWord: e.target.value }))}
-              placeholder={state.isStyle 
-                ? "Enter trigger word for your style (e.g., anime_style)" 
-                : "Enter trigger word for your subject (e.g., my_cat)"}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-            <p className="text-xs text-gray-500">
-              {state.isStyle 
-                ? "This trigger word will be used to apply your trained style to any image" 
-                : "This trigger word will be used to reference your trained subject in prompts"}
-            </p>
-          </div>
+            ) : (
+              'Start Training'
+            )}
+          </button>
+        </div>
+      </form>
+    </Card>
+  );
+};
+
+export default TrainTab;
