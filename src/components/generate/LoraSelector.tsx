@@ -39,9 +39,9 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
               <button
                 key={lora.path}
                 onClick={() => handleLoraClick(lora.path)}
-                className="p-3 rounded-lg text-left transition-colors bg-white hover:bg-gray-50 border border-gray-200"
+                className="p-3 rounded-lg text-left transition-colors bg-card hover:bg-accent border border-border"
               >
-                <span className="block font-medium truncate">
+                <span className="block font-medium truncate text-card-foreground">
                   {lora.triggerWord}
                 </span>
               </button>
@@ -56,17 +56,17 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
           return (
             <div 
               key={index} 
-              className="bg-white border border-gray-200 rounded-lg overflow-hidden"
+              className="bg-card border border-border rounded-lg overflow-hidden"
             >
-              <div className="p-3 flex items-center justify-between bg-gray-50 border-b border-gray-200">
-                <span className="font-medium">
+              <div className="p-3 flex items-center justify-between bg-muted border-b border-border">
+                <span className="font-medium text-card-foreground">
                   {loraInfo?.triggerWord || lora.path}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onRemove(index)}
-                  className="text-gray-500 hover:text-red-500"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -82,13 +82,14 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
                     className="py-2"
                   />
                 </div>
-                <span className="text-sm text-gray-500 w-12 text-right">
+                <span className="text-sm text-card-foreground w-12 text-right">
                   {lora.scale.toFixed(2)}
                 </span>
               </div>
             </div>
           );
-        })}      </div>
+        })}
+      </div>
     </div>
   );
 }
