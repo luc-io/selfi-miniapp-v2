@@ -39,7 +39,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
               <button
                 key={lora.path}
                 onClick={() => handleLoraClick(lora.path)}
-                className="p-3 text-left transition-colors bg-card hover:bg-accent border border-border/40"
+                className="p-3 text-left transition-colors bg-card hover:bg-accent border border-border"
               >
                 <span className="block font-medium truncate text-card-foreground">
                   {lora.triggerWord}
@@ -56,9 +56,9 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
           return (
             <div 
               key={index} 
-              className="bg-card border border-border/40 overflow-hidden"
+              className="bg-card border border-border overflow-hidden"
             >
-              <div className="p-3 flex items-center justify-between bg-muted border-b border-border/40">
+              <div className="p-3 flex items-center justify-between bg-muted border-b border-border">
                 <span className="font-medium text-card-foreground">
                   {loraInfo?.triggerWord || lora.path}
                 </span>
