@@ -91,17 +91,19 @@ export async function deleteModel(modelId: string): Promise<void> {
     const userId = webApp.initDataUnsafe?.user?.id?.toString();
     if (!userId) throw new Error('Telegram user ID not available');
 
-    const response = await fetch(`${API_BASE}/loras/${modelId}`, {
+    // Make sure to check the correct route with your backend team
+    const response = await fetch(`${API_BASE}/loras/model/${modelId}`, {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         'x-telegram-init-data': buildValidationData(webApp),
         'x-telegram-user-id': userId
       }
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to delete model');
+      const error = await response.json().catch(() => ({ message: 'Failed to decode error response' }));
+      throw new Error(error.message || `Failed to delete model: ${response.statusText}`);
     }
   } catch (error) {
     console.error('Error deleting model:', error);
