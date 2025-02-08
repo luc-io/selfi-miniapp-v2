@@ -44,7 +44,7 @@ export function useModels() {
       // Return a context object with the snapshotted value
       return { previousModels };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousModels) {
         queryClient.setQueryData(['models', 'user'], context.previousModels);
