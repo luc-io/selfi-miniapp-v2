@@ -4,29 +4,29 @@
  
 @layer base {
   :root {
-    /* Dark theme background with purple tint */
-    --background: 260 24% 7%;
+    /* Dark theme background with warm tint */
+    --background: 240 15% 3.5%;
     --foreground: 0 0% 98%;
     
     /* Card colors - slightly lighter than background */
-    --card: 260 24% 11%;
+    --card: 240 15% 6%;
     --card-foreground: 0 0% 98%;
     
     /* Popover colors */
-    --popover: 260 24% 7%;
+    --popover: 240 15% 3.5%;
     --popover-foreground: 0 0% 98%;
     
-    /* Primary colors - vivid purple */
+    /* Primary colors - vivid purple from before */
     --primary: 262 72% 54%;
     --primary-foreground: 0 0% 100%;
     
     /* Secondary colors */
-    --secondary: 260 24% 14%;
+    --secondary: 240 15% 8%;
     --secondary-foreground: 0 0% 98%;
     
     /* Muted colors */
-    --muted: 260 24% 14%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 240 15% 8%;
+    --muted-foreground: 240 5% 64%;
     
     /* Accent colors */
     --accent: 262 72% 54%;
@@ -37,8 +37,8 @@
     --destructive-foreground: 0 0% 98%;
     
     /* Border and input colors */
-    --border: 260 24% 16%;
-    --input: 260 24% 16%;
+    --border: 240 15% 12%;
+    --input: 240 15% 12%;
     --ring: 262 72% 54%;
     
     /* Border radius */
