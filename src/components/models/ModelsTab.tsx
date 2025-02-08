@@ -29,6 +29,13 @@ export function ModelsTab() {
   const [activeTab, setActiveTab] = useState<DetailsTab>('input');
 
   const handleDelete = async (model: Model) => {
+    if (!model?.databaseId) {
+      console.error('No model ID provided for deletion');
+      window.Telegram?.WebApp?.showPopup({
+        message: 'Invalid model data. Please try again.'
+      });
+      return;
+    }
     try {
       await deleteModel(model.databaseId);
       setModelToDelete(null);
@@ -38,9 +45,30 @@ export function ModelsTab() {
     } catch (error) {
       console.error('Error deleting model:', error);
       window.Telegram?.WebApp?.showPopup({
-        message: 'Failed to delete model. Please try again.'
+        message: error instanceof Error 
+          ? `Failed to delete model: ${error.message}`
+          : 'Failed to delete model. Please try again.'
       });
     }
+  };
+
+  const getTrainingInputParams = (model: Model) => {
+    if (!model.training) return null;
+    return {
+      steps: model.training.steps,
+      is_style: model.training.is_style ?? false,
+      create_masks: model.training.create_masks ?? false,
+      trigger_word: model.training.trigger_word ?? model.triggerWord,
+      images_data_url: model.training.imageUrls?.[0] ?? null
+    };
+  };
+
+  const getTrainingOutputParams = (model: Model) => {
+    if (!model.training?.metadata) return null;
+    return {
+      steps: model.training.steps,
+      metadata: model.training.metadata
+    };
   };
 
   if (isLoading) {
@@ -141,10 +169,7 @@ export function ModelsTab() {
                           <div className="font-medium mb-2">Training Parameters</div>
                           {model.training ? (
                             <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                              {JSON.stringify({
-                                steps: model.training.steps,
-                                metadata: model.training.metadata
-                              }, null, 2)}
+                              {JSON.stringify(getTrainingInputParams(model), null, 2)}
                             </pre>
                           ) : (
                             <p className="text-gray-500">No training parameters available</p>
@@ -152,24 +177,16 @@ export function ModelsTab() {
                         </div>
                       ) : (
                         <div className="bg-white p-4 rounded border text-xs space-y-4">
-                          {model.config_file && (
+                          {model.training?.metadata && (
                             <div>
-                              <div className="font-medium mb-1">Config File</div>
+                              <div className="font-medium mb-1">Training Result</div>
                               <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                                {JSON.stringify(model.config_file, null, 2)}
+                                {JSON.stringify(getTrainingOutputParams(model), null, 2)}
                               </pre>
                             </div>
                           )}
-                          {model.diffusers_lora_file && (
-                            <div>
-                              <div className="font-medium mb-1">Model Weights</div>
-                              <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-                                {JSON.stringify(model.diffusers_lora_file, null, 2)}
-                              </pre>
-                            </div>
-                          )}
-                          {!model.config_file && !model.diffusers_lora_file && (
-                            <p className="text-gray-500">No output files available</p>
+                          {!model.training?.metadata && (
+                            <p className="text-gray-500">No output data available</p>
                           )}
                         </div>
                       )}
@@ -178,11 +195,11 @@ export function ModelsTab() {
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={() => setModelToDelete(model)}
-                        className="flex items-center px-3 py-1.5 text-xs font-medium text-red-600 rounded border border-red-200 hover:bg-red-50"
+                        className="flex items-center px-3 py-1.5 text-xs font-medium text-red-600 rounded border border-red-200 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={isDeleting || model.status === 'TRAINING'}
                       >
                         <Trash2 className="h-3 w-3 mr-1.5" />
-                        Delete Model
+                        {isDeleting ? 'Deleting...' : 'Delete Model'}
                       </button>
                     </div>
                   </div>
@@ -209,10 +226,11 @@ export function ModelsTab() {
                 Cancel
               </button>
               <button
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
                 onClick={() => handleDelete(modelToDelete)}
+                disabled={isDeleting}
               >
-                Delete
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

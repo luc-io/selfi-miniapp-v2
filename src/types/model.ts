@@ -1,15 +1,36 @@
 export type LoraStatus = 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
 
+export type TrainStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+
 export interface ModelFile {
   url: string;
-  file_name: string;
-  file_size: number;
-  content_type: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
+
+export interface TrainingMetadata {
+  config: ModelFile;
+  weights: ModelFile;
+  test_mode?: boolean;
 }
 
 export interface ModelTraining {
+  databaseId: string;
+  loraId: string;
+  userDatabaseId: string;
+  baseModelId: string;
   steps: number;
-  metadata: Record<string, any>;
+  is_style: boolean;
+  create_masks: boolean;
+  trigger_word: string;
+  imageUrls: string[];
+  starsSpent: number;
+  status: TrainStatus;
+  metadata?: TrainingMetadata;
+  error?: string;
+  startedAt: string;
+  completedAt?: string;
 }
 
 export interface Model {
@@ -18,10 +39,15 @@ export interface Model {
   triggerWord: string;
   weightsUrl?: string;
   configUrl?: string;
-  isPublic: boolean;
+  baseModelId: string;
   status: LoraStatus;
-  createdAt: string;
+  previewImageUrl?: string;
+  isPublic: boolean;
+  starsRequired: number;
+  userDatabaseId: string;
   training?: ModelTraining;
   config_file?: ModelFile;
   diffusers_lora_file?: ModelFile;
+  createdAt: string;
+  updatedAt: string;
 }

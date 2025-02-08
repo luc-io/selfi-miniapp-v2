@@ -83,6 +83,7 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const userId = webApp.initDataUnsafe?.user?.id?.toString();
   if (!userId) throw new Error('Telegram user ID not available');
 
+  // Fixed the endpoint URL by removing 'model/'
   const response = await fetch(`${API_BASE}/loras/${modelId}`, {
     method: 'DELETE',
     headers: {
@@ -92,7 +93,7 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const error = await response.json().catch(() => ({ message: 'Failed to delete model' }));
     throw new Error(error.message || 'Failed to delete model');
   }
 }

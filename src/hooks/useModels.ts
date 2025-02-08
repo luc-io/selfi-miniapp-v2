@@ -28,8 +28,30 @@ export function useModels() {
   });
 
   const deleteModelMutation = useMutation({
-    mutationFn: deleteUserModel,
-    onSuccess: () => {
+    mutationFn: async (modelId: string) => {
+      await deleteUserModel(modelId);
+      return modelId; // Return the modelId for optimistic updates
+    },
+    onMutate: async (modelId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['models', 'user'] });
+      // Snapshot the previous value
+      const previousModels = queryClient.getQueryData<Model[]>(['models', 'user']);
+      // Optimistically update to the new value
+      queryClient.setQueryData<Model[]>(['models', 'user'], (old) => 
+        old?.filter(model => model.databaseId !== modelId) ?? []
+      );
+      // Return a context object with the snapshotted value
+      return { previousModels };
+    },
+    onError: (_err, _variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousModels) {
+        queryClient.setQueryData(['models', 'user'], context.previousModels);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
     },
   });
