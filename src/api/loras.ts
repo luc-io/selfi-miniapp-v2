@@ -44,55 +44,67 @@ export async function getUserModels(): Promise<Model[]> {
       }
     });
     
-    const responseData = await response.json();
-    
     if (!response.ok) {
-      throw new Error(responseData.error || 'Failed to fetch user models');
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch user models');
     }
+
+    const responseData = await response.json();
     return responseData;
   } catch (error) {
+    console.error('Error fetching user models:', error);
     throw error;
   }
 }
 
 export async function toggleModelPublic(modelId: string, isPublic: boolean): Promise<void> {
-  const webApp = window.Telegram?.WebApp;
-  if (!webApp) throw new Error('Telegram WebApp not available');
-  const userId = webApp.initDataUnsafe?.user?.id?.toString();
-  if (!userId) throw new Error('Telegram user ID not available');
+  try {
+    const webApp = window.Telegram?.WebApp;
+    if (!webApp) throw new Error('Telegram WebApp not available');
+    const userId = webApp.initDataUnsafe?.user?.id?.toString();
+    if (!userId) throw new Error('Telegram user ID not available');
 
-  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-telegram-init-data': buildValidationData(webApp),
-      'x-telegram-user-id': userId
-    },
-    body: JSON.stringify({ isPublic })
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to toggle model visibility');
+    const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-public`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-telegram-init-data': buildValidationData(webApp),
+        'x-telegram-user-id': userId
+      },
+      body: JSON.stringify({ isPublic })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to toggle model visibility');
+    }
+  } catch (error) {
+    console.error('Error toggling model visibility:', error);
+    throw error;
   }
 }
 
-export async function deleteUserModel(modelId: string): Promise<void> {
-  const webApp = window.Telegram?.WebApp;
-  if (!webApp) throw new Error('Telegram WebApp not available');
-  const userId = webApp.initDataUnsafe?.user?.id?.toString();
-  if (!userId) throw new Error('Telegram user ID not available');
+export async function deleteModel(modelId: string): Promise<void> {
+  try {
+    const webApp = window.Telegram?.WebApp;
+    if (!webApp) throw new Error('Telegram WebApp not available');
+    const userId = webApp.initDataUnsafe?.user?.id?.toString();
+    if (!userId) throw new Error('Telegram user ID not available');
 
-  const response = await fetch(`${API_BASE}/loras/${modelId}`, {
-    method: 'DELETE',
-    headers: {
-      'x-telegram-init-data': buildValidationData(webApp),
-      'x-telegram-user-id': userId
+    const response = await fetch(`${API_BASE}/loras/${modelId}`, {
+      method: 'DELETE',
+      headers: {
+        'x-telegram-init-data': buildValidationData(webApp),
+        'x-telegram-user-id': userId
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete model');
     }
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to delete model');
+  } catch (error) {
+    console.error('Error deleting model:', error);
+    throw error;
   }
 }
