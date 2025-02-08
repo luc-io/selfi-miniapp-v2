@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Slider } from '../ui/slider';
 import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';
