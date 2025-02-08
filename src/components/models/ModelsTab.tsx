@@ -58,9 +58,9 @@ export function ModelsTab() {
 
     return {
       steps: model.training.steps,
-      is_style: model.training.is_style ?? false,
-      create_masks: model.training.create_masks ?? false,
-      trigger_word: model.training.trigger_word ?? model.triggerWord,
+      is_style: model.training.is_style,
+      create_masks: model.training.create_masks,
+      trigger_word: model.training.trigger_word,
       images_data_url: model.training.imageUrls?.[0] ?? null
     };
   };
@@ -70,7 +70,11 @@ export function ModelsTab() {
 
     return {
       steps: model.training.steps,
-      metadata: model.training.metadata
+      metadata: {
+        config: model.training.metadata.config,
+        weights: model.training.metadata.weights,
+        ...(model.training.metadata.test_mode ? { test_mode: true } : {})
+      }
     };
   };
 
