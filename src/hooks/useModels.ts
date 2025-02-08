@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserModels, toggleModelPublic, deleteModel, buildValidationData } from '@/api/loras';
+import { getUserModels, toggleModelPublic, deleteUserModel, buildValidationData } from '@/api/loras';
 import type { Model } from '@/types/model';
 
 export function useModels() {
@@ -17,8 +17,6 @@ export function useModels() {
       console.log('User models response:', data);
       return data;
     },
-    retry: 1,
-    retryDelay: 1000
   });
 
   const toggleActivation = useMutation({
@@ -30,31 +28,30 @@ export function useModels() {
   });
 
   const deleteModelMutation = useMutation({
-    mutationFn: deleteModel,
+    mutationFn: async (modelId: string) => {
+      await deleteUserModel(modelId);
+      return modelId; // Return the modelId for optimistic updates
+    },
     onMutate: async (modelId) => {
-      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['models', 'user'] });
-
       // Snapshot the previous value
       const previousModels = queryClient.getQueryData<Model[]>(['models', 'user']);
-
-      // Optimistically remove the model from the list
-      queryClient.setQueryData<Model[]>(['models', 'user'], old => 
+      // Optimistically update to the new value
+      queryClient.setQueryData<Model[]>(['models', 'user'], (old) => 
         old?.filter(model => model.databaseId !== modelId) ?? []
       );
-
-      // Return context with the previous models
+      // Return a context object with the snapshotted value
       return { previousModels };
     },
-    onError: (err, _, context) => {
+    onError: (err, variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousModels) {
         queryClient.setQueryData(['models', 'user'], context.previousModels);
       }
-      console.error('Error deleting model:', err);
     },
     onSettled: () => {
-      // Always refetch after error or success to ensure data is in sync
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
     },
   });
