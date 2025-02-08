@@ -38,7 +38,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <div 
-      className={`mt-1 ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+      className={`mt-1 ${dragActive ? 'border-primary/50 bg-primary/5' : 'border-border'}`}
       onDrop={(e) => {
         e.preventDefault();
         setDragActive(false);
@@ -53,13 +53,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         setDragActive(false);
       }}
     >
-      <label className="flex justify-center w-full h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer">
+      <label className="flex justify-center w-full h-32 px-4 transition bg-card border-2 border-dashed border-border appearance-none cursor-pointer">
         <div className="flex flex-col items-center justify-center">
-          <Upload className="w-8 h-8 text-gray-400" />
-          <span className="mt-2 text-sm text-gray-600">
+          <Upload className="w-8 h-8 text-muted-foreground" />
+          <span className="mt-2 text-sm text-card-foreground">
             Drop images here or click to browse
           </span>
-          <span className="mt-1 text-xs text-gray-500">
+          <span className="mt-1 text-xs text-muted-foreground">
             {((totalSize / 1024 / 1024).toFixed(1))} MB of 50 MB used
           </span>
         </div>
