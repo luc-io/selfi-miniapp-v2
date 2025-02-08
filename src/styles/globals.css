@@ -1,32 +1,87 @@
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/Inter-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/Inter-SemiBold.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --ring: 221.2 83.2% 53.3%;
+    /* Dark theme background with warm tint */
+    --background: 240 15% 3.5%;
+    --foreground: 0 0% 98%;
+    
+    /* Card colors - slightly lighter than background */
+    --card: 240 15% 6%;
+    --card-foreground: 0 0% 98%;
+    
+    /* Popover colors */
+    --popover: 240 15% 3.5%;
+    --popover-foreground: 0 0% 98%;
+    
+    /* Primary colors - vivid purple from before */
+    --primary: 262 72% 54%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary colors */
+    --secondary: 240 15% 8%;
+    --secondary-foreground: 0 0% 98%;
+    
+    /* Muted colors */
+    --muted: 240 15% 8%;
+    --muted-foreground: 240 5% 64%;
+    
+    /* Accent colors */
+    --accent: 262 72% 54%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Destructive colors */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Border and input colors - made more prominent */
+    --border: 240 15% 25%;
+    --input: 240 15% 25%;
+    --ring: 262 72% 54%;
+    
+    /* Border radius */
     --radius: 0.5rem;
+
+    /* Font sizes */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
   }
 }
 
-@layer base {
-  body {
-    @apply bg-background text-foreground;
-  }
+/* Apply dark theme by default */
+body {
+  @apply bg-background text-foreground overflow-x-hidden;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }

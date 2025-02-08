@@ -14,6 +14,9 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
@@ -53,6 +56,13 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontSize: {
+        xs: ["var(--text-xs)", "1rem"],
+        sm: ["var(--text-sm)", "1.25rem"],
+        base: ["var(--text-base)", "1.5rem"],
+        lg: ["var(--text-lg)", "1.75rem"],
+        xl: ["var(--text-xl)", "2rem"],
       },
       keyframes: {
         "accordion-down": {

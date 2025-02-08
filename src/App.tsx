@@ -15,35 +15,35 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>(TABS.GENERATE);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
-        <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm mb-6">
+        <div className="flex space-x-1 bg-card p-1 border border-border shadow-md mb-6">
           <button
-            className={`flex-1 py-2.5 px-3 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-3 text-sm font-medium transition-colors ${
               activeTab === TABS.GENERATE
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
             onClick={() => setActiveTab(TABS.GENERATE)}
           >
             Generate
           </button>
           <button
-            className={`flex-1 py-2.5 px-3 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-3 text-sm font-medium transition-colors ${
               activeTab === TABS.TRAIN
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
             onClick={() => setActiveTab(TABS.TRAIN)}
           >
             Train
           </button>
           <button
-            className={`flex-1 py-2.5 px-3 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5 px-3 text-sm font-medium transition-colors ${
               activeTab === TABS.MODELS
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
             onClick={() => setActiveTab(TABS.MODELS)}
           >

@@ -106,16 +106,16 @@ export function GenerateTab() {
 
   if (isLoading || isLoadingParams) {
     return (
-      <Card className="bg-white rounded-lg shadow-md">
+      <Card className="bg-card shadow-md">
         <div className="p-6 flex items-center justify-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="bg-white rounded-lg shadow-md">
+    <Card className="bg-card shadow-md">
       <div className="p-6 space-y-8">
         <ModelSelector 
           onSelect={(modelPath: string) => updateParam('modelPath', modelPath)}
@@ -124,7 +124,7 @@ export function GenerateTab() {
 
         {/* LoRA Selection */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">LoRA Models</h2>
+          <h2 className="text-xl font-semibold text-card-foreground">LoRA Models</h2>
           <LoraSelector
             loras={params.loras || []}
             availableLoras={availableLoras.map(lora => ({
@@ -140,10 +140,10 @@ export function GenerateTab() {
 
         {/* Image Parameters */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800">Image Parameters</h2>
+          <h2 className="text-xl font-semibold text-card-foreground">Image Parameters</h2>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Image Size</label>
+            <label className="block text-sm font-medium text-card-foreground">Image Size</label>
             <Select 
               value={params.image_size} 
               onValueChange={(v: string) => updateParam('image_size', v as ImageSize)}
@@ -162,8 +162,8 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Steps <span className="text-gray-500">({params.num_inference_steps})</span>
+            <label className="block text-sm font-medium text-card-foreground">
+              Steps <span className="text-muted-foreground ml-1">({params.num_inference_steps})</span>
             </label>
             <Slider 
               value={[params.num_inference_steps]}
@@ -176,8 +176,8 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Guidance Scale <span className="text-gray-500">({params.guidance_scale})</span>
+            <label className="block text-sm font-medium text-card-foreground">
+              Guidance Scale <span className="text-muted-foreground ml-1">({params.guidance_scale})</span>
             </label>
             <Slider 
               value={[params.guidance_scale]}
@@ -190,8 +190,8 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Number of Images <span className="text-gray-500">({params.num_images})</span>
+            <label className="block text-sm font-medium text-card-foreground">
+              Number of Images <span className="text-muted-foreground ml-1">({params.num_images})</span>
             </label>
             <Slider 
               value={[params.num_images]}
@@ -204,7 +204,7 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Output Format</label>
+            <label className="block text-sm font-medium text-card-foreground">Output Format</label>
             <Select 
               value={params.output_format}
               onValueChange={(v: string) => updateParam('output_format', v as 'jpeg' | 'png')}
@@ -221,8 +221,8 @@ export function GenerateTab() {
 
           <div className="flex items-center justify-between py-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Safety Checker</label>
-              <p className="text-sm text-gray-500">Filter inappropriate content</p>
+              <label className="block text-sm font-medium text-card-foreground">Safety Checker</label>
+              <p className="text-sm text-muted-foreground">Filter inappropriate content</p>
             </div>
             <Switch 
               checked={params.enable_safety_checker}
@@ -233,7 +233,7 @@ export function GenerateTab() {
 
         {/* Save Button */}
         <button
-          className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+          className="w-full py-3 px-4 bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-1 focus:ring-primary focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
           disabled={isPending || isSaving}
           onClick={handleSave}
         >

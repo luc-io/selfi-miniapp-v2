@@ -25,14 +25,14 @@ export const ImagePreviews: React.FC<ImagePreviewsProps> = ({
             <img
               src={URL.createObjectURL(img.file)}
               alt={`Upload ${index + 1}`}
-              className="w-full h-24 object-cover rounded-md"
+              className="w-full h-24 object-cover border border-border"
             />
             <button
               type="button"
               onClick={() => onImageRemove(index)}
-              className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-1 right-1 p-1 bg-card border border-border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
             </button>
           </div>
 
@@ -44,17 +44,17 @@ export const ImagePreviews: React.FC<ImagePreviewsProps> = ({
               onBlur={() => setEditingIndex(null)}
               onKeyDown={(e) => e.key === 'Enter' && setEditingIndex(null)}
               autoFocus
-              className="w-full text-xs px-1 py-0.5 border rounded"
+              className="w-full text-xs px-1 py-0.5 bg-card border border-border text-card-foreground rounded-none"
             />
           ) : (
             <div 
               className="flex items-center space-x-1 group/caption cursor-pointer"
               onClick={() => setEditingIndex(index)}
             >
-              <p className="text-xs text-gray-500 truncate flex-1">
+              <p className="text-xs text-muted-foreground truncate flex-1">
                 {img.caption}
               </p>
-              <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover/caption:opacity-100 transition-opacity" />
+              <Edit2 className="w-3 h-3 text-muted-foreground opacity-0 group-hover/caption:opacity-100 transition-opacity" />
             </div>
           )}
         </div>

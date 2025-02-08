@@ -80,9 +80,9 @@ const TrainTab: React.FC = () => {
   };
 
   return (
-    <Card className="bg-white rounded-lg shadow-md">
+    <Card className="bg-card shadow-md">
       <form onSubmit={handleSubmit} className="p-6 space-y-8">
-        <h2 className="text-xl font-semibold text-gray-800">Train Model</h2>
+        <h2 className="text-xl font-semibold text-card-foreground">Train Model</h2>
         
         <div className="space-y-6">
           <FileUpload
@@ -138,7 +138,7 @@ const TrainTab: React.FC = () => {
 
           <button 
             type="submit" 
-            className="w-full py-3 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+            className="w-full py-3 px-4 bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
             disabled={isLoading || state.images.length === 0 || !state.triggerWord.trim()}
           >
             {isLoading ? (
