@@ -17,6 +17,8 @@ export function useModels() {
       console.log('User models response:', data);
       return data;
     },
+    retry: 1,
+    retryDelay: 1000
   });
 
   const toggleActivation = useMutation({
@@ -29,7 +31,30 @@ export function useModels() {
 
   const deleteModelMutation = useMutation({
     mutationFn: deleteModel,
-    onSuccess: () => {
+    onMutate: async (modelId) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['models', 'user'] });
+
+      // Snapshot the previous value
+      const previousModels = queryClient.getQueryData<Model[]>(['models', 'user']);
+
+      // Optimistically remove the model from the list
+      queryClient.setQueryData<Model[]>(['models', 'user'], old => 
+        old?.filter(model => model.databaseId !== modelId) ?? []
+      );
+
+      // Return context with the previous models
+      return { previousModels };
+    },
+    onError: (err, _, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousModels) {
+        queryClient.setQueryData(['models', 'user'], context.previousModels);
+      }
+      console.error('Error deleting model:', err);
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure data is in sync
       queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
     },
   });
