@@ -109,12 +109,12 @@ export interface TrainingParams {
   isStyle: boolean;
   createMasks: boolean;
   triggerWord: string;
-  images_data_url: string;
 }
 
 export interface TrainingResult {
-  id: string;
   trainingId: string;
+  loraId: string;
+  test_mode?: boolean;
 }
 
 export interface TrainingProgress {
@@ -122,7 +122,28 @@ export interface TrainingProgress {
   message?: string;
 }
 
-export async function uploadTrainingFiles(formData: FormData) {
+export async function startTraining(
+  params: TrainingParams, 
+  files: File[],
+  captions: Record<string, string>
+): Promise<TrainingResult> {
+  // Create FormData with files and parameters
+  const formData = new FormData();
+
+  // Add parameters
+  formData.append('params', JSON.stringify({
+    steps: params.steps,
+    is_style: params.isStyle,
+    create_masks: params.createMasks,
+    trigger_word: params.triggerWord,
+    captions
+  }));
+
+  // Add files
+  files.forEach(file => {
+    formData.append('images', file);
+  });
+
   // Let's check the total size before sending
   const totalSize = Array.from(formData.entries()).reduce((size, [_, value]) => {
     if (value instanceof File) return size + value.size;
@@ -134,16 +155,9 @@ export async function uploadTrainingFiles(formData: FormData) {
     mb: (totalSize / (1024 * 1024)).toFixed(2) + ' MB'
   });
 
-  return apiRequest<{ images_data_url: string }>('/api/training/upload', {
-    method: 'POST',
-    body: formData
-  });
-}
-
-export async function startTraining(params: TrainingParams): Promise<TrainingResult> {
   return apiRequest<TrainingResult>('/api/training/start', {
     method: 'POST',
-    body: params
+    body: formData
   });
 }
 
