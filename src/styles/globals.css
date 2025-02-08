@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,10 +45,19 @@
     
     /* Border radius */
     --radius: 0.5rem;
+
+    /* Font sizes */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
   }
 }
 
 /* Apply dark theme by default */
 body {
-  @apply bg-background text-foreground overflow-x-hidden;
+  @apply bg-background text-foreground overflow-x-hidden font-sans text-[0.9375rem];
+  font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03", "cv04";
+  -webkit-font-smoothing: antialiased;
 }
