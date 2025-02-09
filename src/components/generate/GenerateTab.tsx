@@ -42,9 +42,27 @@ export function GenerateTab() {
   // Initialize with defaultParams
   const [params, setParams] = useState<GenerationParameters>(defaultParams);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
   const themeParams = useTelegramTheme();
+
+  // Load LoRAs
+  useEffect(() => {
+    let mounted = true;
+    const loadData = async () => {
+      try {
+        const loras = await getAvailableLoras();
+        if (mounted) {
+          setAvailableLoras(loras);
+        }
+      } catch (error) {
+        console.error('Error loading loras:', error);
+      }
+    };
+    loadData();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Update local state when parameters load
   useEffect(() => {
@@ -52,21 +70,6 @@ export function GenerateTab() {
       setParams(parameters);
     }
   }, [parameters]);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const loras = await getAvailableLoras();
-        setAvailableLoras(loras);
-      } catch (error) {
-        console.error('Error loading loras:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
 
   const updateParam = <K extends keyof GenerationParameters>(
     key: K,
@@ -123,29 +126,29 @@ export function GenerateTab() {
   };
 
   const cardStyle = {
-    backgroundColor: themeParams.secondary_bg_color,
-    color: themeParams.text_color,
-    borderColor: `${themeParams.button_color}20`,
+    backgroundColor: themeParams.secondary_bg_color || '#f4f4f5',
+    color: themeParams.text_color || '#000000',
+    borderColor: `${themeParams.button_color || '#3390ec'}20`,
   };
 
   const buttonStyle = {
-    backgroundColor: themeParams.button_color,
-    color: themeParams.button_text_color,
+    backgroundColor: themeParams.button_color || '#3390ec',
+    color: themeParams.button_text_color || '#ffffff',
   };
 
   const labelStyle = {
-    color: themeParams.text_color,
+    color: themeParams.text_color || '#000000',
   };
 
   const hintStyle = {
-    color: themeParams.hint_color,
+    color: themeParams.hint_color || '#999999',
   };
 
-  if (isLoading || isLoadingParams) {
+  if (isLoadingParams) {
     return (
       <Card className="shadow-md" style={cardStyle}>
         <div className="p-6 flex items-center justify-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin" style={{ color: themeParams.button_color }} />
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: themeParams.button_color || '#3390ec' }} />
         </div>
       </Card>
     );
