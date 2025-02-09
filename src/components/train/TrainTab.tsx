@@ -11,11 +11,13 @@ import {
   TrainingToggles 
 } from './components';
 import { DEFAULT_STATE, type TrainingImage } from './types/training';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const TRAINING_COST = 150; // Cost in stars for training
 
 const TrainTab: React.FC = () => {
+  const themeParams = useTelegramTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState(DEFAULT_STATE);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -119,26 +121,54 @@ const TrainTab: React.FC = () => {
     }
   };
 
+  const cardStyle = {
+    backgroundColor: themeParams.bg_color,
+    color: themeParams.text_color,
+    borderColor: `${themeParams.button_color}20`,
+  };
+
+  const buttonStyle = {
+    backgroundColor: themeParams.button_color,
+    color: themeParams.button_text_color,
+  };
+
+  const hintStyle = {
+    color: themeParams.hint_color,
+  };
+
   return (
-    <Card className="bg-card shadow-md">
+    <Card className="shadow-md" style={cardStyle}>
       <form onSubmit={handleSubmit} className="p-6 space-y-8">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-card-foreground">Train Model</h2>
-          <div className="text-sm text-muted-foreground">
-            Training Cost: <span className="font-semibold text-primary">{TRAINING_COST} ⭐</span>
+          <h2 className="text-xl font-semibold" style={{ color: themeParams.text_color }}>
+            Train Model
+          </h2>
+          <div className="text-sm" style={hintStyle}>
+            Training Cost:{' '}
+            <span style={{ color: themeParams.button_color }}>
+              {TRAINING_COST} ⭐
+            </span>
           </div>
         </div>
 
         {userInfo && (
-          <div className="text-sm text-muted-foreground">
-            Your Balance: <span className={`font-semibold ${hasEnoughStars ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="text-sm" style={hintStyle}>
+            Your Balance:{' '}
+            <span style={{ 
+              color: hasEnoughStars ? themeParams.button_color : '#ff3b30',
+              fontWeight: 'bold' 
+            }}>
               {userInfo.stars} ⭐
             </span>
           </div>
         )}
 
         {errorMessage && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" style={{
+            backgroundColor: '#ff3b3020',
+            color: '#ff3b30',
+            borderColor: '#ff3b3040'
+          }}>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
@@ -198,7 +228,8 @@ const TrainTab: React.FC = () => {
 
           <button 
             type="submit" 
-            className="w-full py-3 px-4 bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
+            className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={buttonStyle}
             disabled={isLoading || state.images.length === 0 || !state.triggerWord.trim() || !hasEnoughStars}
           >
             {isLoading ? (
