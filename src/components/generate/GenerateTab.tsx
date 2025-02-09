@@ -12,6 +12,7 @@ import type { GenerationParameters, ImageSize } from '@/types';
 import type { LoraModel, LoraParameter } from '@/types/lora';
 import { saveUserParameters } from '@/api/parameters';
 import { getAvailableLoras } from '@/api/loras';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -29,6 +30,7 @@ export function GenerateTab() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
+  const themeParams = useTelegramTheme();
 
   // Update local state when parameters load
   useEffect(() => {
@@ -104,18 +106,36 @@ export function GenerateTab() {
     }
   };
 
+  const cardStyle = {
+    backgroundColor: themeParams.secondary_bg_color,
+    color: themeParams.text_color,
+  };
+
+  const headingStyle = {
+    color: themeParams.text_color,
+  };
+
+  const labelStyle = {
+    color: themeParams.hint_color,
+  };
+
+  const buttonStyle = {
+    backgroundColor: themeParams.button_color,
+    color: themeParams.button_text_color,
+  };
+
   if (isLoading || isLoadingParams) {
     return (
-      <Card className="bg-card shadow-md">
+      <Card className="shadow-md" style={cardStyle}>
         <div className="p-6 flex items-center justify-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: themeParams.button_color }} />
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="bg-card shadow-md">
+    <Card className="shadow-md" style={cardStyle}>
       <div className="p-6 space-y-8">
         <ModelSelector 
           onSelect={(modelPath: string) => updateParam('modelPath', modelPath)}
@@ -124,7 +144,7 @@ export function GenerateTab() {
 
         {/* LoRA Selection */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-card-foreground">LoRA Models</h2>
+          <h2 className="text-xl font-semibold" style={headingStyle}>LoRA Models</h2>
           <LoraSelector
             loras={params.loras || []}
             availableLoras={availableLoras.map(lora => ({
@@ -140,10 +160,10 @@ export function GenerateTab() {
 
         {/* Image Parameters */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold text-card-foreground">Image Parameters</h2>
+          <h2 className="text-xl font-semibold" style={headingStyle}>Image Parameters</h2>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-card-foreground">Image Size</label>
+            <label className="block text-sm font-medium" style={labelStyle}>Image Size</label>
             <Select 
               value={params.image_size} 
               onValueChange={(v: string) => updateParam('image_size', v as ImageSize)}
@@ -162,8 +182,8 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-card-foreground">
-              Steps <span className="text-muted-foreground ml-1">({params.num_inference_steps})</span>
+            <label className="block text-sm font-medium" style={labelStyle}>
+              Steps <span className="ml-1" style={{color: themeParams.hint_color}}>({params.num_inference_steps})</span>
             </label>
             <Slider 
               value={[params.num_inference_steps]}
@@ -176,8 +196,8 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-card-foreground">
-              Guidance Scale <span className="text-muted-foreground ml-1">({params.guidance_scale})</span>
+            <label className="block text-sm font-medium" style={labelStyle}>
+              Guidance Scale <span className="ml-1" style={{color: themeParams.hint_color}}>({params.guidance_scale})</span>
             </label>
             <Slider 
               value={[params.guidance_scale]}
@@ -190,8 +210,8 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-card-foreground">
-              Number of Images <span className="text-muted-foreground ml-1">({params.num_images})</span>
+            <label className="block text-sm font-medium" style={labelStyle}>
+              Number of Images <span className="ml-1" style={{color: themeParams.hint_color}}>({params.num_images})</span>
             </label>
             <Slider 
               value={[params.num_images]}
@@ -204,7 +224,7 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-card-foreground">Output Format</label>
+            <label className="block text-sm font-medium" style={labelStyle}>Output Format</label>
             <Select 
               value={params.output_format}
               onValueChange={(v: string) => updateParam('output_format', v as 'jpeg' | 'png')}
@@ -221,8 +241,8 @@ export function GenerateTab() {
 
           <div className="flex items-center justify-between py-2">
             <div>
-              <label className="block text-sm font-medium text-card-foreground">Safety Checker</label>
-              <p className="text-sm text-muted-foreground">Filter inappropriate content</p>
+              <label className="block text-sm font-medium" style={labelStyle}>Safety Checker</label>
+              <p className="text-sm" style={{color: themeParams.hint_color}}>Filter inappropriate content</p>
             </div>
             <Switch 
               checked={params.enable_safety_checker}
@@ -233,9 +253,10 @@ export function GenerateTab() {
 
         {/* Save Button */}
         <button
-          className="w-full py-3 px-4 bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-1 focus:ring-primary focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
+          className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isPending || isSaving}
           onClick={handleSave}
+          style={buttonStyle}
         >
           {isSaving ? 'Saving...' : 'Save Parameters'}
         </button>
