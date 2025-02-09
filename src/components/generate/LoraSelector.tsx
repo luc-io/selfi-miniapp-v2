@@ -2,6 +2,7 @@ import { Slider } from '../ui/slider';
 import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';
 import type { LoraParameter } from '@/types/lora';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface AvailableLora {
   path: string;
@@ -18,6 +19,8 @@ interface LoraSelectorProps {
 }
 
 export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleChange }: LoraSelectorProps) {
+  const themeParams = useTelegramTheme();
+
   // Helper function to check if a LoRA is selected
   const isLoraSelected = (path: string) => loras.some(lora => lora.path === path);
   
@@ -26,6 +29,22 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
     if (!isLoraSelected(path) && loras.length < 5) {
       onAdd({ path, scale: 1.0 });
     }
+  };
+
+  const buttonStyle = {
+    backgroundColor: themeParams.secondary_bg_color,
+    color: themeParams.text_color,
+    borderColor: themeParams.button_color,
+  };
+
+  const selectedItemStyle = {
+    backgroundColor: themeParams.bg_color,
+    borderColor: themeParams.button_color,
+  };
+
+  const headerStyle = {
+    backgroundColor: themeParams.secondary_bg_color,
+    borderColor: themeParams.button_color,
   };
 
   return (
@@ -39,9 +58,10 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
               <button
                 key={lora.path}
                 onClick={() => handleLoraClick(lora.path)}
-                className="p-3 text-left transition-colors bg-card hover:bg-accent border border-border"
+                className="p-3 text-left transition-colors border hover:opacity-80"
+                style={buttonStyle}
               >
-                <span className="block font-medium truncate text-card-foreground">
+                <span className="block font-medium truncate">
                   {lora.triggerWord}
                 </span>
               </button>
@@ -56,17 +76,19 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
           return (
             <div 
               key={index} 
-              className="bg-card border border-border overflow-hidden"
+              className="overflow-hidden border"
+              style={selectedItemStyle}
             >
-              <div className="p-3 flex items-center justify-between bg-muted border-b border-border">
-                <span className="font-medium text-card-foreground">
+              <div className="p-3 flex items-center justify-between border-b" style={headerStyle}>
+                <span className="font-medium" style={{ color: themeParams.text_color }}>
                   {loraInfo?.triggerWord || lora.path}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onRemove(index)}
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  className="hover:opacity-80"
+                  style={{ color: themeParams.button_color }}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -80,9 +102,13 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
                     max={2}
                     step={0.01}
                     className="py-2"
+                    style={{
+                      '--slider-thumb-bg': themeParams.button_color,
+                      '--slider-track-bg': themeParams.button_color,
+                    } as React.CSSProperties}
                   />
                 </div>
-                <span className="text-sm text-card-foreground w-12 text-right">
+                <span className="text-sm w-12 text-right" style={{ color: themeParams.text_color }}>
                   {lora.scale.toFixed(2)}
                 </span>
               </div>
