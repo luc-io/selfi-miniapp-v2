@@ -71,7 +71,18 @@ export function GenerateTab() {
       try {
         setIsLoading(true);
         const loras = await getAvailableLoras();
-        setAvailableLoras(loras);
+        // Filter to only show selected models
+        const selectedLoras = loras.filter(lora => lora.isSelected && lora.status === 'COMPLETED');
+        setAvailableLoras(selectedLoras);
+        
+        // Remove any loras from parameters that are no longer selected
+        setParams(currentParams => {
+          const selectedLoraIds = new Set(selectedLoras.map(lora => lora.databaseId));
+          return {
+            ...currentParams,
+            loras: currentParams.loras?.filter(lora => selectedLoraIds.has(lora.path)) || []
+          };
+        });
       } catch (error) {
         console.error('Error loading loras:', error);
       } finally {
@@ -175,17 +186,23 @@ export function GenerateTab() {
         {/* LoRA Selection */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold" style={labelStyle}>LoRA Models</h2>
-          <LoraSelector
-            loras={params.loras || []}
-            availableLoras={availableLoras.map(lora => ({
-              path: lora.databaseId,
-              name: lora.name,
-              triggerWord: lora.triggerWord
-            }))}
-            onAdd={handleAddLora}
-            onRemove={handleRemoveLora}
-            onScaleChange={handleLoraScaleChange}
-          />
+          {availableLoras.length > 0 ? (
+            <LoraSelector
+              loras={params.loras || []}
+              availableLoras={availableLoras.map(lora => ({
+                path: lora.databaseId,
+                name: lora.name,
+                triggerWord: lora.triggerWord
+              }))}
+              onAdd={handleAddLora}
+              onRemove={handleRemoveLora}
+              onScaleChange={handleLoraScaleChange}
+            />
+          ) : (
+            <p className="text-sm" style={hintStyle}>
+              No selected LoRA models available. Go to the Models tab to select models you want to use.
+            </p>
+          )}
         </div>
 
         {/* Image Parameters */}
