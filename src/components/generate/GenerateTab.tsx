@@ -36,10 +36,10 @@ const DEFAULT_PARAMS: Partial<GenerationParameters> = {
 export function GenerateTab() {
   const { isPending } = useGenerate();
   const { parameters, isLoading: isLoadingParams, invalidateParameters } = useParameters();
-  const [params, setParams] = useState<GenerationParameters>({
+  const [params, setParams] = useState<GenerationParameters>(() => ({
     ...DEFAULT_PARAMS,
     ...parameters
-  } as GenerationParameters);
+  } as GenerationParameters));
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
