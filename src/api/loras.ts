@@ -13,6 +13,18 @@ export async function getUserModels(): Promise<Model[]> {
   return response.json();
 }
 
+export async function getAvailableLoras(): Promise<Model[]> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/loras/available`, {
+    headers: buildHeaders()
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch available loras');
+  }
+
+  return response.json();
+}
+
 export async function toggleModelSelection(modelId: string, isSelected: boolean): Promise<Model> {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/loras/${modelId}/toggle-selection`,
