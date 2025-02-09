@@ -48,16 +48,20 @@ export function GenerateTab() {
   // Update local state when parameters load, maintaining defaults for missing values
   useEffect(() => {
     if (parameters) {
-      setParams(currentParams => ({
-        ...DEFAULT_PARAMS,
-        ...parameters,
-        // Preserve any runtime changes that aren't in the loaded parameters
-        ...Object.fromEntries(
-          Object.entries(currentParams).filter(([key, value]) => 
-            parameters[key as keyof GenerationParameters] === undefined && value !== undefined
-          )
-        )
-      }));
+      setParams(currentParams => {
+        const updatedParams = {
+          ...DEFAULT_PARAMS,
+          ...parameters
+        };
+        // Keep any runtime changes that aren't in the loaded parameters
+        Object.keys(currentParams).forEach(key => {
+          const typedKey = key as keyof GenerationParameters;
+          if (!(typedKey in parameters) && currentParams[typedKey] !== undefined) {
+            updatedParams[typedKey] = currentParams[typedKey];
+          }
+        });
+        return updatedParams as GenerationParameters;
+      });
     }
   }, [parameters]);
 
