@@ -52,15 +52,16 @@ export function GenerateTab() {
         const updatedParams = {
           ...DEFAULT_PARAMS,
           ...parameters
-        };
+        } as GenerationParameters;
+
         // Keep any runtime changes that aren't in the loaded parameters
-        Object.keys(currentParams).forEach(key => {
-          const typedKey = key as keyof GenerationParameters;
-          if (!(typedKey in parameters) && currentParams[typedKey] !== undefined) {
-            updatedParams[typedKey] = currentParams[typedKey];
+        (Object.keys(currentParams) as Array<keyof GenerationParameters>).forEach(key => {
+          if (!(key in parameters) && currentParams[key] !== undefined) {
+            (updatedParams[key] as any) = currentParams[key];
           }
         });
-        return updatedParams as GenerationParameters;
+        
+        return updatedParams;
       });
     }
   }, [parameters]);
