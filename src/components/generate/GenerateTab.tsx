@@ -107,21 +107,22 @@ export function GenerateTab() {
   };
 
   const cardStyle = {
-    backgroundColor: themeParams.secondary_bg_color,
+    backgroundColor: themeParams.bg_color,
     color: themeParams.text_color,
-  };
-
-  const headingStyle = {
-    color: themeParams.text_color,
-  };
-
-  const labelStyle = {
-    color: themeParams.hint_color,
+    borderColor: `${themeParams.button_color}20`,
   };
 
   const buttonStyle = {
     backgroundColor: themeParams.button_color,
     color: themeParams.button_text_color,
+  };
+
+  const labelStyle = {
+    color: themeParams.text_color,
+  };
+
+  const hintStyle = {
+    color: themeParams.hint_color,
   };
 
   if (isLoading || isLoadingParams) {
@@ -144,7 +145,7 @@ export function GenerateTab() {
 
         {/* LoRA Selection */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold" style={headingStyle}>LoRA Models</h2>
+          <h2 className="text-xl font-semibold" style={labelStyle}>LoRA Models</h2>
           <LoraSelector
             loras={params.loras || []}
             availableLoras={availableLoras.map(lora => ({
@@ -160,7 +161,7 @@ export function GenerateTab() {
 
         {/* Image Parameters */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold" style={headingStyle}>Image Parameters</h2>
+          <h2 className="text-xl font-semibold" style={labelStyle}>Image Parameters</h2>
           
           <div className="space-y-2">
             <label className="block text-sm font-medium" style={labelStyle}>Image Size</label>
@@ -183,7 +184,7 @@ export function GenerateTab() {
 
           <div className="space-y-2">
             <label className="block text-sm font-medium" style={labelStyle}>
-              Steps <span className="ml-1" style={{color: themeParams.hint_color}}>({params.num_inference_steps})</span>
+              Steps <span style={hintStyle} className="ml-1">({params.num_inference_steps})</span>
             </label>
             <Slider 
               value={[params.num_inference_steps]}
@@ -197,7 +198,7 @@ export function GenerateTab() {
 
           <div className="space-y-2">
             <label className="block text-sm font-medium" style={labelStyle}>
-              Guidance Scale <span className="ml-1" style={{color: themeParams.hint_color}}>({params.guidance_scale})</span>
+              Guidance Scale <span style={hintStyle} className="ml-1">({params.guidance_scale})</span>
             </label>
             <Slider 
               value={[params.guidance_scale]}
@@ -211,7 +212,7 @@ export function GenerateTab() {
 
           <div className="space-y-2">
             <label className="block text-sm font-medium" style={labelStyle}>
-              Number of Images <span className="ml-1" style={{color: themeParams.hint_color}}>({params.num_images})</span>
+              Number of Images <span style={hintStyle} className="ml-1">({params.num_images})</span>
             </label>
             <Slider 
               value={[params.num_images]}
@@ -242,7 +243,7 @@ export function GenerateTab() {
           <div className="flex items-center justify-between py-2">
             <div>
               <label className="block text-sm font-medium" style={labelStyle}>Safety Checker</label>
-              <p className="text-sm" style={{color: themeParams.hint_color}}>Filter inappropriate content</p>
+              <p className="text-sm" style={hintStyle}>Filter inappropriate content</p>
             </div>
             <Switch 
               checked={params.enable_safety_checker}
