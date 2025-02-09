@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
 import { Model, LoraStatus } from '@/types/model';
 import { useModels } from '@/hooks/useModels';
 import { Switch } from '@/components/ui/switch';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 const STATUS_COLORS: Record<LoraStatus, { bg: string; text: string }> = {
   PENDING: { bg: 'bg-muted', text: 'text-muted-foreground' },
@@ -23,6 +24,7 @@ export function ModelsTab() {
     deleteModel,
     isDeleting,
   } = useModels();
+  const themeParams = useTelegramTheme();
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null);
@@ -71,40 +73,79 @@ export function ModelsTab() {
     };
   };
 
+  const mainStyle = {
+    backgroundColor: themeParams.bg_color,
+    color: themeParams.text_color,
+  };
+
+  const headerStyle = {
+    backgroundColor: themeParams.secondary_bg_color,
+    color: themeParams.text_color,
+    borderColor: `${themeParams.button_color}20`,
+  };
+
+  const cardStyle = {
+    backgroundColor: themeParams.bg_color,
+    color: themeParams.text_color,
+    borderColor: `${themeParams.button_color}20`,
+  };
+
+  const buttonStyle = {
+    backgroundColor: themeParams.button_color,
+    color: themeParams.button_text_color,
+  };
+
+  const tabStyle = (isActive: boolean) => ({
+    color: isActive ? themeParams.button_color : themeParams.hint_color,
+    borderColor: isActive ? themeParams.button_color : 'transparent',
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 
+          className="h-8 w-8 animate-spin" 
+          style={{ color: themeParams.button_color }}
+        />
       </div>
     );
   }
 
   if (!models?.length) {
     return (
-      <div className="text-center py-12 bg-card rounded shadow-md">
-        <p className="text-muted-foreground">No models found. Train a model to see it here.</p>
+      <div 
+        className="text-center py-12 rounded shadow-md"
+        style={{ 
+          backgroundColor: themeParams.secondary_bg_color,
+          color: themeParams.hint_color 
+        }}
+      >
+        <p>No models found. Train a model to see it here.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="bg-card shadow-md">
+      <div className="shadow-md" style={mainStyle}>
         {/* Header */}
-        <div className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 bg-muted font-medium text-sm text-card-foreground border-b border-border">
+        <div 
+          className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 font-medium text-sm border-b"
+          style={headerStyle}
+        >
           <div>Model</div>
           <div className="text-center">Status</div>
           <div className="text-right">Actions</div>
         </div>
 
         {/* List */}
-        <div className="divide-y divide-border">
+        <div className="divide-y" style={{ borderColor: `${themeParams.button_color}20` }}>
           {models.map((model) => (
             <div key={model.databaseId} className="text-sm">
               <div className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 items-center">
                 <div>
-                  <div className="font-medium font-mono text-card-foreground">{model.name}</div>
-                  <div className="text-muted-foreground text-[11px] mt-0.5">
+                  <div className="font-medium font-mono">{model.name}</div>
+                  <div style={{ color: themeParams.hint_color }} className="text-[11px] mt-0.5">
                     about {formatDistanceToNow(new Date(model.createdAt))} ago
                   </div>
                 </div>
@@ -123,7 +164,8 @@ export function ModelsTab() {
                   />
                   <button 
                     onClick={() => setExpandedId(expandedId === model.databaseId ? null : model.databaseId)}
-                    className="p-1 hover:bg-accent text-muted-foreground hover:text-accent-foreground"
+                    className="p-1 hover:opacity-80"
+                    style={{ color: themeParams.button_color }}
                   >
                     {expandedId === model.databaseId ? (
                       <ChevronUp className="h-4 w-4" />
@@ -136,27 +178,24 @@ export function ModelsTab() {
 
               {/* Expanded Details */}
               {expandedId === model.databaseId && (
-                <div className="px-4 pt-0 pb-3 bg-muted/50 -mt-2">
+                <div 
+                  className="px-4 pt-0 pb-3 -mt-2"
+                  style={{ backgroundColor: `${themeParams.secondary_bg_color}50` }}
+                >
                   <div className="space-y-4">
                     {/* Tabs */}
-                    <div className="flex space-x-4 border-b border-border">
+                    <div className="flex space-x-4 border-b" style={{ borderColor: `${themeParams.button_color}20` }}>
                       <button
-                        className={`px-4 py-2 text-sm font-medium -mb-px ${
-                          activeTab === 'input'
-                            ? 'border-b-2 border-primary text-primary'
-                            : 'text-muted-foreground hover:text-card-foreground'
-                        }`}
+                        className="px-4 py-2 text-sm font-medium -mb-px"
                         onClick={() => setActiveTab('input')}
+                        style={tabStyle(activeTab === 'input')}
                       >
                         Input
                       </button>
                       <button
-                        className={`px-4 py-2 text-sm font-medium -mb-px ${
-                          activeTab === 'output'
-                            ? 'border-b-2 border-primary text-primary'
-                            : 'text-muted-foreground hover:text-card-foreground'
-                        }`}
+                        className="px-4 py-2 text-sm font-medium -mb-px"
                         onClick={() => setActiveTab('output')}
+                        style={tabStyle(activeTab === 'output')}
                       >
                         Output
                       </button>
@@ -165,28 +204,44 @@ export function ModelsTab() {
                     {/* Tab Content */}
                     <div>
                       {activeTab === 'input' ? (
-                        <div className="bg-card p-4 border border-border text-xs">
-                          <div className="font-medium mb-2 text-card-foreground">Training Parameters</div>
+                        <div className="p-4 border text-xs" style={cardStyle}>
+                          <div className="font-medium mb-2">Training Parameters</div>
                           {model.training ? (
-                            <pre className="bg-muted p-2 text-muted-foreground overflow-x-auto">
+                            <pre 
+                              className="p-2 overflow-x-auto"
+                              style={{ 
+                                backgroundColor: themeParams.secondary_bg_color,
+                                color: themeParams.hint_color 
+                              }}
+                            >
                               {JSON.stringify(getTrainingInputParams(model), null, 2)}
                             </pre>
                           ) : (
-                            <p className="text-muted-foreground">No training parameters available</p>
+                            <p style={{ color: themeParams.hint_color }}>
+                              No training parameters available
+                            </p>
                           )}
                         </div>
                       ) : (
-                        <div className="bg-card p-4 border border-border text-xs space-y-4">
+                        <div className="p-4 border text-xs space-y-4" style={cardStyle}>
                           {model.training?.metadata && (
                             <div>
-                              <div className="font-medium mb-1 text-card-foreground">Training Result</div>
-                              <pre className="bg-muted p-2 text-muted-foreground overflow-x-auto">
+                              <div className="font-medium mb-1">Training Result</div>
+                              <pre 
+                                className="p-2 overflow-x-auto"
+                                style={{ 
+                                  backgroundColor: themeParams.secondary_bg_color,
+                                  color: themeParams.hint_color 
+                                }}
+                              >
                                 {JSON.stringify(getTrainingOutputParams(model), null, 2)}
                               </pre>
                             </div>
                           )}
                           {!model.training?.metadata && (
-                            <p className="text-muted-foreground">No output data available</p>
+                            <p style={{ color: themeParams.hint_color }}>
+                              No output data available
+                            </p>
                           )}
                         </div>
                       )}
@@ -195,7 +250,11 @@ export function ModelsTab() {
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={() => setModelToDelete(model)}
-                        className="flex items-center px-3 py-1.5 text-xs font-medium text-destructive border border-destructive/20 hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center px-3 py-1.5 text-xs font-medium hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                          color: '#ff3b30',
+                          borderColor: '#ff3b3020'
+                        }}
                         disabled={isDeleting || model.status === 'TRAINING'}
                       >
                         <Trash2 className="h-3 w-3 mr-1.5" />
@@ -212,23 +271,40 @@ export function ModelsTab() {
 
       {/* Delete Confirmation Dialog */}
       {modelToDelete && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-card p-6 max-w-md w-full mx-4 border border-border shadow-lg">
-            <h3 className="text-lg font-medium mb-2 text-card-foreground">Delete Model</h3>
-            <p className="text-sm text-muted-foreground mb-6">
+        <div 
+          className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
+          style={{ backgroundColor: `${themeParams.bg_color}80` }}
+        >
+          <div 
+            className="p-6 max-w-md w-full mx-4 border shadow-lg"
+            style={cardStyle}
+          >
+            <h3 className="text-lg font-medium mb-2">Delete Model</h3>
+            <p 
+              className="text-sm mb-6"
+              style={{ color: themeParams.hint_color }}
+            >
               Are you sure you want to delete "{modelToDelete.name}"? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
-                className="px-4 py-2 text-sm font-medium border border-border text-card-foreground hover:bg-accent"
+                className="px-4 py-2 text-sm font-medium border hover:opacity-80"
                 onClick={() => setModelToDelete(null)}
+                style={{
+                  color: themeParams.text_color,
+                  borderColor: `${themeParams.button_color}20`,
+                }}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
                 onClick={() => handleDelete(modelToDelete)}
                 disabled={isDeleting}
+                style={{
+                  backgroundColor: '#ff3b30',
+                  color: '#ffffff'
+                }}
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
