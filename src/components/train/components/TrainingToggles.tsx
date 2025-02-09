@@ -22,12 +22,12 @@ export const TrainingToggles: React.FC<TrainingTogglesProps> = ({
   };
 
   const helpTextStyle = {
-    color: themeParams.text_color,
+    color: themeParams.hint_color,
   };
 
   const tooltipStyle = {
     backgroundColor: themeParams.secondary_bg_color,
-    color: themeParams.text_color,
+    color: themeParams.hint_color,
     borderColor: `${themeParams.button_color}20`,
   };
 
