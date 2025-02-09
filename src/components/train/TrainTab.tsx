@@ -136,6 +136,10 @@ const TrainTab: React.FC = () => {
     color: themeParams.text_color,
   };
 
+  const hintStyle = {
+    color: themeParams.hint_color,
+  };
+
   const balanceStyle = {
     color: hasEnoughStars ? '#34C759' : '#FF3B30',
   };
