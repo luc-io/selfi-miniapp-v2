@@ -12,23 +12,43 @@ const TABS = {
 
 type TabType = typeof TABS[keyof typeof TABS];
 
+// Default theme values
+const DEFAULT_THEME = {
+  bg_color: '#ffffff',
+  text_color: '#000000',
+  hint_color: '#999999',
+  button_color: '#3390ec',
+  button_text_color: '#ffffff',
+  secondary_bg_color: '#f4f4f5',
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>(TABS.GENERATE);
   const themeParams = useTelegramTheme();
 
+  // Apply theme with fallbacks
+  const theme = {
+    bg_color: themeParams.bg_color || DEFAULT_THEME.bg_color,
+    text_color: themeParams.text_color || DEFAULT_THEME.text_color,
+    hint_color: themeParams.hint_color || DEFAULT_THEME.hint_color,
+    button_color: themeParams.button_color || DEFAULT_THEME.button_color,
+    button_text_color: themeParams.button_text_color || DEFAULT_THEME.button_text_color,
+    secondary_bg_color: themeParams.secondary_bg_color || DEFAULT_THEME.secondary_bg_color,
+  };
+
   const containerStyle = {
-    backgroundColor: themeParams.bg_color,
+    backgroundColor: theme.bg_color,
     minHeight: '100vh',
   };
 
   const tabsContainerStyle = {
-    backgroundColor: themeParams.secondary_bg_color,
-    borderColor: `${themeParams.button_color}20`,
+    backgroundColor: theme.secondary_bg_color,
+    borderColor: `${theme.button_color}20`,
   };
 
   const tabStyle = (isActive: boolean) => ({
-    backgroundColor: isActive ? themeParams.button_color : 'transparent',
-    color: isActive ? themeParams.button_text_color : themeParams.hint_color,
+    backgroundColor: isActive ? theme.button_color : 'transparent',
+    color: isActive ? theme.button_text_color : theme.hint_color,
   });
 
   return (
