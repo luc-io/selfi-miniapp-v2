@@ -11,7 +11,8 @@ import { Loader2 } from 'lucide-react';
 import type { GenerationParameters, ImageSize } from '@/types';
 import type { LoraModel, LoraParameter } from '@/types/lora';
 import { saveUserParameters } from '@/api/parameters';
-import { getAvailableLoras } from '@/api/loras';
+import { getUserModels } from '@/api/loras';
+import { useQuery } from '@tanstack/react-query';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 const IMAGE_SIZES = {
@@ -43,9 +44,18 @@ export function GenerateTab() {
     ...parameters
   }));
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
   const themeParams = useTelegramTheme();
+
+  // Query for user's models with isSelected flag
+  const { data: userModels = [], isLoading: isLoadingModels } = useQuery({
+    queryKey: ['models', 'user'],
+    queryFn: getUserModels,
+  });
+
+  // Filter selected and completed models
+  const selectedModels = userModels.filter(
+    model => model.isSelected && model.status === 'COMPLETED'
+  );
 
   // Update local state when parameters load, maintaining defaults for missing values
   useEffect(() => {
@@ -66,31 +76,14 @@ export function GenerateTab() {
     }
   }, [parameters]);
 
+  // Clean up loras that are no longer selected
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const loras = await getAvailableLoras();
-        // Filter to only show selected models
-        const selectedLoras = loras.filter(lora => lora.isSelected && lora.status === 'COMPLETED');
-        setAvailableLoras(selectedLoras);
-        
-        // Remove any loras from parameters that are no longer selected
-        setParams(currentParams => {
-          const selectedLoraIds = new Set(selectedLoras.map(lora => lora.databaseId));
-          return {
-            ...currentParams,
-            loras: currentParams.loras?.filter(lora => selectedLoraIds.has(lora.path)) || []
-          };
-        });
-      } catch (error) {
-        console.error('Error loading loras:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+    const selectedModelIds = new Set(selectedModels.map(model => model.databaseId));
+    setParams(currentParams => ({
+      ...currentParams,
+      loras: currentParams.loras?.filter(lora => selectedModelIds.has(lora.path)) || []
+    }));
+  }, [selectedModels]);
 
   const updateParam = <K extends keyof GenerationParameters>(
     key: K,
@@ -165,7 +158,7 @@ export function GenerateTab() {
     color: themeParams.hint_color,
   };
 
-  if (isLoading || isLoadingParams) {
+  if (isLoadingParams || isLoadingModels) {
     return (
       <Card className="shadow-md" style={cardStyle}>
         <div className="p-6 flex items-center justify-center min-h-[200px]">
@@ -186,10 +179,10 @@ export function GenerateTab() {
         {/* LoRA Selection */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold" style={labelStyle}>LoRA Models</h2>
-          {availableLoras.length > 0 ? (
+          {selectedModels.length > 0 ? (
             <LoraSelector
               loras={params.loras || []}
-              availableLoras={availableLoras.map(lora => ({
+              availableLoras={selectedModels.map(lora => ({
                 path: lora.databaseId,
                 name: lora.name,
                 triggerWord: lora.triggerWord
