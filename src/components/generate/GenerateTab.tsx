@@ -23,7 +23,7 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
-// Default parameters (matching useParameters defaults)
+// Default parameters matching the useParameters hook
 const defaultParams: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
@@ -39,6 +39,7 @@ const defaultParams: GenerationParameters = {
 export function GenerateTab() {
   const { isPending } = useGenerate();
   const { parameters, isLoading: isLoadingParams, invalidateParameters } = useParameters();
+  // Initialize with defaultParams
   const [params, setParams] = useState<GenerationParameters>(defaultParams);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -185,7 +186,7 @@ export function GenerateTab() {
               onValueChange={(v: string) => updateParam('image_size', v as ImageSize)}
             >
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder={IMAGE_SIZES[params.image_size]} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(IMAGE_SIZES).map(([value, label]) => (
@@ -246,7 +247,7 @@ export function GenerateTab() {
               onValueChange={(v: string) => updateParam('output_format', v as 'jpeg' | 'png')}
             >
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder={params.output_format.toUpperCase()} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="jpeg">JPEG</SelectItem>
