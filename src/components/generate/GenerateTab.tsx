@@ -23,18 +23,42 @@ const IMAGE_SIZES = {
   portrait_16_9: 'Portrait 16:9',
 } as const;
 
+const DEFAULT_PARAMS: Partial<GenerationParameters> = {
+  image_size: 'square',
+  num_inference_steps: 20,
+  guidance_scale: 7.5,
+  num_images: 1,
+  enable_safety_checker: true,
+  output_format: 'jpeg',
+  loras: []
+};
+
 export function GenerateTab() {
   const { isPending } = useGenerate();
   const { parameters, isLoading: isLoadingParams, invalidateParameters } = useParameters();
-  const [params, setParams] = useState<GenerationParameters>(parameters);
+  const [params, setParams] = useState<GenerationParameters>({
+    ...DEFAULT_PARAMS,
+    ...parameters
+  } as GenerationParameters);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availableLoras, setAvailableLoras] = useState<LoraModel[]>([]);
   const themeParams = useTelegramTheme();
 
-  // Update local state when parameters load
+  // Update local state when parameters load, maintaining defaults for missing values
   useEffect(() => {
-    setParams(parameters);
+    if (parameters) {
+      setParams(currentParams => ({
+        ...DEFAULT_PARAMS,
+        ...parameters,
+        // Preserve any runtime changes that aren't in the loaded parameters
+        ...Object.fromEntries(
+          Object.entries(currentParams).filter(([key, value]) => 
+            parameters[key as keyof GenerationParameters] === undefined && value !== undefined
+          )
+        )
+      }));
+    }
   }, [parameters]);
 
   useEffect(() => {
