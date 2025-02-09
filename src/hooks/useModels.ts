@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserModels, toggleModelPublic, deleteUserModel, buildValidationData } from '@/api/loras';
+import { getUserModels, toggleModelPublic, toggleModelSelection, deleteUserModel, buildValidationData } from '@/api/loras';
 import type { Model } from '@/types/model';
 
 export function useModels() {
@@ -19,9 +19,19 @@ export function useModels() {
     },
   });
 
-  const toggleActivation = useMutation({
-    mutationFn: ({ modelId, isActive }: { modelId: string; isActive: boolean }) => 
-      toggleModelPublic(modelId, isActive),
+  const toggleSelection = useMutation({
+    mutationFn: ({ modelId, isSelected }: { modelId: string; isSelected: boolean }) => 
+      toggleModelSelection(modelId, isSelected),
+    onSuccess: () => {
+      // Invalidate both models and parameters queries
+      queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
+      queryClient.invalidateQueries({ queryKey: ['parameters'] });
+    },
+  });
+
+  const togglePublic = useMutation({
+    mutationFn: ({ modelId, isPublic }: { modelId: string; isPublic: boolean }) => 
+      toggleModelPublic(modelId, isPublic),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
     },
@@ -60,8 +70,10 @@ export function useModels() {
     models,
     isLoading,
     error,
-    toggleActivation: toggleActivation.mutate,
-    isToggling: toggleActivation.isPending,
+    toggleSelection: toggleSelection.mutate,
+    isTogglingSelection: toggleSelection.isPending,
+    togglePublic: togglePublic.mutate,
+    isTogglingPublic: togglePublic.isPending,
     deleteModel: deleteModelMutation.mutate,
     isDeleting: deleteModelMutation.isPending,
   };

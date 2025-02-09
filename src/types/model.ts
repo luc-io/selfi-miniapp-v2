@@ -43,6 +43,7 @@ export interface Model {
   status: LoraStatus;
   previewImageUrl?: string;
   isPublic: boolean;
+  isSelected: boolean;
   starsRequired: number;
   userDatabaseId: string;
   training?: ModelTraining;

@@ -1,7 +1,7 @@
 import type { Model } from '@/types/model';
 import type { LoraModel } from '@/types/lora';
 
-const API_BASE = 'https://selfi-dev.blackiris.art/api';
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 export function buildValidationData(webApp: any): string {
   return webApp.initData;
@@ -21,6 +21,7 @@ export async function getAvailableLoras(): Promise<LoraModel[]> {
     status: model.status,
     previewImageUrl: model.previewImageUrl,
     isPublic: model.isPublic,
+    isSelected: model.isSelected,
     starsRequired: model.starsRequired || 0,
     userDatabaseId: model.userDatabaseId || '',
     createdAt: model.createdAt,
@@ -55,6 +56,28 @@ export async function getUserModels(): Promise<Model[]> {
   }
 }
 
+export async function toggleModelSelection(modelId: string, isSelected: boolean): Promise<void> {
+  const webApp = window.Telegram?.WebApp;
+  if (!webApp) throw new Error('Telegram WebApp not available');
+  const userId = webApp.initDataUnsafe?.user?.id?.toString();
+  if (!userId) throw new Error('Telegram user ID not available');
+
+  const response = await fetch(`${API_BASE}/loras/${modelId}/toggle-selection`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-telegram-init-data': buildValidationData(webApp),
+      'x-telegram-user-id': userId
+    },
+    body: JSON.stringify({ isSelected })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to toggle model selection');
+  }
+}
+
 export async function toggleModelPublic(modelId: string, isPublic: boolean): Promise<void> {
   const webApp = window.Telegram?.WebApp;
   if (!webApp) throw new Error('Telegram WebApp not available');
@@ -83,7 +106,6 @@ export async function deleteUserModel(modelId: string): Promise<void> {
   const userId = webApp.initDataUnsafe?.user?.id?.toString();
   if (!userId) throw new Error('Telegram user ID not available');
 
-  // Fixed the endpoint URL by removing 'model/'
   const response = await fetch(`${API_BASE}/loras/${modelId}`, {
     method: 'DELETE',
     headers: {
