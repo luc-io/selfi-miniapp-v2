@@ -18,19 +18,23 @@ const SelectTrigger = React.forwardRef<
   const triggerStyle = {
     backgroundColor: themeParams.bg_color,
     color: themeParams.text_color,
-    borderColor: themeParams.button_color,
-  };
+    borderColor: `${themeParams.button_color}20`,
+    '--button-color': themeParams.button_color,
+  } as React.CSSProperties;
 
   return (
     <SelectPrimitive.Trigger
       ref={ref}
-      className="flex h-9 w-full items-center justify-between rounded-md border border-input px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-9 w-full items-center justify-between rounded-md border px-3 py-2 text-sm ring-offset-1 transition-colors hover:opacity-80 focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
       {...props}
       style={triggerStyle}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="h-4 w-4 opacity-50" />
+        <ChevronDown 
+          className="h-4 w-4" 
+          style={{ color: themeParams.button_color }} 
+        />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -46,7 +50,7 @@ const SelectContent = React.forwardRef<
   const contentStyle = {
     backgroundColor: themeParams.bg_color,
     color: themeParams.text_color,
-    borderColor: themeParams.button_color,
+    borderColor: `${themeParams.button_color}20`,
   };
 
   return (
@@ -77,20 +81,17 @@ const SelectItem = React.forwardRef<
   const themeParams = useTelegramTheme();
 
   const itemStyle = {
+    backgroundColor: 'transparent',
     color: themeParams.text_color,
-  };
-
-  const activeStyle = {
-    backgroundColor: `${themeParams.button_color}20`,
-  };
+    '--highlight-bg': `${themeParams.button_color}20`,
+  } as React.CSSProperties;
 
   return (
     <SelectPrimitive.Item
       ref={ref}
-      className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+      className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[highlighted]:bg-[var(--highlight-bg)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
       {...props}
       style={itemStyle}
-      data-active-style={activeStyle}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
@@ -115,7 +116,7 @@ const SelectSeparator = React.forwardRef<
       ref={ref}
       className="mx-1 my-1 h-px"
       {...props}
-      style={{ backgroundColor: themeParams.hint_color }}
+      style={{ backgroundColor: `${themeParams.button_color}20` }}
     />
   );
 });
