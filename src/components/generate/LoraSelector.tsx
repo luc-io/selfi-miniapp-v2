@@ -1,5 +1,4 @@
 import { Slider } from '../ui/slider';
-import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';
 import type { LoraParameter } from '@/types/lora';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
