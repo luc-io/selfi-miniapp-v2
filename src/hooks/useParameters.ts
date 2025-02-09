@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { GenerationParameters } from '@/types';
 import { getUserParameters } from '@/api/parameters';
 
 export function useParameters() {
