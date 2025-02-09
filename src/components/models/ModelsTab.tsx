@@ -5,6 +5,7 @@ import { Model, LoraStatus } from '@/types/model';
 import { useModels } from '@/hooks/useModels';
 import { Switch } from '@/components/ui/switch';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const STATUS_COLORS: Record<LoraStatus, { bg: string; text: string }> = {
   PENDING: { bg: 'bg-muted', text: 'text-muted-foreground' },
@@ -19,8 +20,8 @@ export function ModelsTab() {
   const { 
     models, 
     isLoading, 
-    toggleActivation, 
-    isToggling,
+    toggleSelection,
+    isTogglingSelection,
     deleteModel,
     isDeleting,
   } = useModels();
@@ -29,6 +30,8 @@ export function ModelsTab() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [modelToDelete, setModelToDelete] = useState<Model | null>(null);
   const [activeTab, setActiveTab] = useState<DetailsTab>('input');
+
+  const selectedCount = models?.filter(model => model.isSelected)?.length ?? 0;
 
   const handleDelete = async (model: Model) => {
     if (!model?.databaseId) {
@@ -150,13 +153,28 @@ export function ModelsTab() {
                   </span>
                 </div>
                 <div className="flex items-center justify-end space-x-2">
-                  <Switch 
-                    checked={model.isPublic}
-                    onCheckedChange={(checked) => {
-                      toggleActivation({ modelId: model.databaseId, isActive: checked });
-                    }}
-                    disabled={isToggling || model.status !== 'COMPLETED'}
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Switch 
+                          checked={model.isSelected}
+                          onCheckedChange={(checked) => {
+                            if (checked && selectedCount >= 5) {
+                              window.Telegram?.WebApp?.showPopup({
+                                message: 'You can only select up to 5 models'
+                              });
+                              return;
+                            }
+                            toggleSelection({ modelId: model.databaseId, isSelected: checked });
+                          }}
+                          disabled={isTogglingSelection || model.status !== 'COMPLETED' || (!model.isSelected && selectedCount >= 5)}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {model.isSelected ? 'Deselect model' : 'Select model'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <button 
                     onClick={() => setExpandedId(expandedId === model.databaseId ? null : model.databaseId)}
                     className="p-1 hover:opacity-80"
