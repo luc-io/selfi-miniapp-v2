@@ -18,7 +18,7 @@ function App() {
 
   const containerStyle = {
     backgroundColor: themeParams.bg_color,
-    color: themeParams.text_color,
+    minHeight: '100vh',
   };
 
   const tabsContainerStyle = {
@@ -32,7 +32,7 @@ function App() {
   });
 
   return (
-    <div className="min-h-screen" style={containerStyle}>
+    <div style={containerStyle}>
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
         <div 
