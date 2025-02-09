@@ -90,11 +90,6 @@ export function ModelsTab() {
     borderColor: `${themeParams.button_color}20`,
   };
 
-  const buttonStyle = {
-    backgroundColor: themeParams.button_color,
-    color: themeParams.button_text_color,
-  };
-
   const tabStyle = (isActive: boolean) => ({
     color: isActive ? themeParams.button_color : themeParams.hint_color,
     borderColor: isActive ? themeParams.button_color : 'transparent',
