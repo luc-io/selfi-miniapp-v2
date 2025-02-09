@@ -47,11 +47,6 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
     borderColor: themeParams.button_color,
   };
 
-  // Set opacity for hover effect
-  const buttonHoverStyle = {
-    '--hover-opacity': '0.8',
-  } as React.CSSProperties;
-
   return (
     <div className="space-y-4">
       {/* Available LoRAs grid - only show if not at limit */}
@@ -88,21 +83,13 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
                 <span className="font-medium" style={{ color: themeParams.text_color }}>
                   {loraInfo?.triggerWord || lora.path}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
                   onClick={() => onRemove(index)}
-                  className="group transition-colors duration-200"
-                  style={{
-                    ...buttonHoverStyle,
-                    color: themeParams.button_color,
-                    '--button-color': themeParams.button_color,
-                  } as React.CSSProperties}
+                  className="p-2 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
+                  style={{ color: themeParams.button_color }}
                 >
-                  <Trash2 
-                    className="h-4 w-4 transition-opacity duration-200 group-hover:opacity-80" 
-                  />
-                </Button>
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
               <div className="p-4 flex items-center gap-4">
                 <div className="flex-grow">
