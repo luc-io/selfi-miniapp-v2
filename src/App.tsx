@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GenerateTab } from './components/generate/GenerateTab';
 import TrainTab from './components/train/TrainTab';
 import { ModelsTab } from './components/models/ModelsTab';
+import { useTelegramTheme } from './hooks/useTelegramTheme';
 
 const TABS = {
   GENERATE: 'generate',
@@ -13,39 +14,49 @@ type TabType = typeof TABS[keyof typeof TABS];
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>(TABS.GENERATE);
+  const themeParams = useTelegramTheme();
+
+  const containerStyle = {
+    backgroundColor: themeParams.bg_color,
+    color: themeParams.text_color,
+  };
+
+  const tabsContainerStyle = {
+    backgroundColor: themeParams.secondary_bg_color,
+    borderColor: `${themeParams.button_color}20`,
+  };
+
+  const tabStyle = (isActive: boolean) => ({
+    backgroundColor: isActive ? themeParams.button_color : 'transparent',
+    color: isActive ? themeParams.button_text_color : themeParams.hint_color,
+  });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={containerStyle}>
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
-        <div className="flex space-x-1 bg-card p-1 border border-border shadow-md mb-6">
+        <div 
+          className="flex space-x-1 p-1 shadow-md mb-6 border rounded-lg"
+          style={tabsContainerStyle}
+        >
           <button
-            className={`flex-1 py-2.5 px-3 text-sm font-medium transition-colors ${
-              activeTab === TABS.GENERATE
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-            }`}
+            className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
             onClick={() => setActiveTab(TABS.GENERATE)}
+            style={tabStyle(activeTab === TABS.GENERATE)}
           >
             Generate
           </button>
           <button
-            className={`flex-1 py-2.5 px-3 text-sm font-medium transition-colors ${
-              activeTab === TABS.TRAIN
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-            }`}
+            className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
             onClick={() => setActiveTab(TABS.TRAIN)}
+            style={tabStyle(activeTab === TABS.TRAIN)}
           >
             Train
           </button>
           <button
-            className={`flex-1 py-2.5 px-3 text-sm font-medium transition-colors ${
-              activeTab === TABS.MODELS
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-            }`}
+            className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
             onClick={() => setActiveTab(TABS.MODELS)}
+            style={tabStyle(activeTab === TABS.MODELS)}
           >
             Models
           </button>
