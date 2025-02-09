@@ -1,5 +1,4 @@
 import { Slider } from '../ui/slider';
-import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';
 import type { LoraParameter } from '@/types/lora';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
@@ -83,15 +82,13 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
                 <span className="font-medium" style={{ color: themeParams.text_color }}>
                   {loraInfo?.triggerWord || lora.path}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
                   onClick={() => onRemove(index)}
-                  className="hover:opacity-80"
+                  className="p-2 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
                   style={{ color: themeParams.button_color }}
                 >
                   <Trash2 className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
               <div className="p-4 flex items-center gap-4">
                 <div className="flex-grow">

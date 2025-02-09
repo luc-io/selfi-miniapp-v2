@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card } from '../ui/card';
 import { useGenerate } from '@/hooks/useGenerate';
 import { useParameters } from '@/hooks/useParameters';
@@ -54,17 +54,27 @@ export function GenerateTab() {
   });
 
   // Filter selected and completed models
-  const selectedModels = userModels.filter(
-    model => model.isSelected && model.status === 'COMPLETED'
+  const selectedModels = useMemo(() => 
+    userModels.filter(model => model.isSelected && model.status === 'COMPLETED'),
+    [userModels]
+  );
+
+  // Map of selected model IDs for quick lookup
+  const selectedModelIds = useMemo(() => 
+    new Set(selectedModels.map(model => model.databaseId)),
+    [selectedModels]
   );
 
   // Update local state when parameters load, maintaining defaults for missing values
+  // and preserving active lora states
   useEffect(() => {
     if (parameters) {
       setParams(currentParams => {
         const updatedParams = {
           ...DEFAULT_PARAMS,
           ...parameters,
+          // Keep existing loras that are still selected
+          loras: parameters.loras?.filter(lora => selectedModelIds.has(lora.path)) || [],
           // Preserve any runtime changes that aren't in the loaded parameters
           ...Object.fromEntries(
             Object.entries(currentParams).filter(([key]) => 
@@ -75,16 +85,7 @@ export function GenerateTab() {
         return updatedParams;
       });
     }
-  }, [parameters]);
-
-  // Clean up loras that are no longer selected
-  useEffect(() => {
-    const selectedModelIds = new Set(selectedModels.map(model => model.databaseId));
-    setParams(currentParams => ({
-      ...currentParams,
-      loras: currentParams.loras?.filter(lora => selectedModelIds.has(lora.path)) || []
-    }));
-  }, [selectedModels]);
+  }, [parameters, selectedModelIds]);
 
   const updateParam = <K extends keyof GenerationParameters>(
     key: K,
