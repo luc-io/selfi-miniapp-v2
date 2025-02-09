@@ -74,7 +74,7 @@ export function ModelsTab() {
   };
 
   const mainStyle = {
-    backgroundColor: themeParams.bg_color,
+    backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
   };
 
@@ -85,7 +85,7 @@ export function ModelsTab() {
   };
 
   const cardStyle = {
-    backgroundColor: themeParams.bg_color,
+    backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
     borderColor: `${themeParams.button_color}20`,
   };
@@ -205,7 +205,7 @@ export function ModelsTab() {
                             <pre 
                               className="p-2 overflow-x-auto"
                               style={{ 
-                                backgroundColor: themeParams.secondary_bg_color,
+                                backgroundColor: themeParams.bg_color,
                                 color: themeParams.hint_color 
                               }}
                             >
@@ -225,7 +225,7 @@ export function ModelsTab() {
                               <pre 
                                 className="p-2 overflow-x-auto"
                                 style={{ 
-                                  backgroundColor: themeParams.secondary_bg_color,
+                                  backgroundColor: themeParams.bg_color,
                                   color: themeParams.hint_color 
                                 }}
                               >
