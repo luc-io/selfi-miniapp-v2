@@ -1,18 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { GenerationParameters } from '@/types';
 import { getUserParameters } from '@/api/parameters';
-
-const defaultParameters: GenerationParameters = {
-  image_size: 'landscape_4_3',
-  num_inference_steps: 28,
-  seed: Math.floor(Math.random() * 1000000),
-  guidance_scale: 3.5,
-  num_images: 1,
-  enable_safety_checker: true,
-  output_format: 'jpeg',
-  modelPath: 'fal-ai/flux-lora',
-  loras: []
-};
 
 export function useParameters() {
   const queryClient = useQueryClient();
@@ -27,10 +14,10 @@ export function useParameters() {
           const { sync_mode, ...params } = response.params;
           return params;
         }
-        return defaultParameters;
+        return null;
       } catch (error) {
         console.error('Error fetching parameters:', error);
-        return defaultParameters;
+        return null;
       }
     },
     staleTime: 30000, // Consider data fresh for 30 seconds
@@ -41,7 +28,7 @@ export function useParameters() {
   });
 
   return {
-    parameters: data || defaultParameters,
+    parameters: data,
     isLoading,
     error,
     invalidateParameters: () => queryClient.invalidateQueries({ queryKey: ['parameters'] })
