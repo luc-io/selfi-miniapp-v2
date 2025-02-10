@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { TelegramThemeParams } from '@/types/telegram';
-import { generateFalSeed, expandCompressedSeed, isCompressedSeed } from '@/utils/seed';
+import { generateFalSeed } from '@/utils/seed';
 
 interface SeedInputProps {
   value: number;
