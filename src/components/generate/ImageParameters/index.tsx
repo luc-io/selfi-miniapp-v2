@@ -1,5 +1,5 @@
 import type { GenerationParameters } from '@/types';
-import type { TelegramTheme } from '@/types';
+import type { TelegramTheme } from '@/hooks/useTelegramTheme';
 import { SeedInput } from './SeedInput';
 import { StepsInput } from './StepsInput';
 import { GuidanceInput } from './GuidanceInput';
