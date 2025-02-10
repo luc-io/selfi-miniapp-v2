@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
 import type { GenerationParameters } from '@/types';
-import type { TelegramWebAppTheme } from '@/hooks/useTelegramTheme';
+import type { TelegramWebAppTheme } from '@/types/telegram';
 import { generateFalSeed, expandCompressedSeed, isCompressedSeed } from '@/utils/seed';
+
+type ImageSize = 'square' | 'portrait_16_9';
 
 interface Props {
   params: GenerationParameters;
@@ -44,7 +46,7 @@ export function ImageParameters({ params, updateParam, themeParams }: Props) {
         </label>
         <select
           value={params.image_size}
-          onChange={e => updateParam('image_size', e.target.value)}
+          onChange={e => updateParam('image_size', e.target.value as ImageSize)}
           className="block w-full px-3 py-2 bg-transparent border rounded focus:outline-none focus:ring-1"
           style={{ borderColor: `${themeParams.button_color}40` }}
         >
