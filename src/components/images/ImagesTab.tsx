@@ -10,7 +10,6 @@ interface ImageItemProps {
   image: GeneratedImage;
   themeParams: any;
   images: GeneratedImage[];
-  index: number;
 }
 
 const formatDateLatam = (date: Date) => {
@@ -43,7 +42,7 @@ const generateCommand = (image: GeneratedImage): string => {
   return parts.join(' ');
 };
 
-const ImageGallery = ({ images, startIndex, onClose }: { images: GeneratedImage[], startIndex: number, onClose: () => void }) => {
+const ImageGallery = ({ images, onClose }: { images: GeneratedImage[], onClose: () => void }) => {
   return (
     <div 
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -66,7 +65,7 @@ const ImageGallery = ({ images, startIndex, onClose }: { images: GeneratedImage[
   );
 };
 
-const ImageItem = ({ image, themeParams, images, index }: ImageItemProps) => {
+const ImageItem = ({ image, themeParams, images }: ImageItemProps) => {
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
@@ -151,7 +150,6 @@ const ImageItem = ({ image, themeParams, images, index }: ImageItemProps) => {
       {showGallery && (
         <ImageGallery 
           images={images}
-          startIndex={index}
           onClose={() => setShowGallery(false)}
         />
       )}
@@ -225,13 +223,12 @@ export function ImagesTab() {
   return (
     <Card className="shadow-md" style={cardStyle}>
       <div className="divide-y">
-        {allImages.map((image, index) => (
+        {allImages.map((image) => (
           <ImageItem 
             key={image.id}
             image={image}
             themeParams={themeParams}
             images={allImages}
-            index={index}
           />
         ))}
         
