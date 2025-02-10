@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -37,19 +37,30 @@ const getTelegramUserId = (): string | null => {
   }
 };
 
-export const getUserInfo = async (): Promise<UserInfo> => {
+// Generic API request helper
+export const apiRequest = async <T>(
+  endpoint: string,
+  options: AxiosRequestConfig = {}
+): Promise<T> => {
   const userId = getTelegramUserId();
   if (!userId) {
     throw new Error('User ID not found');
   }
 
-  const response = await axios.get(`${API_BASE_URL}/users/me`, {
+  const response = await axios({
+    ...options,
+    url: `${API_BASE_URL}${endpoint}`,
     headers: {
+      ...options.headers,
       'x-telegram-user-id': userId
     }
   });
 
   return response.data;
+};
+
+export const getUserInfo = async (): Promise<UserInfo> => {
+  return apiRequest('/users/me');
 };
 
 export const startTraining = async (
@@ -62,11 +73,6 @@ export const startTraining = async (
   files: File[],
   captions: Record<string, string>
 ): Promise<TrainingResponse> => {
-  const userId = getTelegramUserId();
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
-
   const formData = new FormData();
   
   // Add files
@@ -83,42 +89,21 @@ export const startTraining = async (
     captions
   }));
 
-  const response = await axios.post(`${API_BASE_URL}/training/start`, formData, {
+  return apiRequest('/training/start', {
+    method: 'POST',
+    data: formData,
     headers: {
-      'x-telegram-user-id': userId,
       'Content-Type': 'multipart/form-data'
     }
   });
-
-  return response.data;
 };
 
 export const getTrainingStatus = async (trainingId: string): Promise<TrainingProgress> => {
-  const userId = getTelegramUserId();
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
-
-  const response = await axios.get(`${API_BASE_URL}/training/${trainingId}/status`, {
-    headers: {
-      'x-telegram-user-id': userId
-    }
-  });
-
-  return response.data;
+  return apiRequest(`/training/${trainingId}/status`);
 };
 
 export const cancelTraining = async (trainingId: string): Promise<{ message: string }> => {
-  const userId = getTelegramUserId();
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
-
-  const response = await axios.post(`${API_BASE_URL}/training/${trainingId}/cancel`, null, {
-    headers: {
-      'x-telegram-user-id': userId
-    }
+  return apiRequest(`/training/${trainingId}/cancel`, {
+    method: 'POST'
   });
-
-  return response.data;
 };
