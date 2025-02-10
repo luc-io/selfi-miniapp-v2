@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card } from '../ui/card';
-import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Loader2, Copy } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { GeneratedImage } from '@/types/image';
 import { getGeneratedImages, type ImagesResponse } from '@/api/images';
@@ -9,6 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 interface ImageItemProps {
   image: GeneratedImage;
   themeParams: any;
+  images: GeneratedImage[];
 }
 
 const formatDateLatam = (date: Date) => {
@@ -23,81 +24,135 @@ const formatDateLatam = (date: Date) => {
   return date.toLocaleDateString('es-AR', options);
 };
 
-const ImageItem = ({ image, themeParams }: ImageItemProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const generateCommand = (image: GeneratedImage): string => {
+  const parts = ['/gen', image.prompt];
+  
+  if (image.width && image.height) {
+    const ar = image.width === image.height ? '1:1' : '16:9';
+    parts.push(`--ar ${ar}`);
+  }
+  if (image.params.num_inference_steps) parts.push(`--s ${image.params.num_inference_steps}`);
+  if (image.params.guidance_scale) parts.push(`--c ${image.params.guidance_scale}`);
+  // Always include seed as it's generated on the backend
+  parts.push(`--seed ${image.seed.toString()}`);
+  if (image.loras?.[0]) {
+    const lora = image.loras[0];
+    parts.push(`--l ${lora.triggerWord || lora.name}:${lora.scale}`);
+  }
+  
+  return parts.join(' ');
+};
+
+const ImageGallery = ({ images, onClose }: { images: GeneratedImage[], onClose: () => void }) => {
+  return (
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div className="w-full h-full overflow-auto py-4">
+        <div className="flex flex-col gap-4 items-center">
+          {images.map((image) => (
+            <img 
+              key={image.id}
+              src={image.url}
+              alt={image.prompt}
+              className="max-w-[90%] max-h-[90vh] object-contain rounded"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ImageItem = ({ image, themeParams, images }: ImageItemProps) => {
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const command = generateCommand(image);
 
   const itemStyle = {
     borderColor: `${themeParams.button_color}20`,
   };
 
+  const commandStyle = {
+    backgroundColor: `${themeParams.button_color}10`,
+  };
+
+  const copyCommand = async () => {
+    await navigator.clipboard.writeText(command);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
+  };
+
   return (
     <div 
-      className="border-b last:border-b-0 py-4"
+      className="border-b last:border-b-0 py-4 px-4"
       style={itemStyle}
     >
-      <div className="flex items-center space-x-4">
-        <span className="text-sm">
-          {formatDateLatam(new Date(image.createdAt))}
-        </span>
-        <div className="flex-1 truncate">
-          <span className="text-sm font-medium">
-            {image.prompt}
-          </span>
-        </div>
-        <div className="w-16 h-16 relative">
-          <img 
-            src={image.url} 
-            alt={image.prompt}
-            className="object-cover w-full h-full rounded"
-          />
-        </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 hover:bg-black/5 rounded"
-        >
-          {isExpanded ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
-        </button>
-      </div>
-
-      {isExpanded && (
-        <div className="mt-4 space-y-2 pl-4">
-          <img 
-            src={image.url}
-            alt={image.prompt}
-            className="max-w-full h-auto rounded mb-4"
-          />
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p><strong>Prompt:</strong> {image.prompt}</p>
-              <p><strong>Seed:</strong> {image.seed}</p>
-              {image.width && image.height && (
-                <p><strong>Size:</strong> {image.width}x{image.height}</p>
-              )}
-              <p><strong>NSFW Check:</strong> {image.hasNsfw ? 'Failed' : 'Passed'}</p>
+      <div className="space-y-2">
+        <div className="flex items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-gray-500">
+                {formatDateLatam(new Date(image.createdAt))}
+              </span>
+              <button
+                onClick={copyCommand}
+                className="p-1 hover:bg-gray-100 rounded group relative"
+                title="Copy command"
+              >
+                <Copy className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+                {showCopied && (
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded">
+                    Copied!
+                  </span>
+                )}
+              </button>
             </div>
-            <div>
-              <p><strong>Steps:</strong> {image.params.num_inference_steps}</p>
-              <p><strong>CFG Scale:</strong> {image.params.guidance_scale}</p>
-              {image.loras && image.loras.length > 0 && (
-                <div>
-                  <strong>LoRAs:</strong>
-                  <ul className="list-disc pl-4">
-                    {image.loras.map((lora, index) => (
-                      <li key={index}>
-                        {lora.name || lora.triggerWord || lora.path} 
-                        {lora.scale && ` (scale: ${lora.scale})`}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+            <div className="mt-1">
+              <div className="flex items-start gap-2">
+                <span className={`text-sm ${!isPromptExpanded ? "line-clamp-1" : ""}`}>
+                  {image.prompt}
+                </span>
+                {image.prompt.length > 50 && (
+                  <button
+                    onClick={() => setIsPromptExpanded(!isPromptExpanded)}
+                    className="text-xs text-gray-500 hover:text-gray-700 shrink-0 mt-0.5"
+                  >
+                    {isPromptExpanded ? 'Show less' : 'Show more'}
+                  </button>
+                )}
+              </div>
+              <div className="mt-1">
+                <code 
+                  className="text-xs font-mono break-all rounded px-2 py-1 block w-full"
+                  style={commandStyle}
+                >
+                  {command}
+                </code>
+              </div>
             </div>
           </div>
+          <button 
+            onClick={() => setShowGallery(true)} 
+            className="w-20 h-20 relative shrink-0 rounded overflow-hidden hover:opacity-90 transition-opacity"
+          >
+            <img 
+              src={image.url} 
+              alt={image.prompt}
+              className="object-cover w-full h-full"
+            />
+          </button>
         </div>
+      </div>
+
+      {showGallery && (
+        <ImageGallery 
+          images={images}
+          onClose={() => setShowGallery(false)}
+        />
       )}
     </div>
   );
@@ -174,6 +229,7 @@ export function ImagesTab() {
             key={image.id}
             image={image}
             themeParams={themeParams}
+            images={allImages}
           />
         ))}
         
