@@ -77,7 +77,7 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
                   <ul className="list-disc pl-4">
                     {image.loras.map((lora, index) => (
                       <li key={index}>
-                        {lora.name} (scale: {lora.scale})
+                        {lora.path} (scale: {lora.scale})
                       </li>
                     ))}
                   </ul>
