@@ -4,13 +4,24 @@ import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { GeneratedImage } from '@/types/image';
 import { getGeneratedImages, type ImagesResponse } from '@/api/images';
-import { formatDate } from '@/utils/date';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 interface ImageItemProps {
   image: GeneratedImage;
   themeParams: any;
 }
+
+const formatDateLatam = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  };
+  return date.toLocaleDateString('es-AR', options);
+};
 
 const ImageItem = ({ image, themeParams }: ImageItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -26,16 +37,13 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
     >
       <div className="flex items-center space-x-4">
         <span className="text-sm">
-          {formatDate(new Date(image.createdAt))}
+          {formatDateLatam(new Date(image.createdAt))}
         </span>
         <div className="flex-1 truncate">
           <span className="text-sm font-medium">
             {image.prompt}
           </span>
         </div>
-        <span className="text-sm text-gray-500">
-          Seed: {image.seed}
-        </span>
         <div className="w-16 h-16 relative">
           <img 
             src={image.url} 
@@ -66,20 +74,22 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
             <div>
               <p><strong>Prompt:</strong> {image.prompt}</p>
               <p><strong>Seed:</strong> {image.seed}</p>
-              <p><strong>Size:</strong> {image.width}x{image.height}</p>
+              {image.width && image.height && (
+                <p><strong>Size:</strong> {image.width}x{image.height}</p>
+              )}
               <p><strong>NSFW Check:</strong> {image.hasNsfw ? 'Failed' : 'Passed'}</p>
             </div>
             <div>
               <p><strong>Steps:</strong> {image.params.num_inference_steps}</p>
               <p><strong>CFG Scale:</strong> {image.params.guidance_scale}</p>
-              <p><strong>Model:</strong> {image.params.modelPath}</p>
               {image.loras && image.loras.length > 0 && (
                 <div>
                   <strong>LoRAs:</strong>
                   <ul className="list-disc pl-4">
                     {image.loras.map((lora, index) => (
                       <li key={index}>
-                        {lora.path} (scale: {lora.scale})
+                        {lora.name || lora.triggerWord || lora.path} 
+                        {lora.scale && ` (scale: ${lora.scale})`}
                       </li>
                     ))}
                   </ul>
