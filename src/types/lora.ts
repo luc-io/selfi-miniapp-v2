@@ -1,6 +1,8 @@
 export interface LoraParameter {
   path: string;
   scale: number;
+  name?: string;
+  triggerWord?: string;
 }
 
 export interface LoraModel {
