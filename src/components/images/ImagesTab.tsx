@@ -9,6 +9,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 interface ImageItemProps {
   image: GeneratedImage;
   themeParams: any;
+  images: GeneratedImage[];
+  index: number;
 }
 
 const formatDateLatam = (date: Date) => {
@@ -41,10 +43,35 @@ const generateCommand = (image: GeneratedImage): string => {
   return parts.join(' ');
 };
 
-const ImageItem = ({ image, themeParams }: ImageItemProps) => {
+const ImageGallery = ({ images, startIndex, onClose }: { images: GeneratedImage[], startIndex: number, onClose: () => void }) => {
+  const [currentIndex, setCurrentIndex] = useState(startIndex);
+  
+  return (
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div className="w-full h-full overflow-auto py-4">
+        <div className="flex flex-col gap-4 items-center">
+          {images.map((image, index) => (
+            <img 
+              key={image.id}
+              src={image.url}
+              alt={image.prompt}
+              className="max-w-[90%] max-h-[90vh] object-contain rounded"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ImageItem = ({ image, themeParams, images, index }: ImageItemProps) => {
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
-  const [showLargeImage, setShowLargeImage] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
   const command = generateCommand(image);
 
   const itemStyle = {
@@ -63,16 +90,28 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
 
   return (
     <div 
-      className="border-b last:border-b-0 py-4"
+      className="border-b last:border-b-0 py-4 px-4"
       style={itemStyle}
     >
       <div className="space-y-2">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-gray-500">
                 {formatDateLatam(new Date(image.createdAt))}
               </span>
+              <button
+                onClick={copyCommand}
+                className="p-1 hover:bg-gray-100 rounded group relative"
+                title="Copy command"
+              >
+                <Copy className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+                {showCopied && (
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded">
+                    Copied!
+                  </span>
+                )}
+              </button>
             </div>
             <div className="mt-1">
               <div className="flex items-start gap-2">
@@ -88,31 +127,19 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
                   </button>
                 )}
               </div>
-              <div className="mt-1 flex items-center gap-2">
+              <div className="mt-1">
                 <code 
-                  className="text-xs font-mono break-all rounded px-2 py-1 flex-1"
+                  className="text-xs font-mono break-all rounded px-2 py-1 block w-full"
                   style={commandStyle}
                 >
                   {command}
                 </code>
-                <button
-                  onClick={copyCommand}
-                  className="p-1 hover:bg-gray-100 rounded group relative"
-                  title="Copy command"
-                >
-                  <Copy className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
-                  {showCopied && (
-                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded">
-                      Copied!
-                    </span>
-                  )}
-                </button>
               </div>
             </div>
           </div>
           <button 
-            onClick={() => setShowLargeImage(true)} 
-            className="w-16 h-16 relative shrink-0 rounded overflow-hidden hover:opacity-90 transition-opacity"
+            onClick={() => setShowGallery(true)} 
+            className="w-20 h-20 relative shrink-0 rounded overflow-hidden hover:opacity-90 transition-opacity"
           >
             <img 
               src={image.url} 
@@ -123,19 +150,12 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
         </div>
       </div>
 
-      {showLargeImage && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setShowLargeImage(false)}
-        >
-          <div className="max-w-[90%] max-h-[90%] relative">
-            <img 
-              src={image.url}
-              alt={image.prompt}
-              className="max-w-full max-h-[90vh] object-contain rounded"
-            />
-          </div>
-        </div>
+      {showGallery && (
+        <ImageGallery 
+          images={images}
+          startIndex={index}
+          onClose={() => setShowGallery(false)}
+        />
       )}
     </div>
   );
@@ -207,11 +227,13 @@ export function ImagesTab() {
   return (
     <Card className="shadow-md" style={cardStyle}>
       <div className="divide-y">
-        {allImages.map((image) => (
+        {allImages.map((image, index) => (
           <ImageItem 
             key={image.id}
             image={image}
             themeParams={themeParams}
+            images={allImages}
+            index={index}
           />
         ))}
         
