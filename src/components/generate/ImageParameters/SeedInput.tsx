@@ -13,22 +13,28 @@ interface SeedInputProps {
   themeParams: TelegramThemeParams;
 }
 
-// Generate random 7-digit seed
+// Generate random seed using a larger range similar to fal-ai
 const generateRandomSeed = (): number => {
-  return Math.floor(Math.random() * 9000000) + 1000000; // 7 digits
+  // Generate a random number between 0 and Number.MAX_SAFE_INTEGER
+  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 };
 
-// Format seed for display (7 digits or empty for Random)
+// Format seed for display (empty for Random or the actual number)
 const formatSeedForDisplay = (seed: number): string => {
   if (seed === 0) return "";
-  return String(seed).slice(0, 7);
+  return String(seed);
 };
 
 // Parse user input to valid seed
 const parseSeedInput = (input: string): number => {
   if (!input) return 0;
-  const num = parseInt(input.slice(0, 7), 10);
-  return isNaN(num) ? 0 : num;
+  // Remove any non-numeric characters
+  const cleanInput = input.replace(/[^0-9]/g, '');
+  if (!cleanInput) return 0;
+  
+  // Parse as a big number, being careful with limits
+  const num = Number(cleanInput);
+  return isNaN(num) ? 0 : Math.min(num, Number.MAX_SAFE_INTEGER);
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
@@ -83,12 +89,12 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
           placeholder="Random"
-          className="w-28 px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
+          className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={inputStyle}
         />
         <button
           onClick={handleRandomSeed}
-          className="p-1.5 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
+          className="p-1.5 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none flex-shrink-0"
           style={resetButtonStyle}
           title="Generate random seed"
         >
