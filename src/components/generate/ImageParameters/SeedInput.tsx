@@ -5,12 +5,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { TelegramTheme } from '@/hooks/useTelegramTheme';
+import type { TelegramThemeParams } from '@/types/telegram';
 
 interface SeedInputProps {
   value: number;
   onChange: (value: number) => void;
-  themeParams: TelegramTheme;
+  themeParams: TelegramThemeParams;
 }
 
 // Generate random 7-digit seed
