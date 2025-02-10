@@ -2,27 +2,40 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { startTraining, getUserInfo, type UserInfo } from '@/lib/api';
+import { 
+  startTraining, 
+  getUserInfo, 
+  getTrainingStatus,
+  cancelTraining,
+  type UserInfo, 
+  type TrainingProgress as TrainingProgressType
+} from '@/lib/api';
 import { 
   FileUpload,
   ImagePreviews,
   TriggerWordInput,
   TrainingSteps,
-  TrainingToggles 
+  TrainingToggles,
+  TrainingProgress
 } from './components';
 import { DEFAULT_STATE, type TrainingImage } from './types/training';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const TRAINING_COST = 150; // Cost in stars for training
+const POLLING_INTERVAL = 3000; // 3 seconds
 
 const TrainTab: React.FC = () => {
   const themeParams = useTelegramTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [state, setState] = useState(DEFAULT_STATE);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [trainingProgress, setTrainingProgress] = useState<TrainingProgressType | null>(null);
+  const [currentTrainingId, setCurrentTrainingId] = useState<string | null>(null);
 
+  // Load user info on mount
   useEffect(() => {
     const loadUserInfo = async () => {
       try {
@@ -37,8 +50,63 @@ const TrainTab: React.FC = () => {
     loadUserInfo();
   }, []);
 
+  // Poll training status
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const pollTrainingStatus = async () => {
+      if (!currentTrainingId) return;
+
+      try {
+        const progress = await getTrainingStatus(currentTrainingId);
+        setTrainingProgress(progress);
+
+        // Stop polling if training is complete or failed
+        if (['completed', 'failed', 'cancelled'].includes(progress.status.toLowerCase())) {
+          setCurrentTrainingId(null);
+          // Refresh user info to get updated stars
+          const info = await getUserInfo();
+          setUserInfo(info);
+        }
+      } catch (error) {
+        console.error('Failed to get training status:', error);
+        setErrorMessage('Failed to get training status');
+        setCurrentTrainingId(null);
+      }
+    };
+
+    if (currentTrainingId) {
+      // Poll immediately
+      pollTrainingStatus();
+      // Then start interval
+      interval = setInterval(pollTrainingStatus, POLLING_INTERVAL);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [currentTrainingId]);
+
   const totalSize = state.images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
   const hasEnoughStars = userInfo ? userInfo.stars >= TRAINING_COST : false;
+
+  const handleCancel = async () => {
+    if (!currentTrainingId) return;
+
+    try {
+      setIsCancelling(true);
+      await cancelTraining(currentTrainingId);
+      
+      // Update will be caught by polling
+    } catch (error) {
+      console.error('Failed to cancel training:', error);
+      setErrorMessage('Failed to cancel training');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,12 +146,12 @@ const TrainTab: React.FC = () => {
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
-      }, files, captions).catch(error => {
-        console.error('Training failed:', error);
-        throw new Error('Training failed: ' + (error.message || 'Unknown error'));
-      });
+      }, files, captions);
 
       console.log('Training started successfully:', trainingResult);
+
+      // Set training ID for polling
+      setCurrentTrainingId(trainingResult.trainingId);
 
       // Update user info after successful training start
       const updatedInfo = await getUserInfo();
@@ -93,7 +161,7 @@ const TrainTab: React.FC = () => {
         message: 'Training started successfully!'
       });
 
-      // Reset form
+      // Reset form after successful start
       setState(DEFAULT_STATE);
 
     } catch (error) {
@@ -178,6 +246,14 @@ const TrainTab: React.FC = () => {
           </Alert>
         )}
         
+        {trainingProgress && (
+          <TrainingProgress
+            progress={trainingProgress}
+            onCancel={handleCancel}
+            isLoadingCancel={isCancelling}
+          />
+        )}
+        
         <div className="space-y-6">
           <FileUpload
             totalSize={totalSize}
@@ -188,6 +264,7 @@ const TrainTab: React.FC = () => {
                 images: [...prev.images, ...newImages] 
               }))
             }
+            disabled={!!currentTrainingId}
           />
 
           <ImagePreviews
@@ -206,17 +283,20 @@ const TrainTab: React.FC = () => {
                 )
               }))
             }
+            disabled={!!currentTrainingId}
           />
 
           <TriggerWordInput
             value={state.triggerWord}
             isStyle={state.isStyle}
             onChange={triggerWord => setState(prev => ({ ...prev, triggerWord }))}
+            disabled={!!currentTrainingId}
           />
 
           <TrainingSteps
             value={state.steps}
             onChange={steps => setState(prev => ({ ...prev, steps }))}
+            disabled={!!currentTrainingId}
           />
 
           <TrainingToggles
@@ -228,19 +308,22 @@ const TrainTab: React.FC = () => {
               createMasks: isStyle ? false : prev.createMasks
             }))}
             onMasksChange={createMasks => setState(prev => ({ ...prev, createMasks }))}
+            disabled={!!currentTrainingId}
           />
 
           <button 
             type="submit" 
             className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={buttonStyle}
-            disabled={isLoading || state.images.length === 0 || !state.triggerWord.trim() || !hasEnoughStars}
+            disabled={isLoading || state.images.length === 0 || !state.triggerWord.trim() || !hasEnoughStars || !!currentTrainingId}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Training Model...
               </div>
+            ) : currentTrainingId ? (
+              'Training in Progress'
             ) : !hasEnoughStars ? (
               'Insufficient Stars'
             ) : (
