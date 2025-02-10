@@ -50,15 +50,17 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
         >
           Seed
         </label>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={100}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Info 
-                className="h-4 w-4" 
-                style={{ color: themeParams.hint_color }} 
-              />
+              <button type="button" className="cursor-help">
+                <Info 
+                  className="h-4 w-4" 
+                  style={{ color: themeParams.hint_color }} 
+                />
+              </button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent style={{ backgroundColor: themeParams.bg_color, color: themeParams.text_color }}>
               <p>The same seed and the same prompt given to the same version of the model will output the same image every time.</p>
             </TooltipContent>
           </Tooltip>
@@ -71,6 +73,11 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           pattern="[0-9]*"
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Backspace' && !e.currentTarget.value) {
+              onChange(0);
+            }
+          }}
           placeholder="Random"
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
