@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card } from '../ui/card';
-import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, Copy } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { GeneratedImage } from '@/types/image';
 import { getGeneratedImages, type ImagesResponse } from '@/api/images';
@@ -23,11 +23,38 @@ const formatDateLatam = (date: Date) => {
   return date.toLocaleDateString('es-AR', options);
 };
 
+const generateCommand = (image: GeneratedImage): string => {
+  const parts = ['/gen', image.prompt];
+  
+  if (image.width && image.height) {
+    const ar = image.width === image.height ? '1:1' : '16:9';
+    parts.push(`--ar ${ar}`);
+  }
+  if (image.params.num_inference_steps) parts.push(`--s ${image.params.num_inference_steps}`);
+  if (image.params.guidance_scale) parts.push(`--c ${image.params.guidance_scale}`);
+  if (image.seed) parts.push(`--seed ${image.seed}`);
+  if (image.loras?.[0]) {
+    const lora = image.loras[0];
+    parts.push(`--l ${lora.triggerWord || lora.name}:${lora.scale}`);
+  }
+  
+  return parts.join(' ');
+};
+
 const ImageItem = ({ image, themeParams }: ImageItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
+  const command = generateCommand(image);
 
   const itemStyle = {
     borderColor: `${themeParams.button_color}20`,
+  };
+
+  const copyCommand = async () => {
+    await navigator.clipboard.writeText(command);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
   };
 
   return (
@@ -35,32 +62,67 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
       className="border-b last:border-b-0 py-4"
       style={itemStyle}
     >
-      <div className="flex items-center space-x-4">
-        <span className="text-sm">
-          {formatDateLatam(new Date(image.createdAt))}
-        </span>
-        <div className="flex-1 truncate">
-          <span className="text-sm font-medium">
-            {image.prompt}
-          </span>
+      <div className="space-y-2">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">
+                {formatDateLatam(new Date(image.createdAt))}
+              </span>
+            </div>
+            <div className="mt-1">
+              <div className="flex items-start gap-2">
+                <span className={`text-sm ${!isPromptExpanded ? "line-clamp-1" : ""}`}>
+                  {image.prompt}
+                </span>
+                {image.prompt.length > 50 && (
+                  <button
+                    onClick={() => setIsPromptExpanded(!isPromptExpanded)}
+                    className="text-xs text-gray-500 hover:text-gray-700 shrink-0 mt-0.5"
+                  >
+                    {isPromptExpanded ? 'Show less' : 'Show more'}
+                  </button>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                <code className="text-xs text-gray-600 font-mono break-all bg-gray-100 rounded px-1 py-0.5">
+                  {command}
+                </code>
+                <button
+                  onClick={copyCommand}
+                  className="p-1 hover:bg-gray-100 rounded group relative"
+                  title="Copy command"
+                >
+                  <Copy className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+                  {showCopied && (
+                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded">
+                      Copied!
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-16 h-16 relative shrink-0">
+              <img 
+                src={image.url} 
+                alt={image.prompt}
+                className="object-cover w-full h-full rounded"
+              />
+            </div>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1 hover:bg-black/5 rounded shrink-0"
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
-        <div className="w-16 h-16 relative">
-          <img 
-            src={image.url} 
-            alt={image.prompt}
-            className="object-cover w-full h-full rounded"
-          />
-        </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 hover:bg-black/5 rounded"
-        >
-          {isExpanded ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
-        </button>
       </div>
 
       {isExpanded && (
