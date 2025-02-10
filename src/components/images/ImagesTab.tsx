@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card } from '../ui/card';
-import { ChevronDown, ChevronUp, Loader2, Copy } from 'lucide-react';
+import { Loader2, Copy } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { GeneratedImage } from '@/types/image';
 import { getGeneratedImages, type ImagesResponse } from '@/api/images';
@@ -42,13 +42,17 @@ const generateCommand = (image: GeneratedImage): string => {
 };
 
 const ImageItem = ({ image, themeParams }: ImageItemProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+  const [showLargeImage, setShowLargeImage] = useState(false);
   const command = generateCommand(image);
 
   const itemStyle = {
     borderColor: `${themeParams.button_color}20`,
+  };
+
+  const commandStyle = {
+    backgroundColor: `${themeParams.button_color}10`,
   };
 
   const copyCommand = async () => {
@@ -85,7 +89,10 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
                 )}
               </div>
               <div className="mt-1 flex items-center gap-2">
-                <code className="text-xs text-gray-600 font-mono break-all bg-gray-100 rounded px-1 py-0.5">
+                <code 
+                  className="text-xs font-mono break-all rounded px-2 py-1 flex-1"
+                  style={commandStyle}
+                >
                   {command}
                 </code>
                 <button
@@ -103,61 +110,30 @@ const ImageItem = ({ image, themeParams }: ImageItemProps) => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-16 h-16 relative shrink-0">
-              <img 
-                src={image.url} 
-                alt={image.prompt}
-                className="object-cover w-full h-full rounded"
-              />
-            </div>
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 hover:bg-black/5 rounded shrink-0"
-            >
-              {isExpanded ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
-              )}
-            </button>
-          </div>
+          <button 
+            onClick={() => setShowLargeImage(true)} 
+            className="w-16 h-16 relative shrink-0 rounded overflow-hidden hover:opacity-90 transition-opacity"
+          >
+            <img 
+              src={image.url} 
+              alt={image.prompt}
+              className="object-cover w-full h-full"
+            />
+          </button>
         </div>
       </div>
 
-      {isExpanded && (
-        <div className="mt-4 space-y-2 pl-4">
-          <img 
-            src={image.url}
-            alt={image.prompt}
-            className="max-w-full h-auto rounded mb-4"
-          />
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p><strong>Prompt:</strong> {image.prompt}</p>
-              <p><strong>Seed:</strong> {image.seed}</p>
-              {image.width && image.height && (
-                <p><strong>Size:</strong> {image.width}x{image.height}</p>
-              )}
-              <p><strong>NSFW Check:</strong> {image.hasNsfw ? 'Failed' : 'Passed'}</p>
-            </div>
-            <div>
-              <p><strong>Steps:</strong> {image.params.num_inference_steps}</p>
-              <p><strong>CFG Scale:</strong> {image.params.guidance_scale}</p>
-              {image.loras && image.loras.length > 0 && (
-                <div>
-                  <strong>LoRAs:</strong>
-                  <ul className="list-disc pl-4">
-                    {image.loras.map((lora, index) => (
-                      <li key={index}>
-                        {lora.name || lora.triggerWord || lora.path} 
-                        {lora.scale && ` (scale: ${lora.scale})`}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+      {showLargeImage && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShowLargeImage(false)}
+        >
+          <div className="max-w-[90%] max-h-[90%] relative">
+            <img 
+              src={image.url}
+              alt={image.prompt}
+              className="max-w-full max-h-[90vh] object-contain rounded"
+            />
           </div>
         </div>
       )}
