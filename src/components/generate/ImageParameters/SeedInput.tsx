@@ -20,7 +20,7 @@ const formatSeedForDisplay = (seed: number): string => {
 };
 
 const parseSeedInput = (input: string): number => {
-  if (!input) return 0;
+  if (!input || input.trim() === '') return 0;
   const cleanInput = input.replace(/[^0-9]/g, '');
   if (!cleanInput) return 0;
   const num = Number(cleanInput);
@@ -29,12 +29,7 @@ const parseSeedInput = (input: string): number => {
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   const handleSeedChange = (input: string) => {
-    const seedValue = parseSeedInput(input);
-    if (isCompressedSeed(seedValue)) {
-      onChange(expandCompressedSeed(seedValue));
-    } else {
-      onChange(seedValue);
-    }
+    onChange(parseSeedInput(input));
   };
 
   const handleRandomSeed = () => {
