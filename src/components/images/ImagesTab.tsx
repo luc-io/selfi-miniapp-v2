@@ -3,7 +3,7 @@ import { Card } from '../ui/card';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { GeneratedImage } from '@/types/image';
-import { getGeneratedImages } from '@/api/images';
+import { getGeneratedImages, type ImagesResponse } from '@/api/images';
 import { formatDate } from '@/utils/date';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
@@ -106,17 +106,16 @@ export function ImagesTab() {
     isLoading,
     isError,
     error
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<ImagesResponse, Error>({
     queryKey: ['images'],
-    queryFn: ({ pageParam = 1 }) => getGeneratedImages({
-      page: pageParam,
+    queryFn: async ({ pageParam = 1 }) => getGeneratedImages({
+      page: pageParam as number,
       limit: ITEMS_PER_PAGE
     }),
-    getNextPageParam: (lastPage, pages) => {
+    getNextPageParam: (lastPage: ImagesResponse) => {
       if (!lastPage.hasMore) return undefined;
-      return pages.length + 1;
-    },
-    initialPageSize: ITEMS_PER_PAGE
+      return lastPage.total > 0 ? Math.ceil(lastPage.total / ITEMS_PER_PAGE) : undefined;
+    }
   });
 
   const cardStyle = {
@@ -145,7 +144,7 @@ export function ImagesTab() {
       <Card className="shadow-md" style={cardStyle}>
         <div className="p-6 text-center">
           <p className="text-sm text-red-500">
-            Error loading images: {error instanceof Error ? error.message : 'Unknown error'}
+            Error loading images: {error.message}
           </p>
         </div>
       </Card>
