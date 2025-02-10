@@ -19,6 +19,16 @@ export interface TelegramUser {
   language_code?: string;
 }
 
+export interface PopupParams {
+  message: string;
+  title?: string;
+  buttons?: Array<{
+    id?: string;
+    type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+    text?: string;
+  }>;
+}
+
 export interface TelegramWebApp {
   initData: string;
   initDataUnsafe: {
@@ -75,4 +85,7 @@ export interface TelegramWebApp {
   openTelegramLink: (url: string) => void;
   setBackgroundColor: (color: string) => void;
   setHeaderColor: (color: string) => void;
+  showPopup: (params: PopupParams) => void;
+  onEvent: (eventType: string, callback: () => void) => void;
+  offEvent: (eventType: string, callback: () => void) => void;
 }
