@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { GenerateTab } from './components/generate/GenerateTab';
 import TrainTab from './components/train/TrainTab';
 import { ModelsTab } from './components/models/ModelsTab';
+import { ImagesTab } from './components/images/ImagesTab';
 import { useTelegramTheme } from './hooks/useTelegramTheme';
 
 const TABS = {
   GENERATE: 'generate',
   TRAIN: 'train',
   MODELS: 'models',
+  IMAGES: 'images',
 } as const;
 
 type TabType = typeof TABS[keyof typeof TABS];
@@ -60,6 +62,13 @@ function App() {
           >
             Models
           </button>
+          <button
+            className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
+            onClick={() => setActiveTab(TABS.IMAGES)}
+            style={tabStyle(activeTab === TABS.IMAGES)}
+          >
+            Images
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -67,6 +76,7 @@ function App() {
           {activeTab === TABS.GENERATE && <GenerateTab />}
           {activeTab === TABS.TRAIN && <TrainTab />}
           {activeTab === TABS.MODELS && <ModelsTab />}
+          {activeTab === TABS.IMAGES && <ImagesTab />}
         </div>
       </div>
     </div>
