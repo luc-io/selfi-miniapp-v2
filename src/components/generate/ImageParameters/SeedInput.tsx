@@ -13,15 +13,20 @@ interface SeedInputProps {
   themeParams: TelegramThemeParams;
 }
 
-// Format seed for display (7 digits or "Random")
+// Generate random 7-digit seed
+const generateRandomSeed = (): number => {
+  return Math.floor(Math.random() * 9000000) + 1000000; // 7 digits
+};
+
+// Format seed for display (7 digits or empty for Random)
 const formatSeedForDisplay = (seed: number): string => {
-  if (seed === 0) return "Random";
+  if (seed === 0) return "";
   return String(seed).slice(0, 7);
 };
 
 // Parse user input to valid seed
 const parseSeedInput = (input: string): number => {
-  if (!input || input.toLowerCase() === 'random') return 0;
+  if (!input) return 0;
   const num = parseInt(input.slice(0, 7), 10);
   return isNaN(num) ? 0 : num;
 };
@@ -32,7 +37,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   };
 
   const handleRandomSeed = () => {
-    onChange(0); // Set to 0 for Random
+    onChange(generateRandomSeed());
   };
 
   const labelStyle = {
