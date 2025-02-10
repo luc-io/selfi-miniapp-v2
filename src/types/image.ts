@@ -1,30 +1,27 @@
-import { GenerationParameters } from './index';
-import { LoraParameter } from './lora';
+import { type SeedInfo } from '@/utils/seed';
+
+export interface GenerationParams {
+  num_inference_steps: number;
+  guidance_scale: number;
+}
+
+export interface LoraInfo {
+  name?: string;
+  path?: string;
+  triggerWord?: string;
+  scale?: number;
+}
 
 export interface GeneratedImage {
   id: string;
   url: string;
-  width: number;
-  height: number;
   prompt: string;
+  falSeed: number;
   seed: number;
-  hasNsfw: boolean;
+  width?: number;
+  height?: number;
   createdAt: string;
-  params: GenerationParameters;
-  loras?: LoraParameter[];
-}
-
-export interface ImageResponse {
-  seed: number;
-  images: Array<{
-    url: string;
-    width: number;
-    height: number;
-    content_type: string;
-  }>;
-  prompt: string;
-  timings: {
-    inference: number;
-  };
-  has_nsfw_concepts: boolean[];
+  hasNsfw: boolean;
+  params: GenerationParams;
+  loras?: LoraInfo[];
 }
