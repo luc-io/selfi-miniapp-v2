@@ -7,7 +7,7 @@ import { LoraSelector } from './LoraSelector';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RotateCcw } from 'lucide-react';
 import type { GenerationParameters, ImageSize } from '@/types';
 import type { LoraModel, LoraParameter } from '@/types/lora';
 import { saveUserParameters } from '@/api/parameters';
@@ -97,6 +97,10 @@ export function GenerateTab() {
     }));
   };
 
+  const resetParameter = (paramName: keyof typeof DEFAULT_PARAMS) => {
+    updateParam(paramName, DEFAULT_PARAMS[paramName]);
+  };
+
   const handleAddLora = (lora: LoraParameter) => {
     setParams((prevParams) => ({
       ...prevParams,
@@ -158,6 +162,10 @@ export function GenerateTab() {
 
   const hintStyle = {
     color: themeParams.hint_color,
+  };
+
+  const resetButtonStyle = {
+    color: themeParams.button_color,
   };
 
   if (isLoadingParams || isLoadingModels) {
@@ -224,9 +232,19 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium" style={labelStyle}>
-              Steps <span style={hintStyle} className="ml-1">({params.num_inference_steps})</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium" style={labelStyle}>
+                Steps <span style={hintStyle} className="ml-1">({params.num_inference_steps})</span>
+              </label>
+              <button 
+                onClick={() => resetParameter('num_inference_steps')}
+                className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
+                style={resetButtonStyle}
+                title="Reset to default (28)"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
             <Slider 
               value={[params.num_inference_steps]}
               onValueChange={(v: number[]) => updateParam('num_inference_steps', v[0])}
@@ -238,9 +256,19 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium" style={labelStyle}>
-              Guidance Scale <span style={hintStyle} className="ml-1">({params.guidance_scale})</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium" style={labelStyle}>
+                Guidance Scale <span style={hintStyle} className="ml-1">({params.guidance_scale})</span>
+              </label>
+              <button 
+                onClick={() => resetParameter('guidance_scale')}
+                className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
+                style={resetButtonStyle}
+                title="Reset to default (3.5)"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
             <Slider 
               value={[params.guidance_scale]}
               onValueChange={(v: number[]) => updateParam('guidance_scale', v[0])}
@@ -252,9 +280,19 @@ export function GenerateTab() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium" style={labelStyle}>
-              Number of Images <span style={hintStyle} className="ml-1">({params.num_images})</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium" style={labelStyle}>
+                Number of Images <span style={hintStyle} className="ml-1">({params.num_images})</span>
+              </label>
+              <button 
+                onClick={() => resetParameter('num_images')}
+                className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
+                style={resetButtonStyle}
+                title="Reset to default (1)"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
             <Slider 
               value={[params.num_images]}
               onValueChange={(v: number[]) => updateParam('num_images', v[0])}
