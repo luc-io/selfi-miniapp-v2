@@ -1,4 +1,4 @@
-import { RotateCcw, X } from 'lucide-react';
+import { RotateCcw, X, Info } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -59,13 +59,13 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             <TooltipTrigger asChild>
               <button type="button" className="cursor-help">
                 <Info 
-                  className="h-4 w-4" 
+                  className="h-3.5 w-3.5" 
                   style={{ color: themeParams.hint_color }} 
                 />
               </button>
             </TooltipTrigger>
-            <TooltipContent style={{ backgroundColor: themeParams.bg_color, color: themeParams.text_color }}>
-              <p>The same seed and the same prompt given to the same version of the model will output the same image every time.</p>
+            <TooltipContent side="top" className="border-0 shadow-sm p-2" style={{ backgroundColor: themeParams.bg_color, color: themeParams.hint_color }}>
+              Same seed + prompt = same image
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
