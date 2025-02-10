@@ -20,13 +20,13 @@ const generateRandomSeed = (): number => {
 
 // Format seed for display (7 digits or "Random")
 const formatSeedForDisplay = (seed: number): string => {
-  if (seed === 0) return "";
+  if (seed === 0) return "Random";
   return String(seed).slice(0, 7);
 };
 
 // Parse user input to valid seed
 const parseSeedInput = (input: string): number => {
-  if (!input) return 0;
+  if (!input || input.toLowerCase() === 'random') return 0;
   const num = parseInt(input.slice(0, 7), 10);
   return isNaN(num) ? 0 : num;
 };
@@ -37,7 +37,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   };
 
   const handleRandomSeed = () => {
-    onChange(generateRandomSeed());
+    onChange(0); // Set to 0 for Random
   };
 
   const labelStyle = {
