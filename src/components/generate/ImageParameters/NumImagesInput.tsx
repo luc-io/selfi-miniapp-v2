@@ -1,12 +1,12 @@
 import { RotateCcw } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import type { TelegramTheme } from '@/hooks/useTelegramTheme';
+import type { TelegramThemeParams } from '@/types/telegram';
 
 interface NumImagesInputProps {
   value: number;
   onChange: (value: number) => void;
   onReset: () => void;
-  themeParams: TelegramTheme;
+  themeParams: TelegramThemeParams;
 }
 
 export function NumImagesInput({ value, onChange, onReset, themeParams }: NumImagesInputProps) {
