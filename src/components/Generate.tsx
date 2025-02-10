@@ -1,47 +1,46 @@
-import { useParameters } from '@/hooks/useParameters';
-import { useGenerate } from '@/hooks/useGenerate';
-import { LoadingSpinner } from './LoadingSpinner';
-import type { GenerationParameters } from '@/types';
+import React, { useState } from 'react';
+import { generateImage } from '@/lib/api';
+import { type GenerationParameters, type GenerationResponse } from '@/types/generation';
 
-const defaultParameters: GenerationParameters = {
-  image_size: 'portrait_16_9',
-  num_inference_steps: 48,
-  seed: 334370,
-  guidance_scale: 20,
-  num_images: 1,
-  sync_mode: false,
-  enable_safety_checker: true,
-  output_format: 'jpeg',
-  modelPath: 'fal-ai/flux-lora',
-  loras: []
-};
+interface GenerateProps {
+  activeParams: GenerationParameters;
+  onGenerated?: (result: GenerationResponse) => void;
+  disabled?: boolean;
+}
 
-export function Generate() {
-  const { parameters, isLoading } = useParameters();
-  const { generateImage, isPending } = useGenerate();
-  
-  // If we're loading parameters, show spinner
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+const Generate: React.FC<GenerateProps> = ({ 
+  activeParams, 
+  onGenerated,
+  disabled = false 
+}) => {
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  // Use saved parameters if available, otherwise use defaults
-  const activeParams = parameters || defaultParameters;
+  const handleGenerate = async () => {
+    if (disabled || isGenerating) return;
 
-  const handleGenerate = () => {
-    generateImage(activeParams);
+    try {
+      setIsGenerating(true);
+      const result = await generateImage(activeParams);
+      onGenerated?.(result);
+    } catch (error) {
+      console.error('Generation failed:', error);
+      // Handle error appropriately
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Form fields here using activeParams */}
-      <button 
-        onClick={handleGenerate}
-        disabled={isPending}
-        className="w-full px-4 py-2 text-white bg-primary rounded-md disabled:opacity-50"
-      >
-        {isPending ? 'Generating...' : 'Generate'}
-      </button>
-    </div>
+    <button
+      onClick={handleGenerate}
+      className={`w-full py-3 px-4 text-sm font-semibold bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
+        (disabled || isGenerating) ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+      disabled={disabled || isGenerating}
+    >
+      {isGenerating ? 'Generating...' : 'Generate'}
+    </button>
   );
-}
+};
+
+export default Generate;
