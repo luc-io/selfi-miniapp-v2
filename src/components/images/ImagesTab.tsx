@@ -44,8 +44,6 @@ const generateCommand = (image: GeneratedImage): string => {
 };
 
 const ImageGallery = ({ images, startIndex, onClose }: { images: GeneratedImage[], startIndex: number, onClose: () => void }) => {
-  const [currentIndex, setCurrentIndex] = useState(startIndex);
-  
   return (
     <div 
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -53,7 +51,7 @@ const ImageGallery = ({ images, startIndex, onClose }: { images: GeneratedImage[
     >
       <div className="w-full h-full overflow-auto py-4">
         <div className="flex flex-col gap-4 items-center">
-          {images.map((image, index) => (
+          {images.map((image) => (
             <img 
               key={image.id}
               src={image.url}
