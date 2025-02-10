@@ -1,36 +1,40 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { getUserParameters } from '@/api/parameters';
+import { type ParamsOption } from '@/types/params';
 
-export function useParameters() {
-  const queryClient = useQueryClient();
+interface UseParametersResult {
+  parameters: Record<string, ParamsOption> | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+}
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['parameters'],
-    queryFn: async () => {
-      try {
-        const response = await getUserParameters();
-        if (response?.params) {
-          // Ensure sync_mode is not included
-          const { sync_mode, ...params } = response.params;
-          return params;
-        }
-        return null;
-      } catch (error) {
-        console.error('Error fetching parameters:', error);
-        return null;
-      }
-    },
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 60000, // Keep in cache for 1 minute
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    retry: 2
-  });
+export const useParameters = (): UseParametersResult => {
+  const [parameters, setParameters] = useState<Record<string, ParamsOption> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchParameters = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await getUserParameters();
+      setParameters(response.params);
+    } catch (e) {
+      setError(e instanceof Error ? e : new Error('Failed to fetch parameters'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchParameters();
+  }, []);
 
   return {
-    parameters: data,
+    parameters,
     isLoading,
     error,
-    invalidateParameters: () => queryClient.invalidateQueries({ queryKey: ['parameters'] })
+    refetch: fetchParameters
   };
-}
+};
