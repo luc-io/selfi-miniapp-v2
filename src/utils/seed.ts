@@ -1,7 +1,17 @@
-export interface SeedInfo {
-  falSeed: number;  // Original FAL seed
-  seed: number;     // Compressed 7-digit seed
+const MAX_SEED = 9999999; // 7 digits
+
+export function compressLongSeed(seed: number): number {
+  return Math.abs(seed) % MAX_SEED;
 }
 
-// Frontend doesn't need to compress seeds, only display them
-// Compression happens on the backend
+export function isCompressedSeed(seed: number): boolean {
+  return seed <= MAX_SEED;
+}
+
+export function expandCompressedSeed(seed: number): number {
+  return isCompressedSeed(seed) ? seed + (MAX_SEED + 1) : seed;
+}
+
+export function generateFalSeed(): number {
+  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+}
