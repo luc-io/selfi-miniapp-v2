@@ -13,11 +13,6 @@ interface SeedInputProps {
   themeParams: TelegramThemeParams;
 }
 
-// Generate random 7-digit seed
-const generateRandomSeed = (): number => {
-  return Math.floor(Math.random() * 9000000) + 1000000; // 7 digits
-};
-
 // Format seed for display (7 digits or "Random")
 const formatSeedForDisplay = (seed: number): string => {
   if (seed === 0) return "Random";
