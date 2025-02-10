@@ -1,145 +1,78 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import axios from 'axios';
 
-interface TelegramUser {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-interface RequestOptions {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: any;
-}
-
-export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', headers = {}, body } = options;
-  const user = window.Telegram?.WebApp?.initDataUnsafe.user as TelegramUser | undefined;
-
-  // Log request details
-  console.log(`API Request to ${path}:`, {
-    method,
-    headers,
-    bodyType: body instanceof FormData ? 'FormData' : typeof body,
-    bodySize: body instanceof FormData ? 
-      Array.from(body.entries()).reduce((size, [_, value]) => {
-        if (value instanceof File) return size + value.size;
-        return size + new Blob([String(value)]).size;
-      }, 0) : 
-      body ? new Blob([JSON.stringify(body)]).size : 0,
-    user
-  });
-
-  // Prepare headers
-  const requestHeaders: Record<string, string> = {
-    ...headers,
-    ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
-  };
-
-  // Add auth headers if user exists
-  if (user) {
-    requestHeaders['X-Telegram-User-Id'] = user.id.toString();
-    requestHeaders['X-Telegram-Username'] = user.username || '';
-    requestHeaders['X-Telegram-First-Name'] = user.first_name;
-    requestHeaders['X-Telegram-Last-Name'] = user.last_name || '';
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      headers: requestHeaders,
-      credentials: 'include',
-      body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-    });
-
-    // Log response status
-    console.log(`API Response from ${path}:`, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
-    });
-
-    if (!response.ok) {
-      let errorMessage = `API request failed: ${response.statusText}`;
-      let errorDetails = {};
-
-      try {
-        // Try to parse error response
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
-        errorDetails = errorData;
-      } catch (e) {
-        // If error response is not JSON, try to get text
-        try {
-          const errorText = await response.text();
-          errorMessage = errorText || errorMessage;
-        } catch (e2) {
-          // If we can't get text, use original error message
-        }
-      }
-
-      console.error('API Error Details:', {
-        path,
-        status: response.status,
-        message: errorMessage,
-        details: errorDetails
-      });
-
-      throw new Error(errorMessage);
-    }
-
-    const data = await response.json();
-    console.log(`API Success from ${path}:`, data);
-    return data;
-  } catch (error) {
-    console.error('API Request Failed:', {
-      path,
-      error,
-      body: body instanceof FormData ? 'FormData content' : body
-    });
-    throw error;
-  }
-}
-
-// User Types
 export interface UserInfo {
+  username: string;
   stars: number;
-  totalSpentStars: number;
-  totalBoughtStars: number;
+  telegramId: string;
 }
 
-export async function getUserInfo(): Promise<UserInfo> {
-  return apiRequest<UserInfo>('/api/user/info');
+export interface TrainingProgress {
+  trainingId: string;
+  loraId: string;
+  status: string;
+  progress: number;
+  message?: string;
+  error?: string;
+  estimatedTimeRemaining?: number;
+  metadata?: any;
+  completedAt?: string;
+  test_mode?: boolean;
 }
 
-// Training Types
-export interface TrainingParams {
-  steps: number;
-  isStyle: boolean;
-  createMasks: boolean;
-  triggerWord: string;
-}
-
-export interface TrainingResult {
+export interface TrainingResponse {
   trainingId: string;
   loraId: string;
   test_mode?: boolean;
 }
 
-export interface TrainingProgress {
-  status: 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
-  message?: string;
-}
+// Helper function to get the Telegram WebApp user's ID from window object
+const getTelegramUserId = (): string | null => {
+  try {
+    return window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || null;
+  } catch (error) {
+    console.error('Failed to get Telegram user ID:', error);
+    return null;
+  }
+};
 
-export async function startTraining(
-  params: TrainingParams, 
+export const getUserInfo = async (): Promise<UserInfo> => {
+  const userId = getTelegramUserId();
+  if (!userId) {
+    throw new Error('User ID not found');
+  }
+
+  const response = await axios.get(`${API_BASE_URL}/users/me`, {
+    headers: {
+      'x-telegram-user-id': userId
+    }
+  });
+
+  return response.data;
+};
+
+export const startTraining = async (
+  params: {
+    steps: number;
+    isStyle: boolean;
+    createMasks: boolean;
+    triggerWord: string;
+  },
   files: File[],
   captions: Record<string, string>
-): Promise<TrainingResult> {
-  // Create FormData with files and parameters
+): Promise<TrainingResponse> => {
+  const userId = getTelegramUserId();
+  if (!userId) {
+    throw new Error('User ID not found');
+  }
+
   const formData = new FormData();
+  
+  // Add files
+  files.forEach(file => {
+    formData.append('files', file);
+  });
 
   // Add parameters
   formData.append('params', JSON.stringify({
@@ -150,29 +83,42 @@ export async function startTraining(
     captions
   }));
 
-  // Add files
-  files.forEach(file => {
-    formData.append('images', file);
+  const response = await axios.post(`${API_BASE_URL}/training/start`, formData, {
+    headers: {
+      'x-telegram-user-id': userId,
+      'Content-Type': 'multipart/form-data'
+    }
   });
 
-  // Let's check the total size before sending
-  const totalSize = Array.from(formData.entries()).reduce((size, [_, value]) => {
-    if (value instanceof File) return size + value.size;
-    return size + new Blob([String(value)]).size;
-  }, 0);
+  return response.data;
+};
 
-  console.log('Total upload size:', {
-    bytes: totalSize,
-    mb: (totalSize / (1024 * 1024)).toFixed(2) + ' MB'
+export const getTrainingStatus = async (trainingId: string): Promise<TrainingProgress> => {
+  const userId = getTelegramUserId();
+  if (!userId) {
+    throw new Error('User ID not found');
+  }
+
+  const response = await axios.get(`${API_BASE_URL}/training/${trainingId}/status`, {
+    headers: {
+      'x-telegram-user-id': userId
+    }
   });
 
-  return apiRequest<TrainingResult>('/api/training/start', {
-    method: 'POST',
-    body: formData
-  });
-}
+  return response.data;
+};
 
-export async function getTrainingProgress(id: string | null): Promise<TrainingProgress | null> {  
-  if (!id) return null;
-  return apiRequest<TrainingProgress>(`/api/training/${id}/status`);
-}
+export const cancelTraining = async (trainingId: string): Promise<{ message: string }> => {
+  const userId = getTelegramUserId();
+  if (!userId) {
+    throw new Error('User ID not found');
+  }
+
+  const response = await axios.post(`${API_BASE_URL}/training/${trainingId}/cancel`, null, {
+    headers: {
+      'x-telegram-user-id': userId
+    }
+  });
+
+  return response.data;
+};
