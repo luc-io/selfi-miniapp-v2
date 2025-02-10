@@ -1,6 +1,6 @@
 import { RotateCcw } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import type { TelegramTheme } from '@/types';
+import type { TelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface StepsInputProps {
   value: number;
