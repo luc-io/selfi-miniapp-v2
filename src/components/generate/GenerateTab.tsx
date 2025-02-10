@@ -4,30 +4,19 @@ import { useGenerate } from '@/hooks/useGenerate';
 import { useParameters } from '@/hooks/useParameters';
 import { ModelSelector } from './ModelSelector';
 import { LoraSelector } from './LoraSelector';
-import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Switch } from '../ui/switch';
-import { Loader2, RotateCcw } from 'lucide-react';
-import type { GenerationParameters, ImageSize } from '@/types';
+import { Loader2 } from 'lucide-react';
+import type { GenerationParameters } from '@/types';
 import type { LoraModel, LoraParameter } from '@/types/lora';
 import { saveUserParameters } from '@/api/parameters';
 import { getUserModels } from '@/api/loras';
 import { useQuery } from '@tanstack/react-query';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
-
-const IMAGE_SIZES = {
-  landscape_4_3: 'Landscape 4:3',
-  landscape_16_9: 'Landscape 16:9',
-  square_hd: 'Square HD',
-  square: 'Square',
-  portrait_4_3: 'Portrait 4:3',
-  portrait_16_9: 'Portrait 16:9',
-} as const;
+import { ImageParameters } from './ImageParameters';
 
 const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
-  seed: Math.floor(Math.random() * 1000000),
+  seed: 0,
   guidance_scale: 3.5,
   num_images: 1,
   enable_safety_checker: true,
@@ -65,17 +54,14 @@ export function GenerateTab() {
     [selectedModels]
   );
 
-  // Update local state when parameters load, maintaining defaults for missing values
-  // and preserving active lora states
+  // Update local state when parameters load
   useEffect(() => {
     if (parameters) {
       setParams(currentParams => {
         const updatedParams = {
           ...DEFAULT_PARAMS,
           ...parameters,
-          // Keep existing loras that are still selected
           loras: parameters.loras?.filter(lora => selectedModelIds.has(lora.path)) || [],
-          // Preserve any runtime changes that aren't in the loaded parameters
           ...Object.fromEntries(
             Object.entries(currentParams).filter(([key]) => 
               !(key in parameters) && key in currentParams
@@ -95,10 +81,6 @@ export function GenerateTab() {
       ...prevParams,
       [key]: value
     }));
-  };
-
-  const resetParameter = (paramName: keyof typeof DEFAULT_PARAMS) => {
-    updateParam(paramName, DEFAULT_PARAMS[paramName]);
   };
 
   const handleAddLora = (lora: LoraParameter) => {
@@ -128,7 +110,7 @@ export function GenerateTab() {
     setIsSaving(true);
     try {
       await saveUserParameters(params);
-      await invalidateParameters(); // Refresh the parameters in cache
+      await invalidateParameters();
       
       window.Telegram?.WebApp?.sendData(JSON.stringify({
         action: 'save_params',
@@ -162,10 +144,6 @@ export function GenerateTab() {
 
   const hintStyle = {
     color: themeParams.hint_color,
-  };
-
-  const resetButtonStyle = {
-    color: themeParams.button_color,
   };
 
   if (isLoadingParams || isLoadingModels) {
@@ -209,127 +187,11 @@ export function GenerateTab() {
         </div>
 
         {/* Image Parameters */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-semibold" style={labelStyle}>Image Parameters</h2>
-          
-          <div className="space-y-2">
-            <label className="block text-sm font-medium" style={labelStyle}>Image Size</label>
-            <Select 
-              value={params.image_size} 
-              onValueChange={(v: string) => updateParam('image_size', v as ImageSize)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(IMAGE_SIZES).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium" style={labelStyle}>
-                Steps <span style={hintStyle} className="ml-1">({params.num_inference_steps})</span>
-              </label>
-              <button 
-                onClick={() => resetParameter('num_inference_steps')}
-                className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
-                style={resetButtonStyle}
-                title="Reset to default (28)"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <Slider 
-              value={[params.num_inference_steps]}
-              onValueChange={(v: number[]) => updateParam('num_inference_steps', v[0])}
-              min={1}
-              max={50}
-              step={1}
-              className="py-2"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium" style={labelStyle}>
-                Guidance Scale <span style={hintStyle} className="ml-1">({params.guidance_scale})</span>
-              </label>
-              <button 
-                onClick={() => resetParameter('guidance_scale')}
-                className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
-                style={resetButtonStyle}
-                title="Reset to default (3.5)"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <Slider 
-              value={[params.guidance_scale]}
-              onValueChange={(v: number[]) => updateParam('guidance_scale', v[0])}
-              min={1}
-              max={20}
-              step={0.1}
-              className="py-2"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium" style={labelStyle}>
-                Number of Images <span style={hintStyle} className="ml-1">({params.num_images})</span>
-              </label>
-              <button 
-                onClick={() => resetParameter('num_images')}
-                className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
-                style={resetButtonStyle}
-                title="Reset to default (1)"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <Slider 
-              value={[params.num_images]}
-              onValueChange={(v: number[]) => updateParam('num_images', v[0])}
-              min={1}
-              max={4}
-              step={1}
-              className="py-2"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium" style={labelStyle}>Output Format</label>
-            <Select 
-              value={params.output_format}
-              onValueChange={(v: string) => updateParam('output_format', v as 'jpeg' | 'png')}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="jpeg">JPEG</SelectItem>
-                <SelectItem value="png">PNG</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <label className="block text-sm font-medium" style={labelStyle}>Safety Checker</label>
-              <p className="text-sm" style={hintStyle}>Filter inappropriate content</p>
-            </div>
-            <Switch 
-              checked={params.enable_safety_checker}
-              onCheckedChange={(checked: boolean) => updateParam('enable_safety_checker', checked)}
-            />
-          </div>
-        </div>
+        <ImageParameters
+          params={params}
+          updateParam={updateParam}
+          themeParams={themeParams}
+        />
 
         {/* Save Button */}
         <button
