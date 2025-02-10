@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { TelegramTheme } from '@/types';
+import type { TelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface SeedInputProps {
   value: number;
