@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { GenerationParameters } from '@/types';
-import type { TelegramWebAppTheme } from '@/types/telegram';
-import { generateFalSeed, expandCompressedSeed, isCompressedSeed } from '@/utils/seed';
+import type { TelegramThemeParams } from '@/types/telegram';
+import { generateFalSeed, expandCompressedSeed, isCompressedSeed } from '@/lib/seed';
 
 interface Props {
   params: GenerationParameters;
@@ -9,7 +9,7 @@ interface Props {
     key: K,
     value: GenerationParameters[K]
   ) => void;
-  themeParams: TelegramWebAppTheme;
+  themeParams: TelegramThemeParams;
 }
 
 export function ImageParameters({ params, updateParam, themeParams }: Props) {
