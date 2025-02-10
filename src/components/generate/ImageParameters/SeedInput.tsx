@@ -1,4 +1,4 @@
-import { Info, RotateCcw } from 'lucide-react';
+import { RotateCcw, X } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -41,6 +41,10 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
     onChange(generateFalSeed());
   };
 
+  const handleClearSeed = () => {
+    onChange(0);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -73,11 +77,6 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           pattern="[0-9]*"
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Backspace' && !e.currentTarget.value) {
-              onChange(0);
-            }
-          }}
           placeholder="Random"
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
@@ -86,6 +85,17 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             borderColor: `${themeParams.button_color}20`
           }}
         />
+        <button
+          onClick={handleClearSeed}
+          className="p-1.5 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none flex-shrink-0"
+          style={{ 
+            backgroundColor: themeParams.button_color,
+            color: themeParams.button_text_color
+          }}
+          title="Clear seed (Random)"
+        >
+          <X className="h-4 w-4" />
+        </button>
         <button
           onClick={handleRandomSeed}
           className="p-1.5 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none flex-shrink-0"
