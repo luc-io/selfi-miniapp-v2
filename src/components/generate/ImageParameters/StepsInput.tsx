@@ -10,28 +10,19 @@ interface StepsInputProps {
 }
 
 export function StepsInput({ value, onChange, onReset, themeParams }: StepsInputProps) {
-  const labelStyle = {
-    color: themeParams.text_color,
-  };
-
-  const hintStyle = {
-    color: themeParams.hint_color,
-  };
-
-  const resetButtonStyle = {
-    color: themeParams.button_color,
-  };
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium" style={labelStyle}>
-          Steps <span style={hintStyle} className="ml-1">({value})</span>
+        <label 
+          className="block text-sm font-medium" 
+          style={{ color: themeParams.text_color }}
+        >
+          Steps <span style={{ color: themeParams.hint_color }} className="ml-1">({value})</span>
         </label>
         <button 
           onClick={onReset}
           className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
-          style={resetButtonStyle}
+          style={{ color: themeParams.button_color }}
           title="Reset to default (28)"
         >
           <RotateCcw className="h-3.5 w-3.5" />
@@ -44,6 +35,10 @@ export function StepsInput({ value, onChange, onReset, themeParams }: StepsInput
         max={50}
         step={1}
         className="py-2"
+        style={{
+          '--slider-thumb-bg': themeParams.button_color,
+          '--slider-track-bg': themeParams.button_color,
+        } as React.CSSProperties}
       />
     </div>
   );

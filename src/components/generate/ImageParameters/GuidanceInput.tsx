@@ -1,6 +1,12 @@
-import { RotateCcw } from 'lucide-react';
+import { Info, RotateCcw } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import type { TelegramThemeParams } from '@/types/telegram';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface GuidanceInputProps {
   value: number;
@@ -10,28 +16,35 @@ interface GuidanceInputProps {
 }
 
 export function GuidanceInput({ value, onChange, onReset, themeParams }: GuidanceInputProps) {
-  const labelStyle = {
-    color: themeParams.text_color,
-  };
-
-  const hintStyle = {
-    color: themeParams.hint_color,
-  };
-
-  const resetButtonStyle = {
-    color: themeParams.button_color,
-  };
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium" style={labelStyle}>
-          Guidance Scale <span style={hintStyle} className="ml-1">({value})</span>
-        </label>
+        <div className="flex items-center gap-2">
+          <label 
+            className="block text-sm font-medium" 
+            style={{ color: themeParams.text_color }}
+          >
+            CFG Scale
+          </label>
+          <span style={{ color: themeParams.hint_color }}>({value.toFixed(1)})</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info 
+                  className="h-4 w-4" 
+                  style={{ color: themeParams.hint_color }} 
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <button 
           onClick={onReset}
           className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
-          style={resetButtonStyle}
+          style={{ color: themeParams.button_color }}
           title="Reset to default (3.5)"
         >
           <RotateCcw className="h-3.5 w-3.5" />
@@ -44,6 +57,10 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
         max={20}
         step={0.1}
         className="py-2"
+        style={{
+          '--slider-thumb-bg': themeParams.button_color,
+          '--slider-track-bg': themeParams.button_color,
+        } as React.CSSProperties}
       />
     </div>
   );
