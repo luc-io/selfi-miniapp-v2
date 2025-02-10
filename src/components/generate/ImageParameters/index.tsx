@@ -1,5 +1,5 @@
 import type { GenerationParameters } from '@/types';
-import type { TelegramTheme } from '@/hooks/useTelegramTheme';
+import type { TelegramThemeParams } from '@/types/telegram';
 import { SeedInput } from './SeedInput';
 import { StepsInput } from './StepsInput';
 import { GuidanceInput } from './GuidanceInput';
@@ -19,7 +19,7 @@ const IMAGE_SIZES = {
 interface ImageParametersProps {
   params: GenerationParameters;
   updateParam: <K extends keyof GenerationParameters>(key: K, value: GenerationParameters[K]) => void;
-  themeParams: TelegramTheme;
+  themeParams: TelegramThemeParams;
 }
 
 const DEFAULT_PARAMS: GenerationParameters = {
