@@ -1,76 +1,72 @@
-import { useState, useCallback } from 'react';
-import { Upload } from 'lucide-react';
-import type { TrainingImage } from '../types/training';
+import React, { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { ImageIcon } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FileUploadProps } from './types';
+import { type TrainingImage } from '../types/training';
 
-interface FileUploadProps {
-  totalSize: number;
-  maxSize: number;
-  onFilesSelected: (files: TrainingImage[]) => void;
-}
-
-export const FileUpload: React.FC<FileUploadProps> = ({
-  totalSize,
-  maxSize,
-  onFilesSelected
+export const FileUpload: React.FC<FileUploadProps> = ({ 
+  totalSize, 
+  maxSize, 
+  onFilesSelected,
+  disabled = false 
 }) => {
-  const [dragActive, setDragActive] = useState(false);
-
-  const handleFiles = useCallback((files: FileList | null) => {
-    if (!files) return;
-
-    const imageFiles = Array.from(files);
-    const newTotalSize = totalSize + imageFiles.reduce((acc, file) => acc + file.size, 0);
-
-    if (newTotalSize > maxSize) {
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Total file size must be less than 50MB'
-      });
-      return;
-    }
-
-    const newImages = imageFiles.map(file => ({
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (disabled) return;
+    
+    const newImages: TrainingImage[] = acceptedFiles.map(file => ({
       file,
-      caption: file.name.replace(/\.[^/.]+$/, '') // Remove extension
+      caption: ''
     }));
-
     onFilesSelected(newImages);
-  }, [totalSize, maxSize, onFilesSelected]);
+  }, [onFilesSelected, disabled]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpg', '.jpeg', '.png']
+    },
+    maxSize: maxSize - totalSize,
+    disabled
+  });
+
+  const remainingSize = maxSize - totalSize;
+  const remainingSizeMB = Math.round(remainingSize / (1024 * 1024));
 
   return (
-    <div 
-      className={`mt-1 ${dragActive ? 'border-primary/50 bg-primary/5' : 'border-border'}`}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragActive(false);
-        handleFiles(e.dataTransfer.files);
-      }}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragActive(true);
-      }}
-      onDragLeave={(e) => {
-        e.preventDefault();
-        setDragActive(false);
-      }}
-    >
-      <label className="flex justify-center w-full h-32 px-4 transition bg-card border-2 border-dashed border-border appearance-none cursor-pointer">
-        <div className="flex flex-col items-center justify-center">
-          <Upload className="w-8 h-8 text-muted-foreground" />
-          <span className="mt-2 text-sm text-card-foreground">
-            Drop images here or click to browse
-          </span>
-          <span className="mt-1 text-xs text-muted-foreground">
-            {((totalSize / 1024 / 1024).toFixed(1))} MB of 50 MB used
-          </span>
+    <div className="space-y-2">
+      <div
+        {...getRootProps()}
+        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+          isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-500 hover:bg-blue-50'}`}
+      >
+        <input {...getInputProps()} />
+        <div className="flex flex-col items-center space-y-2">
+          <ImageIcon className="w-8 h-8 text-gray-400" />
+          <div className="text-sm text-gray-600">
+            {isDragActive ? (
+              <p>Drop the files here...</p>
+            ) : (
+              <p>
+                Drag & drop images here, or click to select
+                <br />
+                <span className="text-xs">
+                  Remaining space: {remainingSizeMB}MB
+                </span>
+              </p>
+            )}
+          </div>
         </div>
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={(e) => handleFiles(e.target.files)}
-          className="hidden"
-        />
-      </label>
+      </div>
+
+      {totalSize > maxSize && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Total file size exceeds the maximum allowed ({maxSize / (1024 * 1024)}MB)
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
