@@ -1,5 +1,3 @@
-import { type SeedInfo } from '@/utils/seed';
-
 export interface GenerationParams {
   num_inference_steps: number;
   guidance_scale: number;
