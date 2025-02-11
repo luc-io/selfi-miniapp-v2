@@ -6,7 +6,7 @@ import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
 import { startTraining } from '@/lib/api';
 import { useTrainingState, useTrainingStatus } from './hooks';
 import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from './components';
-import type { TrainingImage } from './types/training';
+// import type { TrainingImage } from './types/training';
 
 const TRAINING_COST = 150; // Cost in stars for training
 
@@ -162,6 +162,4 @@ export function TrainTab() {
     </Card>
   );
 }
-
-export { TrainTab };
 
