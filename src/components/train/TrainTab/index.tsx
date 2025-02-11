@@ -4,8 +4,9 @@ import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import { useStarBalance } from '@/hooks/useStarBalance';
 import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
 import { startTraining } from '@/lib/api';
-import { useTrainingState, useTrainingStatus } from './hooks';
-import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from './components';
+import { useTrainingState, useTrainingStatus } from '../hooks';
+import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from '../components';
+import type { TrainingImage } from '../types';
 
 const TRAINING_COST = 150; // Cost in stars for training
 
@@ -68,11 +69,11 @@ export function TrainTab() {
       startTrainingProgress();
 
       // Extract files and captions
-      const files = state.images.map(img => img.file);
-      const captions = state.images.reduce((acc, img) => {
+      const files = state.images.map((img: TrainingImage) => img.file);
+      const captions = state.images.reduce((acc: Record<string, string>, img: TrainingImage) => {
         acc[img.file.name] = img.caption;
         return acc;
-      }, {} as Record<string, string>);
+      }, {});
 
       const trainingResult = await startTraining({
         steps: state.steps,
