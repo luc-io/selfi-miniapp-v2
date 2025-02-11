@@ -1,7 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export interface TrainingProgress {
   step: number;
@@ -27,30 +26,25 @@ export function TrainingStatus({ isVisible, progress }: TrainingStatusProps) {
   };
 
   const progressBarStyle = {
-    backgroundColor: themeParams.button_color,
+    backgroundColor: progress.error ? '#FF3B30' : themeParams.button_color,
   };
 
-  const percentage = (progress.step / progress.totalSteps) * 100;
-
-  // If there's an error, show it in an Alert
-  if (progress.error) {
-    return (
-      <Alert variant="destructive" style={{
-        backgroundColor: '#FF3B3020',
-        color: '#FF3B30',
-        borderColor: '#FF3B3040'
-      }}>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>{progress.error}</AlertDescription>
-      </Alert>
-    );
-  }
+  const percentage = Math.min(100, Math.max(0, (progress.step / progress.totalSteps) * 100));
 
   return (
     <Card className="p-4 mt-4" style={cardStyle}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">{progress.status}</div>
+          <div className="text-sm font-medium">
+            {progress.error ? (
+              <div className="flex items-center text-red-500 gap-2">
+                <AlertCircle className="h-4 w-4" />
+                Error
+              </div>
+            ) : (
+              progress.status
+            )}
+          </div>
           <div className="text-sm">{Math.round(percentage)}%</div>
         </div>
 
@@ -64,10 +58,18 @@ export function TrainingStatus({ isVisible, progress }: TrainingStatusProps) {
           />
         </div>
 
-        <div className="flex items-center justify-center text-sm gap-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Processing...
-        </div>
+        {progress.error ? (
+          <div className="text-sm text-red-500">{progress.error}</div>
+        ) : percentage < 100 ? (
+          <div className="flex items-center justify-center text-sm gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Processing
+          </div>
+        ) : (
+          <div className="text-sm text-center text-green-500">
+            Training Complete!
+          </div>
+        )}
       </div>
     </Card>
   );
