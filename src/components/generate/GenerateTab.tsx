@@ -166,7 +166,7 @@ export function GenerateTab() {
 
         {/* LoRA Selection */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold" style={labelStyle}>LoRA Models</h2>
+{/*           <h2 className="text-xl font-semibold" style={labelStyle}>LoRA Models</h2> */}
           {selectedModels.length > 0 ? (
             <LoraSelector
               loras={params.loras || []}
