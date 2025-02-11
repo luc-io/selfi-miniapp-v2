@@ -26,17 +26,31 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
           >
             CFG Scale
           </label>
-          <span style={{ color: themeParams.hint_color }}>({value.toFixed(1)})</span>
-          <TooltipProvider>
+          <span 
+            className="text-sm"
+            style={{ color: themeParams.hint_color }}
+          >
+            ({value.toFixed(1)})
+          </span>
+          <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Info 
-                  className="h-4 w-4" 
-                  style={{ color: themeParams.hint_color }} 
-                />
+                <button type="button" className="cursor-help">
+                  <Info 
+                    className="h-3.5 w-3.5" 
+                    style={{ color: themeParams.hint_color }} 
+                  />
+                </button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.</p>
+              <TooltipContent 
+                side="top" 
+                className="border-0 shadow-sm p-2 text-sm" 
+                style={{ 
+                  backgroundColor: themeParams.bg_color, 
+                  color: themeParams.hint_color 
+                }}
+              >
+                Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
