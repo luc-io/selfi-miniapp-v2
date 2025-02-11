@@ -28,7 +28,6 @@ export function TrainTab() {
     isTraining,
     startTraining: startTrainingProgress,
     finishTraining,
-    updateProgress,
     setError: setTrainingError
   } = useTrainingStatus();
 

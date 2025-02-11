@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { UserInfo } from '@/lib/api';
 
