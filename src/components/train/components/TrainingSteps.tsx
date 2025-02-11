@@ -22,9 +22,9 @@ export function TrainingSteps({ value, onChange }: TrainingStepsProps) {
       </label>
       <input
         type="range"
-        min={50}
-        max={400}
-        step={50}
+        min={100}
+        max={2000}
+        step={100}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 rounded-lg appearance-none cursor-pointer"
@@ -34,8 +34,8 @@ export function TrainingSteps({ value, onChange }: TrainingStepsProps) {
         } as React.CSSProperties}
       />
       <div className="flex justify-between text-xs" style={labelStyle}>
-        <span>50</span>
-        <span>400</span>
+        <span>100</span>
+        <span>2000</span>
       </div>
     </div>
   );
