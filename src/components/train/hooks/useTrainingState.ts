@@ -1,22 +1,31 @@
+import { useState, useCallback } from 'react';
+import { DEFAULT_STATE, type TrainingImage } from '../types/training';
 
+interface TrainingStateType {
+  images: TrainingImage[];
+  triggerWord: string;
+  steps: number;
+  isStyle: boolean;
+  createMasks: boolean;
+}
 
 export function useTrainingState() {
-  const [state, setState] = useState(DEFAULT_STATE);
+  const [state, setState] = useState<TrainingStateType>(DEFAULT_STATE);
 
   const setImages = useCallback((images: TrainingImage[]) => {
-    setState(prev => ({ ...prev, images }));
+    setState((prev: TrainingStateType) => ({ ...prev, images }));
   }, []);
 
   const setTriggerWord = useCallback((triggerWord: string) => {
-    setState(prev => ({ ...prev, triggerWord }));
+    setState((prev: TrainingStateType) => ({ ...prev, triggerWord }));
   }, []);
 
   const setSteps = useCallback((steps: number) => {
-    setState(prev => ({ ...prev, steps }));
+    setState((prev: TrainingStateType) => ({ ...prev, steps }));
   }, []);
 
   const setStyle = useCallback((isStyle: boolean) => {
-    setState(prev => ({ 
+    setState((prev: TrainingStateType) => ({ 
       ...prev, 
       isStyle,
       createMasks: isStyle ? false : prev.createMasks
@@ -24,7 +33,7 @@ export function useTrainingState() {
   }, []);
 
   const setMasks = useCallback((createMasks: boolean) => {
-    setState(prev => ({ ...prev, createMasks }));
+    setState((prev: TrainingStateType) => ({ ...prev, createMasks }));
   }, []);
 
   const resetState = useCallback(() => {
