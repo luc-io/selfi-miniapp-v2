@@ -50,8 +50,9 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
                 </button>
               </TooltipTrigger>
               <TooltipContent 
-                side="top" 
-                className="text-sm" 
+                side="right" 
+                align="start"
+                className="text-sm max-w-[200px]" 
                 style={{ 
                   backgroundColor: `${themeParams.bg_color}E6`,
                   color: themeParams.hint_color,
