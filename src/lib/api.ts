@@ -12,10 +12,11 @@ interface RequestOptions {
   method?: string;
   headers?: Record<string, string>;
   body?: any;
+  allowedErrors?: string[]; // List of error messages that should not throw
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', headers = {}, body } = options;
+  const { method = 'GET', headers = {}, body, allowedErrors = [] } = options;
   const user = window.Telegram?.WebApp?.initDataUnsafe.user as TelegramUser | undefined;
 
   // Log request details
@@ -80,12 +81,18 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         }
       }
 
+      // Log error details regardless
       console.error('API Error Details:', {
         path,
         status: response.status,
         message: errorMessage,
         details: errorDetails
       });
+
+      // If this is an allowed error, return null
+      if (allowedErrors.some(allowedError => errorMessage.includes(allowedError))) {
+        return null as T;
+      }
 
       throw new Error(errorMessage);
     }
@@ -189,5 +196,9 @@ export async function startTraining(
 
 export async function getTrainingStatus(id: string | null): Promise<TrainingStatus | null> {  
   if (!id) return null;
-  return apiRequest<TrainingStatus>(`/api/training/${id}/status`);
+  
+  // Allow specific errors that we know are temporary
+  return apiRequest<TrainingStatus>(`/api/training/${id}/status`, {
+    allowedErrors: ['Could not find training record']
+  });
 }
