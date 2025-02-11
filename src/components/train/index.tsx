@@ -4,8 +4,9 @@ import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import { useStarBalance } from '@/hooks/useStarBalance';
 import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
 import { startTraining } from '@/lib/api';
-import { useTrainingState, useTrainingStatus } from '../hooks';
-import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from '../components';
+import { useTrainingState, useTrainingStatus } from './hooks';
+import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from './components';
+import type { TrainingImage } from './types/training';
 
 const TRAINING_COST = 150; // Cost in stars for training
 
@@ -45,12 +46,11 @@ export function TrainTab() {
     // Clear any previous error messages
     setErrorMessage(null);
 
-    // Check if user has enough stars
+    // Check if user has enough stars before starting training
     if (!hasEnoughStars) {
-      setErrorMessage(`Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`);
-      window.Telegram?.WebApp?.showPopup({
-        message: `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`
-      });
+      const errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+      setErrorMessage(errorMsg);
+      window.Telegram?.WebApp?.showPopup({ message: errorMsg });
       return;
     }
 
@@ -58,8 +58,8 @@ export function TrainTab() {
       setIsLoading(true);
 
       // Extract files and captions
-      const files = state.images.map(img => img.file);
-      const captions = state.images.reduce((acc, img) => {
+      const files = state.images.map((img: TrainingImage) => img.file);
+      const captions = state.images.reduce((acc: Record<string, string>, img: TrainingImage) => {
         acc[img.file.name] = img.caption;
         return acc;
       }, {} as Record<string, string>);
@@ -69,15 +69,15 @@ export function TrainTab() {
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
-      }, files, captions).catch(error => {
-        console.error('Training failed:', error);
-        throw new Error('Training failed: ' + (error.message || 'Unknown error'));
-      });
+      }, files, captions);
 
-      console.log('Training started successfully:', trainingResult);
-
-      // Start progress tracking with training ID
-      startTrainingProgress(trainingResult.trainingId);
+      if (trainingResult.falRequestId) {
+        console.log('Starting training progress tracking with FAL ID:', trainingResult.falRequestId);
+        startTrainingProgress(trainingResult.falRequestId);
+      } else {
+        console.error('Training result missing falRequestId:', trainingResult);
+        throw new Error('Could not find training ID in response');
+      }
 
       // Update user info after successful training start
       await refreshBalance();
@@ -86,26 +86,28 @@ export function TrainTab() {
         message: 'Training started successfully!'
       });
 
-      // Reset form
+      // Reset form after successful start
       resetState();
 
     } catch (error) {
       console.error('Training process failed:', error);
-      let errorMessage = 'Training failed: ';
+      let errorMsg = 'Training failed: ';
       
       if (error instanceof Error) {
         if (error.message.includes('Insufficient stars')) {
-          errorMessage = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+          errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+          setErrorMessage(errorMsg);
         } else {
-          errorMessage += error.message;
+          errorMsg += error.message;
+          setTrainingError(errorMsg);
         }
       } else {
-        errorMessage += 'Unknown error occurred';
+        errorMsg += 'Unknown error occurred';
+        setTrainingError(errorMsg);
       }
 
-      setErrorMessage(errorMessage);
-      setTrainingError(errorMessage);
-      window.Telegram?.WebApp?.showPopup({ message: errorMessage });
+      console.error('Final error message:', errorMsg);
+      window.Telegram?.WebApp?.showPopup({ message: errorMsg });
 
     } finally {
       setIsLoading(false);
@@ -127,7 +129,7 @@ export function TrainTab() {
           hasEnoughStars={hasEnoughStars}
         />
 
-        <ErrorDisplay message={errorMessage} />
+        {!isTraining && <ErrorDisplay message={errorMessage} />}
 
         <TrainingForm
           isLoading={isLoading}
@@ -153,5 +155,3 @@ export function TrainTab() {
     </Card>
   );
 }
-
-export default TrainTab;

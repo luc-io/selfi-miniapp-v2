@@ -125,6 +125,7 @@ export interface TrainingParams {
 export interface TrainingResult {
   trainingId: string;
   loraId: string;
+  falRequestId: string;  // Added this field
   test_mode?: boolean;
 }
 
@@ -137,6 +138,7 @@ export interface TrainingProgressInfo {
 export interface TrainingStatus {
   trainingId: string;
   loraId: string;
+  falRequestId: string;  // Added this field
   status: 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
   trainingStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   metadata?: any;

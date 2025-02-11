@@ -1,10 +1,10 @@
-import type { TrainingImage } from '../types';
+import type { TrainingImage } from '../types/training';
+import { Loader2 } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { ImagePreviews } from './ImagePreviews';
 import { TriggerWordInput } from './TriggerWordInput';
 import { TrainingSteps } from './TrainingSteps';
 import { TrainingToggles } from './TrainingToggles';
-import { Loader2 } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface TrainingFormProps {
@@ -17,10 +17,10 @@ interface TrainingFormProps {
   hasEnoughStars: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onImagesChange: (images: TrainingImage[]) => void;
-  onTriggerWordChange: (word: string) => void;
-  onStepsChange: (steps: number) => void;
-  onStyleChange: (isStyle: boolean) => void;
-  onMasksChange: (createMasks: boolean) => void;
+  onTriggerWordChange: (value: string) => void;
+  onStepsChange: (value: number) => void;
+  onStyleChange: (value: boolean) => void;
+  onMasksChange: (value: boolean) => void;
 }
 
 export function TrainingForm({
@@ -36,10 +36,10 @@ export function TrainingForm({
   onTriggerWordChange,
   onStepsChange,
   onStyleChange,
-  onMasksChange
+  onMasksChange,
 }: TrainingFormProps) {
-  const MAX_SIZE = 50 * 1024 * 1024; // 50MB
   const themeParams = useTelegramTheme();
+  const MAX_SIZE = 50 * 1024 * 1024; // 50MB
   const totalSize = images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
 
   const buttonStyle = {
@@ -48,26 +48,27 @@ export function TrainingForm({
   };
 
   const isFormValid = images.length > 0 && triggerWord.trim().length > 0;
+  const buttonDisabled = isLoading || !isFormValid || !hasEnoughStars;
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <FileUpload
         totalSize={totalSize}
         maxSize={MAX_SIZE}
-        onFilesSelected={newImages => 
+        onFilesSelected={(newImages: TrainingImage[]) => 
           onImagesChange([...images, ...newImages])
         }
       />
 
       <ImagePreviews
         images={images}
-        onImageRemove={index => 
+        onImageRemove={(index: number) => 
           onImagesChange(images.filter((_, i) => i !== index))
         }
-        onCaptionUpdate={(index, caption) =>
-          onImagesChange(
-            images.map((img, i) => i === index ? { ...img, caption } : img)
-          )
+        onCaptionUpdate={(index: number, caption: string) =>
+          onImagesChange(images.map((img, i) => 
+            i === index ? { ...img, caption } : img
+          ))
         }
       />
 
@@ -84,27 +85,21 @@ export function TrainingForm({
       <TrainingToggles
         isStyle={isStyle}
         createMasks={createMasks}
-        onStyleChange={val => {
-          onStyleChange(val);
-          if (val) onMasksChange(false);
-        }}
+        onStyleChange={onStyleChange}
         onMasksChange={onMasksChange}
       />
 
       <button 
-        type="submit" 
-        className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          ...buttonStyle,
-          opacity: !hasEnoughStars || !isFormValid ? 0.5 : 1
-        }}
-        disabled={isLoading || !isFormValid || !hasEnoughStars}
+        type="submit"
+        className="w-full mt-6 flex items-center justify-center py-3 px-4 text-sm font-semibold rounded-md shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2"
+        style={buttonStyle}
+        disabled={buttonDisabled}
       >
         {isLoading ? (
-          <div className="flex items-center justify-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Training Model...
-          </div>
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Training...
+          </>
         ) : !hasEnoughStars ? (
           'Insufficient Stars'
         ) : !isFormValid ? (
