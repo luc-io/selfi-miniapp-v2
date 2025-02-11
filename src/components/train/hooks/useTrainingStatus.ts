@@ -18,7 +18,7 @@ interface TrainingStatusHook {
 }
 
 const POLLING_INTERVAL = 3000;   // Poll every 3 seconds
-const CLEANUP_DELAY = 3000;     // Clear progress after 3 seconds
+const CLEANUP_DELAY = 5000;     // Clear progress after 5 seconds (increased from 3s)
 const MAX_RETRIES = 3;         // Maximum number of consecutive polling failures
 
 export function useTrainingStatus(): TrainingStatusHook {
@@ -27,9 +27,9 @@ export function useTrainingStatus(): TrainingStatusHook {
   const [currentTrainingId, setCurrentTrainingId] = useState<string | null>(null);
   const [failedAttempts, setFailedAttempts] = useState(0);
 
-  // Clear progress when training finishes
+  // Clear progress when training finishes successfully
   useEffect(() => {
-    if (!isTraining && progress && !progress.error) {
+    if (!isTraining && progress && !progress.error && progress.step >= progress.totalSteps) {
       const timer = setTimeout(() => {
         setProgress(null);
         setCurrentTrainingId(null);
@@ -49,6 +49,7 @@ export function useTrainingStatus(): TrainingStatusHook {
 
       try {
         const status = await getTrainingStatus(currentTrainingId);
+        console.log('Training status poll:', status); // Debug log
 
         // Reset failed attempts on successful poll
         setFailedAttempts(0);
@@ -62,37 +63,46 @@ export function useTrainingStatus(): TrainingStatusHook {
               status: status.progress.message || 'Training in progress...'
             };
 
-            // Handle completion states from FAL
-            if (status.progress.status === 'completed') {
-              setProgress({
-                ...updatedProgress,
+            // Update progress before checking completion state
+            setProgress(updatedProgress);
+
+            // Handle completion states from FAL or training record
+            if (status.progress.status === 'completed' || status.trainingStatus === 'COMPLETED') {
+              // Set final state but don't immediately clear isTraining
+              setProgress(prev => ({
+                ...prev!,
                 step: 100,
                 status: 'Training completed!'
-              });
-              setIsTraining(false);
-            } else if (status.progress.status === 'failed') {
+              }));
+              // Delay setting isTraining to false
+              setTimeout(() => setIsTraining(false), 1000);
+            } else if (status.progress.status === 'failed' || status.trainingStatus === 'FAILED') {
               const errorMessage = status.error || status.progress.message || 'Unknown error';
-              setError('Training failed: ' + errorMessage);
-              setIsTraining(false);
-            } else {
-              setProgress(updatedProgress);
+              if (!errorMessage.includes('Could not find training record')) {
+                setError('Training failed: ' + errorMessage);
+              }
             }
           } 
-          // Handle status from training record
+          // Handle status from training record without FAL progress
           else if (status.trainingStatus === 'COMPLETED') {
             setProgress(prev => ({
               ...prev!,
               step: 100,
               status: 'Training completed!'
             }));
-            setIsTraining(false);
+            setTimeout(() => setIsTraining(false), 1000);
           } else if (status.trainingStatus === 'FAILED') {
-            setError('Training failed: ' + (status.error || 'Unknown error'));
-            setIsTraining(false);
+            if (!status.error?.includes('Could not find training record')) {
+              setError('Training failed: ' + (status.error || 'Unknown error'));
+            }
           }
         }
       } catch (error) {
         console.error('Failed to poll training status:', error);
+        
+        if (typeof error === 'string' && error.includes('Could not find training record')) {
+          return; // Ignore this specific error
+        }
         
         // Increment failed attempts
         setFailedAttempts(prev => {
@@ -115,7 +125,8 @@ export function useTrainingStatus(): TrainingStatusHook {
     };
 
     if (currentTrainingId && isTraining) {
-      pollTimer = setTimeout(pollStatus, POLLING_INTERVAL);
+      // Start polling immediately
+      pollStatus();
     }
 
     return () => {
@@ -137,7 +148,6 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, []);
 
   const finishTraining = useCallback(() => {
-    setIsTraining(false);
     if (progress && !progress.error) {
       setProgress(prev => ({
         ...prev!,
@@ -145,6 +155,8 @@ export function useTrainingStatus(): TrainingStatusHook {
         status: 'Training completed!'
       }));
     }
+    // Delay setting isTraining to false
+    setTimeout(() => setIsTraining(false), 1000);
   }, [progress]);
 
   const updateProgress = useCallback((data: Partial<TrainingProgress>) => {
@@ -152,9 +164,13 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, []);
 
   const setError = useCallback((error: string) => {
-    console.error('Training error:', error);
+    // Don't set error state for "Could not find training record"
+    if (error.includes('Could not find training record')) {
+      return;
+    }
+    console.log('Training error:', error);
     setProgress(prev => prev ? { ...prev, error } : null);
-    setIsTraining(false);
+    setTimeout(() => setIsTraining(false), 1000);
     setFailedAttempts(0);
   }, []);
 

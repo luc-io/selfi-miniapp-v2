@@ -72,22 +72,20 @@ export function TrainTab() {
       }, files, captions);
 
       if (trainingResult.falRequestId) {
-        console.log('Starting training progress tracking with FAL ID:', trainingResult.falRequestId);
+        console.log('Training started:', trainingResult);
+        // Start progress tracking with training ID
         startTrainingProgress(trainingResult.falRequestId);
+        // Reset form after successful start
+        resetState();
+        // Show success message
+        window.Telegram?.WebApp?.showPopup({
+          message: 'Training started successfully!'
+        });
+        // Update user info
+        await refreshBalance();
       } else {
-        console.error('Training result missing falRequestId:', trainingResult);
         throw new Error('Could not find training ID in response');
       }
-
-      // Update user info after successful training start
-      await refreshBalance();
-
-      window.Telegram?.WebApp?.showPopup({
-        message: 'Training started successfully!'
-      });
-
-      // Reset form after successful start
-      resetState();
 
     } catch (error) {
       console.error('Training process failed:', error);
@@ -147,6 +145,7 @@ export function TrainTab() {
           onMasksChange={setMasks}
         />
 
+        {/* Show training status when we have progress */}
         <TrainingStatus
           isVisible={isTraining}
           progress={progress}
