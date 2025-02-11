@@ -2,11 +2,10 @@ import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface TriggerWordInputProps {
   value: string;
-  isStyle: boolean;
   onChange: (value: string) => void;
 }
 
-export function TriggerWordInput({ value, isStyle, onChange }: TriggerWordInputProps) {
+export function TriggerWordInput({ value, onChange }: TriggerWordInputProps) {
   const themeParams = useTelegramTheme();
 
   const labelStyle = {
