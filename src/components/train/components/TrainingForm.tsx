@@ -94,7 +94,10 @@ export function TrainingForm({
       <button 
         type="submit" 
         className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        style={buttonStyle}
+        style={{
+          ...buttonStyle,
+          opacity: !hasEnoughStars || !isFormValid ? 0.5 : 1
+        }}
         disabled={isLoading || !isFormValid || !hasEnoughStars}
       >
         {isLoading ? (
