@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getTrainingStatus } from '@/lib/api';
+import { getUserModels } from '@/lib/api/loras';
+import type { LoraStatus } from '@/types/model';
 
 export interface TrainingProgress {
   step: number;
@@ -12,141 +13,67 @@ export interface TrainingProgress {
 interface TrainingStatusHook {
   progress: TrainingProgress | null;
   isTraining: boolean;
-  startTraining: (trainingId: string) => void;
+  startTraining: (trainingId: string, loraId: string) => void;
   finishTraining: () => void;
   updateProgress: (data: Partial<TrainingProgress>) => void;
   setError: (error: string) => void;
 }
 
+const STATUS_MESSAGES: Record<LoraStatus, string> = {
+  PENDING: 'Initializing training...',
+  TRAINING: 'Training in progress...',
+  COMPLETED: 'Training completed!',
+  FAILED: 'Training failed'
+};
+
 export function useTrainingStatus(): TrainingStatusHook {
   const [isTraining, setIsTraining] = useState(false);
+  const [currentLoraId, setCurrentLoraId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const trainingIdRef = useRef<string | null>(null);
 
-  // Use react-query for polling
-  const { data: queryProgress } = useQuery<TrainingProgress | null>({
-    queryKey: ['training', 'status', trainingIdRef.current],
-    queryFn: async () => {
-      if (!trainingIdRef.current || !isTraining) return null;
-
-      try {
-        const status = await getTrainingStatus(trainingIdRef.current);
-        console.log('Training status:', status);
-
-        if (!status) return null;
-
-        // Create progress object based on status
-        const updatedProgress: TrainingProgress = {
-          step: status.progress?.progress ?? 0,
-          totalSteps: 100,
-          status: status.progress?.message || 'Training in progress...'
-        };
-
-        // Handle completion states
-        if (status.progress?.status === 'completed' || status.trainingStatus === 'COMPLETED') {
-          const finalProgress: TrainingProgress = {
-            ...updatedProgress,
-            step: 100,
-            status: 'Training completed!'
-          };
-          setTimeout(() => {
-            setIsTraining(false);
-            // Also invalidate models list to show updated status
-            queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
-          }, 1000);
-          return finalProgress;
-        }
-        
-        // Handle failure states
-        if (status.progress?.status === 'failed' || status.trainingStatus === 'FAILED') {
-          const errorMessage = status.error || status.progress?.message || 'Unknown error';
-          if (!errorMessage.includes('Could not find training record')) {
-            const errorProgress: TrainingProgress = {
-              ...updatedProgress,
-              error: `Training failed: ${errorMessage}`
-            };
-            setTimeout(() => {
-              setIsTraining(false);
-              // Also invalidate models list to show updated status
-              queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
-            }, 1000);
-            return errorProgress;
-          }
-        }
-
-        return updatedProgress;
-      } catch (error) {
-        console.error('Failed to poll training status:', error);
-        if (typeof error === 'string' && error.includes('Could not find training record')) {
-          return null;
-        }
-        return {
-          step: 0,
-          totalSteps: 100,
-          status: 'Error checking status',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        };
-      }
-    },
-    refetchInterval: isTraining ? 3000 : false, // Poll every 3 seconds while training
-    enabled: Boolean(trainingIdRef.current && isTraining)
+  // Use the models query to get status
+  const { data: models = [] } = useQuery({
+    queryKey: ['models', 'user'],
+    queryFn: getUserModels,
+    refetchInterval: isTraining ? 3000 : false
   });
 
-  const startTraining = useCallback((trainingId: string) => {
-    console.log('Starting training with ID:', trainingId);
-    trainingIdRef.current = trainingId;
+  // Find current model status
+  const currentModel = currentLoraId ? models.find(m => m.databaseId === currentLoraId) : null;
+  
+  // Convert model status to progress
+  const progress = currentModel ? {
+    step: currentModel.status === 'COMPLETED' ? 100 : 
+          currentModel.status === 'FAILED' ? 0 : 50,
+    totalSteps: 100,
+    status: STATUS_MESSAGES[currentModel.status],
+    ...(currentModel.status === 'FAILED' && { error: 'Training failed' })
+  } : null;
+
+  const startTraining = useCallback((trainingId: string, loraId: string) => {
+    console.log('Starting training with ID:', trainingId, 'LoRA ID:', loraId);
+    setCurrentLoraId(loraId);
     setIsTraining(true);
-    // Initialize progress
-    queryClient.setQueryData<TrainingProgress>(['training', 'status', trainingId], {
-      step: 0,
-      totalSteps: 100,
-      status: 'Initializing training...'
-    });
-  }, [queryClient]);
+  }, []);
 
   const finishTraining = useCallback(() => {
-    const currentProgress = queryClient.getQueryData<TrainingProgress>(['training', 'status', trainingIdRef.current]);
-    if (currentProgress && !('error' in currentProgress)) {
-      queryClient.setQueryData(['training', 'status', trainingIdRef.current], {
-        ...currentProgress,
-        step: currentProgress.totalSteps,
-        status: 'Training completed!'
-      });
-    }
-    setTimeout(() => {
-      setIsTraining(false);
-      trainingIdRef.current = null;
-      // Invalidate models list to show updated status
-      queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
-    }, 1000);
-  }, [queryClient]);
+    setIsTraining(false);
+    setCurrentLoraId(null);
+  }, []);
 
   const updateProgress = useCallback((data: Partial<TrainingProgress>) => {
-    queryClient.setQueryData<TrainingProgress | null>(
-      ['training', 'status', trainingIdRef.current], 
-      (prev) => prev ? { ...prev, ...data } : null
-    );
-  }, [queryClient]);
+    // No need to manually update progress anymore
+    console.log('Progress update:', data);
+  }, []);
 
   const setError = useCallback((error: string) => {
-    if (error.includes('Could not find training record')) {
-      return;
-    }
     console.log('Training error:', error);
-    queryClient.setQueryData<TrainingProgress | null>(
-      ['training', 'status', trainingIdRef.current],
-      (prev) => prev ? { ...prev, error } : null
-    );
-    setTimeout(() => {
-      setIsTraining(false);
-      trainingIdRef.current = null;
-      // Invalidate models list to show error status
-      queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
-    }, 1000);
-  }, [queryClient]);
+    setIsTraining(false);
+    setCurrentLoraId(null);
+  }, []);
 
   return {
-    progress: queryProgress ?? null,
+    progress,
     isTraining,
     startTraining,
     finishTraining,
