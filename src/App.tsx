@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GenerateTab } from './components/generate/GenerateTab';
-import TrainTab from './components/train/TrainTab/index';
+import TrainTab from './components/train/components/index';
 import { ModelsTab } from './components/models/ModelsTab';
 import { ImagesTab } from './components/images/ImagesTab';
 import { useTelegramTheme } from './hooks/useTelegramTheme';
