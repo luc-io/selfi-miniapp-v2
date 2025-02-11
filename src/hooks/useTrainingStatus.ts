@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getUserModels } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { getUserModels } from '@/lib/api/loras';
 import type { LoraStatus, Model } from '@/types/model';
 
 export interface TrainingProgress {
