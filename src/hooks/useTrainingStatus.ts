@@ -24,7 +24,7 @@ export function useTrainingStatus(): TrainingStatusHook {
   const trainingIdRef = useRef<string | null>(null);
 
   // Use react-query for polling
-  const { data: progress } = useQuery({
+  const { data: progress } = useQuery<TrainingProgress | null>({
     queryKey: ['training', 'status', trainingIdRef.current],
     queryFn: async () => {
       if (!trainingIdRef.current || !isTraining) return null;
@@ -36,7 +36,7 @@ export function useTrainingStatus(): TrainingStatusHook {
         if (!status) return null;
 
         // Create progress object based on status
-        const updatedProgress = {
+        const updatedProgress: TrainingProgress = {
           step: status.progress?.progress ?? 0,
           totalSteps: 100,
           status: status.progress?.message || 'Training in progress...'
@@ -44,7 +44,7 @@ export function useTrainingStatus(): TrainingStatusHook {
 
         // Handle completion states
         if (status.progress?.status === 'completed' || status.trainingStatus === 'COMPLETED') {
-          const finalProgress = {
+          const finalProgress: TrainingProgress = {
             ...updatedProgress,
             step: 100,
             status: 'Training completed!'
@@ -61,7 +61,7 @@ export function useTrainingStatus(): TrainingStatusHook {
         if (status.progress?.status === 'failed' || status.trainingStatus === 'FAILED') {
           const errorMessage = status.error || status.progress?.message || 'Unknown error';
           if (!errorMessage.includes('Could not find training record')) {
-            const errorProgress = {
+            const errorProgress: TrainingProgress = {
               ...updatedProgress,
               error: `Training failed: ${errorMessage}`
             };
@@ -99,7 +99,7 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, []);
 
   const finishTraining = useCallback(() => {
-    if (progress && !progress.error) {
+    if (progress && !('error' in progress)) {
       queryClient.setQueryData(['training', 'status', trainingIdRef.current], {
         ...progress,
         step: progress.totalSteps,
@@ -115,8 +115,9 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, [progress, queryClient]);
 
   const updateProgress = useCallback((data: Partial<TrainingProgress>) => {
-    queryClient.setQueryData(['training', 'status', trainingIdRef.current], 
-      (prev: TrainingProgress | null) => prev ? { ...prev, ...data } : null
+    queryClient.setQueryData<TrainingProgress | null>(
+      ['training', 'status', trainingIdRef.current], 
+      (prev) => prev ? { ...prev, ...data } : null
     );
   }, [queryClient]);
 
@@ -125,8 +126,9 @@ export function useTrainingStatus(): TrainingStatusHook {
       return;
     }
     console.log('Training error:', error);
-    queryClient.setQueryData(['training', 'status', trainingIdRef.current],
-      (prev: TrainingProgress | null) => prev ? { ...prev, error } : null
+    queryClient.setQueryData<TrainingProgress | null>(
+      ['training', 'status', trainingIdRef.current],
+      (prev) => prev ? { ...prev, error } : null
     );
     setTimeout(() => {
       setIsTraining(false);
@@ -137,7 +139,7 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, [queryClient]);
 
   return {
-    progress: progress ?? null,
+    progress,
     isTraining,
     startTraining,
     finishTraining,
