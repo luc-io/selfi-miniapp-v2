@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -210,7 +210,6 @@ const TrainTab: React.FC = () => {
 
           <TriggerWordInput
             value={state.triggerWord}
-            isStyle={state.isStyle}
             onChange={triggerWord => setState(prev => ({ ...prev, triggerWord }))}
           />
 
