@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
-import { getUserInfo, startTraining, type UserInfo } from '@/lib/api';
-import { useTrainingState, useTrainingStatus } from './hooks';
-import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from './components';
+import { useStarBalance } from '@/hooks/useStarBalance';
+import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
+import { startTraining } from '@/lib/api';
+import { useTrainingState, useTrainingStatus } from '../hooks';
+import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from '../components';
 
 const TRAINING_COST = 150; // Cost in stars for training
 
 export function TrainTab() {
   const themeParams = useTelegramTheme();
   const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
@@ -31,20 +32,10 @@ export function TrainTab() {
     setError: setTrainingError
   } = useTrainingStatus();
 
-  // Load user info on mount
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const info = await getUserInfo();
-        setUserInfo(info);
-      } catch (error) {
-        console.error('Failed to load user info:', error);
-        setErrorMessage('Failed to load user information');
-      }
-    };
-
-    loadUserInfo();
-  }, []);
+  const { userInfo, refreshBalance } = useStarBalance();
+  
+  // Set up automatic balance refresh
+  useBalanceRefresh(refreshBalance);
 
   const hasEnoughStars = userInfo ? userInfo.stars >= TRAINING_COST : false;
 
@@ -52,12 +43,15 @@ export function TrainTab() {
     e.preventDefault();
     if (state.images.length === 0 || !state.triggerWord.trim()) return;
 
+    // Clear any previous error messages
     setErrorMessage(null);
 
+    // Check if user has enough stars
     if (!hasEnoughStars) {
-      const message = `Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`;
-      setErrorMessage(message);
-      window.Telegram?.WebApp?.showPopup({ message });
+      setErrorMessage(`Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`);
+      window.Telegram?.WebApp?.showPopup({
+        message: `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`
+      });
       return;
     }
 
@@ -77,18 +71,21 @@ export function TrainTab() {
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
-      }, files, captions);
+      }, files, captions).catch(error => {
+        console.error('Training failed:', error);
+        throw new Error('Training failed: ' + (error.message || 'Unknown error'));
+      });
 
       console.log('Training started successfully:', trainingResult);
 
       // Update user info after successful training start
-      const updatedInfo = await getUserInfo();
-      setUserInfo(updatedInfo);
+      await refreshBalance();
 
       window.Telegram?.WebApp?.showPopup({
         message: 'Training started successfully!'
       });
 
+      // Reset form
       resetState();
 
     } catch (error) {

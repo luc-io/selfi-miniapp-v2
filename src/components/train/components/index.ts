@@ -1,5 +1,9 @@
-export { FileUpload } from './FileUpload';
-export { ImagePreviews } from './ImagePreviews';
-export { TriggerWordInput } from './TriggerWordInput';
-export { TrainingSteps } from './TrainingSteps';
-export { TrainingToggles } from './TrainingToggles';
+export * from './TrainingForm';
+export * from './CostDisplay';
+export * from './ErrorDisplay';
+export * from './TrainingStatus';
+export * from './FileUpload';
+export * from './ImagePreviews';
+export * from './TriggerWordInput';
+export * from './TrainingSteps';
+export * from './TrainingToggles';

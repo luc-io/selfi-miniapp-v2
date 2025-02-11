@@ -1,102 +1,97 @@
-import { Switch } from '@/components/ui/switch';
-import { InfoIcon } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface TrainingTogglesProps {
   isStyle: boolean;
   createMasks: boolean;
-  onStyleChange: (checked: boolean) => void;
-  onMasksChange: (checked: boolean) => void;
+  onStyleChange: (isStyle: boolean) => void;
+  onMasksChange: (createMasks: boolean) => void;
 }
 
-export const TrainingToggles: React.FC<TrainingTogglesProps> = ({
+export function TrainingToggles({
   isStyle,
   createMasks,
   onStyleChange,
   onMasksChange
-}) => {
+}: TrainingTogglesProps) {
   const themeParams = useTelegramTheme();
 
   const labelStyle = {
     color: themeParams.text_color,
   };
 
-  const helpTextStyle = {
+  const hintStyle = {
     color: themeParams.hint_color,
-  };
-
-  const tooltipStyle = {
-    backgroundColor: themeParams.secondary_bg_color,
-    color: themeParams.hint_color,
-    borderColor: `${themeParams.button_color}20`,
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <div className="flex items-center space-x-2">
+        <div>
+          <label 
+            className="text-sm font-medium" 
+            style={labelStyle} 
+            htmlFor="style-toggle"
+          >
+            Style Training
+          </label>
+          <p 
+            className="text-xs mt-1" 
+            style={hintStyle}
+          >
+            Enable for training visual styles
+          </p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            id="style-toggle"
+            className="sr-only peer"
+            checked={isStyle}
+            onChange={(e) => onStyleChange(e.target.checked)}
+          />
+          <div 
+            className="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"
+            style={{
+              backgroundColor: isStyle ? themeParams.button_color : `${themeParams.button_color}40`
+            }}
+          />
+        </label>
+      </div>
+
+      {!isStyle && (
+        <div className="flex items-center justify-between">
+          <div>
             <label 
-              className="block text-sm font-medium"
-              style={labelStyle}
+              className="text-sm font-medium" 
+              style={labelStyle} 
+              htmlFor="mask-toggle"
             >
               Create Masks
             </label>
-            <div className="group relative">
-              <InfoIcon 
-                className="w-4 h-4" 
-                style={{ color: themeParams.hint_color }}
-              />
-              <div 
-                className="absolute left-0 bottom-6 w-64 p-2 text-xs rounded border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-sm"
-                style={tooltipStyle}
-              >
-                When enabled, uses AI to detect and focus on the main subject. Recommended for training specific subjects or people.
-              </div>
-            </div>
-          </div>
-          <p className="text-sm" style={helpTextStyle}>
-            Use AI to focus on the main subject
-          </p>
-        </div>
-        <Switch
-          checked={createMasks}
-          onCheckedChange={onMasksChange}
-          disabled={isStyle}
-        />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <div className="flex items-center space-x-2">
-            <label 
-              className="block text-sm font-medium"
-              style={labelStyle}
+            <p 
+              className="text-xs mt-1" 
+              style={hintStyle}
             >
-              Style Training
-            </label>
-            <div className="group relative">
-              <InfoIcon 
-                className="w-4 h-4" 
-                style={{ color: themeParams.hint_color }}
-              />
-              <div 
-                className="absolute left-0 bottom-6 w-64 p-2 text-xs rounded border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-sm"
-                style={tooltipStyle}
-              >
-                Choose this when training an art style or visual effect, rather than a specific subject.
-              </div>
-            </div>
+              Enable for better subject isolation
+            </p>
           </div>
-          <p className="text-sm" style={helpTextStyle}>
-            Train for style instead of subject
-          </p>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="mask-toggle"
+              className="sr-only peer"
+              checked={createMasks}
+              onChange={(e) => onMasksChange(e.target.checked)}
+            />
+            <div 
+              className="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"
+              style={{
+                backgroundColor: createMasks ? themeParams.button_color : `${themeParams.button_color}40`
+              }}
+            />
+          </label>
         </div>
-        <Switch
-          checked={isStyle}
-          onCheckedChange={onStyleChange}
-        />
-      </div>
+      )}
     </div>
   );
-};
+}
