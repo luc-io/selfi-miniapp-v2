@@ -31,10 +31,12 @@ const generateCommand = (image: GeneratedImage): string => {
     const ar = image.width === image.height ? '1:1' : '16:9';
     parts.push(`--ar ${ar}`);
   }
-  if (image.params.num_inference_steps) parts.push(`--s ${image.params.num_inference_steps}`);
-  if (image.params.guidance_scale) parts.push(`--c ${image.params.guidance_scale}`);
-  // Always include seed as it's generated on the backend
-  parts.push(`--seed ${image.seed.toString()}`);
+  if (image.params?.num_inference_steps) parts.push(`--s ${image.params.num_inference_steps}`);
+  if (image.params?.guidance_scale) parts.push(`--c ${image.params.guidance_scale}`);
+  // Only add seed if it exists and is not null/undefined
+  if (typeof image.seed === 'number' && !isNaN(image.seed)) {
+    parts.push(`--seed ${image.seed}`);
+  }
   if (image.loras?.[0]) {
     const lora = image.loras[0];
     parts.push(`--l ${lora.triggerWord || lora.name}:${lora.scale}`);
