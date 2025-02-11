@@ -67,7 +67,8 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
               </button>
             </TooltipTrigger>
             <TooltipContent 
-              side="top" 
+              side="right"
+              align="start"
               className="text-sm" 
               style={{ 
                 backgroundColor: `${themeParams.bg_color}E6`,
@@ -92,7 +93,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           style={{
             backgroundColor: themeParams.secondary_bg_color,
             color: themeParams.text_color,
-            borderColor: `${themeParams.button_color}15`
+            borderColor: `${themeParams.button_color}0A` // 5% opacity
           }}
         />
         <button
