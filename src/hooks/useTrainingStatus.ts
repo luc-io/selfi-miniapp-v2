@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getUserModels } from '@/lib/api/loras';
-import type { LoraStatus } from '@/types/model';
+import { getUserModels } from '@/lib/api';
+import type { LoraStatus, Model } from '@/types/model';
 
 export interface TrainingProgress {
   step: number;
@@ -29,10 +29,9 @@ const STATUS_MESSAGES: Record<LoraStatus, string> = {
 export function useTrainingStatus(): TrainingStatusHook {
   const [isTraining, setIsTraining] = useState(false);
   const [currentLoraId, setCurrentLoraId] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
   // Use the models query to get status
-  const { data: models = [] } = useQuery({
+  const { data: models = [] } = useQuery<Model[]>({
     queryKey: ['models', 'user'],
     queryFn: getUserModels,
     refetchInterval: isTraining ? 3000 : false
@@ -46,12 +45,12 @@ export function useTrainingStatus(): TrainingStatusHook {
     step: currentModel.status === 'COMPLETED' ? 100 : 
           currentModel.status === 'FAILED' ? 0 : 50,
     totalSteps: 100,
-    status: STATUS_MESSAGES[currentModel.status],
+    status: STATUS_MESSAGES[currentModel.status as LoraStatus],
     ...(currentModel.status === 'FAILED' && { error: 'Training failed' })
   } : null;
 
-  const startTraining = useCallback((trainingId: string, loraId: string) => {
-    console.log('Starting training with ID:', trainingId, 'LoRA ID:', loraId);
+  const startTraining = useCallback((_trainingId: string, loraId: string) => {
+    console.log('Starting training with LoRA ID:', loraId);
     setCurrentLoraId(loraId);
     setIsTraining(true);
   }, []);
