@@ -24,7 +24,7 @@ export function useTrainingStatus(): TrainingStatusHook {
   const trainingIdRef = useRef<string | null>(null);
 
   // Use react-query for polling
-  const { data: progress } = useQuery<TrainingProgress | null>({
+  const { data: queryProgress } = useQuery<TrainingProgress | null>({
     queryKey: ['training', 'status', trainingIdRef.current],
     queryFn: async () => {
       if (!trainingIdRef.current || !isTraining) return null;
@@ -96,13 +96,20 @@ export function useTrainingStatus(): TrainingStatusHook {
     console.log('Starting training with ID:', trainingId);
     trainingIdRef.current = trainingId;
     setIsTraining(true);
-  }, []);
+    // Initialize progress
+    queryClient.setQueryData<TrainingProgress>(['training', 'status', trainingId], {
+      step: 0,
+      totalSteps: 100,
+      status: 'Initializing training...'
+    });
+  }, [queryClient]);
 
   const finishTraining = useCallback(() => {
-    if (progress && !('error' in progress)) {
+    const currentProgress = queryClient.getQueryData<TrainingProgress>(['training', 'status', trainingIdRef.current]);
+    if (currentProgress && !('error' in currentProgress)) {
       queryClient.setQueryData(['training', 'status', trainingIdRef.current], {
-        ...progress,
-        step: progress.totalSteps,
+        ...currentProgress,
+        step: currentProgress.totalSteps,
         status: 'Training completed!'
       });
     }
@@ -112,7 +119,7 @@ export function useTrainingStatus(): TrainingStatusHook {
       // Invalidate models list to show updated status
       queryClient.invalidateQueries({ queryKey: ['models', 'user'] });
     }, 1000);
-  }, [progress, queryClient]);
+  }, [queryClient]);
 
   const updateProgress = useCallback((data: Partial<TrainingProgress>) => {
     queryClient.setQueryData<TrainingProgress | null>(
@@ -139,7 +146,7 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, [queryClient]);
 
   return {
-    progress,
+    progress: queryProgress ?? null,
     isTraining,
     startTraining,
     finishTraining,
