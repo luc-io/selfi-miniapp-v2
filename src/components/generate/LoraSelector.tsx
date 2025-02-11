@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Slider } from '../ui/slider';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Info } from 'lucide-react';
 import type { LoraParameter } from '@/types/lora';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
@@ -19,11 +20,10 @@ interface LoraSelectorProps {
 
 export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleChange }: LoraSelectorProps) {
   const themeParams = useTelegramTheme();
+  const [showHelp, setShowHelp] = useState(false);
 
-  // Helper function to check if a LoRA is selected
   const isLoraSelected = (path: string) => loras.some(lora => lora.path === path);
   
-  // Helper function to handle LoRA click
   const handleLoraClick = (path: string) => {
     if (!isLoraSelected(path) && loras.length < 5) {
       onAdd({ path, scale: 1.0 });
@@ -33,22 +33,51 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
   const buttonStyle = {
     backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
-    borderColor: themeParams.button_color,
+    borderColor: `${themeParams.button_color}80`,
   };
 
   const selectedItemStyle = {
     backgroundColor: themeParams.bg_color,
-    borderColor: themeParams.button_color,
+    borderColor: `${themeParams.button_color}80`,
   };
 
   const headerStyle = {
     backgroundColor: themeParams.secondary_bg_color,
-    borderColor: themeParams.button_color,
+    borderColor: `${themeParams.button_color}80`,
   };
 
   return (
     <div className="space-y-4">
-      {/* Available LoRAs grid - only show if not at limit */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <label 
+            className="text-sm font-medium" 
+            style={{ color: themeParams.text_color }}
+          >
+            LoRAs
+          </label>
+          <button 
+            type="button" 
+            className="hover:opacity-80 transition-opacity focus:outline-none"
+            onClick={() => setShowHelp(!showHelp)}
+            aria-label="Toggle LoRA info"
+          >
+            <Info 
+              className="h-3.5 w-3.5" 
+              style={{ color: themeParams.hint_color }} 
+            />
+          </button>
+        </div>
+        {showHelp && (
+          <p 
+            className="text-sm" 
+            style={{ color: themeParams.hint_color }}
+          >
+            The LoRAs to use for the image generation. You can use any number of LoRAs and they will be merged together to generate the final image.
+          </p>
+        )}
+      </div>
+
       {loras.length < 5 && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
           {availableLoras
@@ -68,7 +97,6 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
         </div>
       )}
 
-      {/* Selected LoRAs list */}
       <div className="space-y-2">
         {loras.map((lora, index) => {
           const loraInfo = availableLoras.find(l => l.path === lora.path);

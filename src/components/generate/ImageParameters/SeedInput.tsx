@@ -1,10 +1,5 @@
+import { useState } from 'react';
 import { RotateCcw, X, Info } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { TelegramThemeParams } from '@/types/telegram';
 import { generateFalSeed } from '@/utils/seed';
 
@@ -28,6 +23,8 @@ const parseSeedInput = (input: string): number => {
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
+  const [showHelp, setShowHelp] = useState(false);
+
   const handleSeedChange = (input: string) => {
     onChange(parseSeedInput(input));
   };
@@ -42,28 +39,34 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <label 
-          className="block text-sm font-medium" 
-          style={{ color: themeParams.text_color }}
-        >
-          Seed
-        </label>
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button type="button" className="cursor-help">
-                <Info 
-                  className="h-3.5 w-3.5" 
-                  style={{ color: themeParams.hint_color }} 
-                />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="border-0 shadow-sm p-2" style={{ backgroundColor: themeParams.bg_color, color: themeParams.hint_color }}>
-              Same seed + prompt = same image
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <label 
+            className="block text-sm font-medium" 
+            style={{ color: themeParams.text_color }}
+          >
+            Seed
+          </label>
+          <button 
+            type="button"
+            className="hover:opacity-80 transition-opacity focus:outline-none"
+            onClick={() => setShowHelp(!showHelp)}
+            aria-label="Toggle seed info"
+          >
+            <Info 
+              className="h-3.5 w-3.5" 
+              style={{ color: themeParams.hint_color }} 
+            />
+          </button>
+        </div>
+        {showHelp && (
+          <p 
+            className="text-sm" 
+            style={{ color: themeParams.hint_color }}
+          >
+            Same seed + prompt = same image
+          </p>
+        )}
       </div>
       <div className="flex gap-2">
         <input
@@ -77,7 +80,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           style={{
             backgroundColor: themeParams.secondary_bg_color,
             color: themeParams.text_color,
-            borderColor: `${themeParams.button_color}20`
+            borderColor: `${themeParams.button_color}80`
           }}
         />
         <button

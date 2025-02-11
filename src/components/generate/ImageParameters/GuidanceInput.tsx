@@ -1,12 +1,7 @@
+import { useState } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import type { TelegramThemeParams } from '@/types/telegram';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface GuidanceInputProps {
   value: number;
@@ -16,30 +11,45 @@ interface GuidanceInputProps {
 }
 
 export function GuidanceInput({ value, onChange, onReset, themeParams }: GuidanceInputProps) {
+  const [showHelp, setShowHelp] = useState(false);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <label 
-            className="block text-sm font-medium" 
-            style={{ color: themeParams.text_color }}
-          >
-            CFG Scale
-          </label>
-          <span style={{ color: themeParams.hint_color }}>({value.toFixed(1)})</span>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info 
-                  className="h-4 w-4" 
-                  style={{ color: themeParams.hint_color }} 
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <label 
+              className="block text-sm font-medium" 
+              style={{ color: themeParams.text_color }}
+            >
+              CFG Scale
+            </label>
+            <span 
+              className="text-sm"
+              style={{ color: themeParams.hint_color }}
+            >
+              ({value.toFixed(1)})
+            </span>
+            <button 
+              type="button" 
+              className="hover:opacity-80 transition-opacity focus:outline-none"
+              onClick={() => setShowHelp(!showHelp)}
+              aria-label="Toggle guidance scale info"
+            >
+              <Info 
+                className="h-3.5 w-3.5" 
+                style={{ color: themeParams.hint_color }} 
+              />
+            </button>
+          </div>
+          {showHelp && (
+            <p 
+              className="text-sm" 
+              style={{ color: themeParams.hint_color }}
+            >
+              Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.
+            </p>
+          )}
         </div>
         <button 
           onClick={onReset}
