@@ -1,5 +1,4 @@
-import { useState, useCallback } from 'react';
-import { DEFAULT_STATE, type TrainingImage, type TrainingState } from '../types/training';
+
 
 export function useTrainingState() {
   const [state, setState] = useState(DEFAULT_STATE);
