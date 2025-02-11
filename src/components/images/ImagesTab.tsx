@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Card } from '../ui/card';
 import { Loader2, Copy } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
@@ -10,7 +10,10 @@ interface ImageItemProps {
   image: GeneratedImage;
   themeParams: any;
   images: GeneratedImage[];
+  onImageClick: (imageId: string) => void;
 }
+
+const ITEMS_PER_PAGE = 20; // Increased from 10 to 20
 
 const formatDateLatam = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -45,33 +48,86 @@ const generateCommand = (image: GeneratedImage): string => {
   return parts.join(' ');
 };
 
-const ImageGallery = ({ images, onClose }: { images: GeneratedImage[], onClose: () => void }) => {
+const ImageGallery = ({ 
+  images, 
+  onClose, 
+  initialImageId,
+  onImageChange 
+}: { 
+  images: GeneratedImage[], 
+  onClose: () => void,
+  initialImageId: string,
+  onImageChange: (imageId: string) => void 
+}) => {
+  // Find initial image index
+  const initialIndex = images.findIndex(img => img.id === initialImageId);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex !== -1 ? initialIndex : 0);
+  
+  // Handle keydown events for navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        setCurrentIndex(prev => (prev + 1) % images.length);
+      } else if (e.key === 'ArrowLeft') {
+        setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [images.length, onClose]);
+
+  // Notify parent about image changes
+  useEffect(() => {
+    onImageChange(images[currentIndex].id);
+  }, [currentIndex, images, onImageChange]);
+
   return (
     <div 
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={onClose}
     >
-      <div className="w-full h-full overflow-auto py-4">
-        <div className="flex flex-col gap-4 items-center">
-          {images.map((image) => (
-            <img 
-              key={image.id}
-              src={image.url}
-              alt={image.prompt}
-              className="max-w-[90%] max-h-[90vh] object-contain rounded"
-              onClick={(e) => e.stopPropagation()}
-            />
-          ))}
+      <div className="w-full h-full overflow-hidden relative">
+        <div 
+          className="h-full flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <img 
+            src={images[currentIndex].url}
+            alt={images[currentIndex].prompt}
+            className="max-w-[90%] max-h-[90vh] object-contain rounded"
+          />
+          <button 
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+            }}
+          >
+            ←
+          </button>
+          <button 
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentIndex(prev => (prev + 1) % images.length);
+            }}
+          >
+            →
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-const ImageItem = ({ image, themeParams, images }: ImageItemProps) => {
+const ImageItem = ({ image, themeParams, images, onImageClick }: ImageItemProps) => {
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const itemRef = useRef<HTMLDivElement>(null);
   const command = generateCommand(image);
 
   const itemStyle = {
@@ -88,8 +144,20 @@ const ImageItem = ({ image, themeParams, images }: ImageItemProps) => {
     setTimeout(() => setShowCopied(false), 2000);
   };
 
+  const handleImageClick = () => {
+    setShowGallery(true);
+    onImageClick(image.id);
+  };
+
+  const handleGalleryClose = () => {
+    setShowGallery(false);
+    // Scroll the item into view when gallery closes
+    itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   return (
     <div 
+      ref={itemRef}
       className="border-b last:border-b-0 py-4 px-4"
       style={itemStyle}
     >
@@ -138,7 +206,7 @@ const ImageItem = ({ image, themeParams, images }: ImageItemProps) => {
             </div>
           </div>
           <button 
-            onClick={() => setShowGallery(true)} 
+            onClick={handleImageClick}
             className="w-20 h-20 relative shrink-0 rounded overflow-hidden hover:opacity-90 transition-opacity"
           >
             <img 
@@ -153,17 +221,19 @@ const ImageItem = ({ image, themeParams, images }: ImageItemProps) => {
       {showGallery && (
         <ImageGallery 
           images={images}
-          onClose={() => setShowGallery(false)}
+          onClose={handleGalleryClose}
+          initialImageId={image.id}
+          onImageChange={(newImageId) => onImageClick(newImageId)}
         />
       )}
     </div>
   );
 };
 
-const ITEMS_PER_PAGE = 10;
-
 export function ImagesTab() {
   const themeParams = useTelegramTheme();
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const {
     data,
@@ -188,15 +258,32 @@ export function ImagesTab() {
     }
   });
 
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const handleImageClick = useCallback((imageId: string) => {
+    setCurrentImageId(imageId);
+  }, []);
+
   const cardStyle = {
     backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
     borderColor: `${themeParams.button_color}20`,
-  };
-
-  const buttonStyle = {
-    backgroundColor: themeParams.button_color,
-    color: themeParams.button_text_color,
   };
 
   if (isLoading) {
@@ -232,6 +319,7 @@ export function ImagesTab() {
             image={image}
             themeParams={themeParams}
             images={allImages}
+            onImageClick={handleImageClick}
           />
         ))}
         
@@ -241,23 +329,18 @@ export function ImagesTab() {
               No images generated yet. Go to the Generate tab to create some!
             </p>
           </div>
-        ) : hasNextPage && (
-          <div className="p-4 flex justify-center">
-            <button
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="py-2 px-4 text-sm font-medium rounded-md shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style={buttonStyle}
-            >
-              {isFetchingNextPage ? (
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                'Load More'
-              )}
-            </button>
+        ) : (
+          // Infinite scroll trigger element
+          <div 
+            ref={loadMoreRef} 
+            className="p-4 flex justify-center"
+          >
+            {isFetchingNextPage && (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading more...</span>
+              </div>
+            )}
           </div>
         )}
       </div>
