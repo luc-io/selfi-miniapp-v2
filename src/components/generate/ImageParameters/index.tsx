@@ -37,19 +37,58 @@ const DEFAULT_PARAMS: GenerationParameters = {
 export function ImageParameters({ params, updateParam, themeParams }: ImageParametersProps) {
   return (
     <div className="space-y-6">
-      <h2 
-        className="text-xl font-semibold" 
-        style={{ color: themeParams.text_color }}
-      >
-        Image Parameters
-      </h2>
-      
       {/* Seed Input */}
       <SeedInput
         value={params.seed}
         onChange={(value) => updateParam('seed', value)}
         themeParams={themeParams}
       />
+
+      {/* Image Size */}
+      <div className="space-y-2">
+        <label 
+          className="block text-sm font-medium" 
+          style={{ color: themeParams.text_color }}
+        >
+          Image Size
+        </label>
+        <Select 
+          value={params.image_size} 
+          onValueChange={(v: string) => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
+        >
+          <SelectTrigger 
+            className="w-full"
+            style={{
+              backgroundColor: themeParams.secondary_bg_color,
+              color: themeParams.text_color,
+              borderColor: `${themeParams.button_color}0A`
+            }}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent
+            style={{
+              backgroundColor: themeParams.bg_color,
+              color: themeParams.text_color,
+              borderColor: `${themeParams.button_color}0A`
+            }}
+          >
+            {Object.entries(IMAGE_SIZES).map(([value, label]) => (
+              <SelectItem 
+                key={value} 
+                value={value}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: themeParams.text_color,
+                  '--highlight-bg': `${themeParams.button_color}0A`
+                } as React.CSSProperties}
+              >
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Steps Input */}
       <StepsInput
@@ -75,52 +114,6 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
         themeParams={themeParams}
       />
 
-      {/* Image Size */}
-      <div className="space-y-2">
-        <label 
-          className="block text-sm font-medium" 
-          style={{ color: themeParams.text_color }}
-        >
-          Image Size
-        </label>
-        <Select 
-          value={params.image_size} 
-          onValueChange={(v: string) => updateParam('image_size', v as keyof typeof IMAGE_SIZES)}
-        >
-          <SelectTrigger 
-            className="w-full"
-            style={{
-              backgroundColor: themeParams.secondary_bg_color,
-              color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}20`
-            }}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent
-            style={{
-              backgroundColor: themeParams.bg_color,
-              color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}20`
-            }}
-          >
-            {Object.entries(IMAGE_SIZES).map(([value, label]) => (
-              <SelectItem 
-                key={value} 
-                value={value}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: themeParams.text_color,
-                  '--highlight-bg': `${themeParams.button_color}20`
-                } as React.CSSProperties}
-              >
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       {/* Output Format */}
       <div className="space-y-2">
         <label 
@@ -138,7 +131,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             style={{
               backgroundColor: themeParams.secondary_bg_color,
               color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}20`
+              borderColor: `${themeParams.button_color}0A`
             }}
           >
             <SelectValue />
@@ -147,7 +140,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             style={{
               backgroundColor: themeParams.bg_color,
               color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}20`
+              borderColor: `${themeParams.button_color}0A`
             }}
           >
             <SelectItem 
@@ -155,7 +148,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
               style={{
                 backgroundColor: 'transparent',
                 color: themeParams.text_color,
-                '--highlight-bg': `${themeParams.button_color}20`
+                '--highlight-bg': `${themeParams.button_color}0A`
               } as React.CSSProperties}
             >
               JPEG
@@ -165,7 +158,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
               style={{
                 backgroundColor: 'transparent',
                 color: themeParams.text_color,
-                '--highlight-bg': `${themeParams.button_color}20`
+                '--highlight-bg': `${themeParams.button_color}0A`
               } as React.CSSProperties}
             >
               PNG
@@ -194,7 +187,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
           checked={params.enable_safety_checker}
           onCheckedChange={(checked: boolean) => updateParam('enable_safety_checker', checked)}
           style={{
-            backgroundColor: params.enable_safety_checker ? themeParams.button_color : `${themeParams.button_color}20`,
+            backgroundColor: params.enable_safety_checker ? themeParams.button_color : `${themeParams.button_color}0A`,
             borderColor: themeParams.button_color
           }}
         />
