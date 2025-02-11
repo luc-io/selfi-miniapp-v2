@@ -1,49 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
-const REFRESH_INTERVAL = 30000; // 30 seconds
-const MIN_REFRESH_INTERVAL = 5000; // Minimum 5 seconds between refreshes
+const REFRESH_INTERVAL = 60000; // Refresh only every minute by default
+const ONLY_ON_FOCUS = true; // Don't poll in background
 
 export function useBalanceRefresh(onRefresh: () => void) {
-  const lastRefreshTime = useRef<number>(0);
-
-  // Throttled refresh function
-  const throttledRefresh = () => {
-    const now = Date.now();
-    if (now - lastRefreshTime.current >= MIN_REFRESH_INTERVAL) {
-      onRefresh();
-      lastRefreshTime.current = now;
-    }
-  };
-
   useEffect(() => {
-    // Initial refresh
-    throttledRefresh();
+    let interval: NodeJS.Timeout | undefined;
 
-    // Set up polling interval
-    const interval = setInterval(throttledRefresh, REFRESH_INTERVAL);
-
-    // Set up visibility change listener
+    // Handle visibility change
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        throttledRefresh();
+        // When becoming visible, do a refresh and restart polling
+        onRefresh();
+        if (!interval) {
+          interval = setInterval(onRefresh, REFRESH_INTERVAL);
+        }
+      } else if (ONLY_ON_FOCUS && interval) {
+        // When hidden, stop polling if ONLY_ON_FOCUS is true
+        clearInterval(interval);
+        interval = undefined;
       }
     };
 
-    // Set up Telegram background event listener
+    // Handle Telegram events
     const handleTelegramEvent = () => {
       if (window.Telegram?.WebApp?.isExpanded) {
-        throttledRefresh();
+        onRefresh();
       }
     };
 
+    // Initial setup
+    if (document.visibilityState === 'visible') {
+      onRefresh();
+      if (!ONLY_ON_FOCUS || document.visibilityState === 'visible') {
+        interval = setInterval(onRefresh, REFRESH_INTERVAL);
+      }
+    }
+
+    // Add event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.Telegram?.WebApp?.onEvent('viewportChanged', handleTelegramEvent);
 
     // Cleanup
     return () => {
-      clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.Telegram?.WebApp?.offEvent('viewportChanged', handleTelegramEvent);
     };
-  }, [onRefresh]); // onRefresh is a dependency because throttledRefresh uses it
+  }, [onRefresh]);
 }
