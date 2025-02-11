@@ -47,12 +47,16 @@ export function TrainingForm({
     color: themeParams.button_text_color,
   };
 
+  const isFormValid = images.length > 0 && triggerWord.trim().length > 0;
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <FileUpload
         totalSize={totalSize}
         maxSize={MAX_SIZE}
-        onFilesSelected={onImagesChange}
+        onFilesSelected={newImages => 
+          onImagesChange([...images, ...newImages])
+        }
       />
 
       <ImagePreviews
@@ -91,8 +95,11 @@ export function TrainingForm({
       <button 
         type="submit" 
         className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        style={buttonStyle}
-        disabled={isLoading || images.length === 0 || !triggerWord.trim() || !hasEnoughStars}
+        style={{
+          ...buttonStyle,
+          opacity: !hasEnoughStars || !isFormValid ? 0.5 : 1
+        }}
+        disabled={isLoading || !isFormValid || !hasEnoughStars}
       >
         {isLoading ? (
           <div className="flex items-center justify-center">
@@ -101,6 +108,8 @@ export function TrainingForm({
           </div>
         ) : !hasEnoughStars ? (
           'Insufficient Stars'
+        ) : !isFormValid ? (
+          'Fill Required Fields'
         ) : (
           'Start Training'
         )}
