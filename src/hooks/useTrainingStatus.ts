@@ -13,7 +13,7 @@ export interface TrainingProgress {
 interface TrainingStatusHook {
   progress: TrainingProgress | null;
   isTraining: boolean;
-  startTraining: (trainingId: string, loraId: string) => void;
+  startTraining: (trainingId: string) => void;
   finishTraining: () => void;
   updateProgress: (data: Partial<TrainingProgress>) => void;
   setError: (error: string) => void;
@@ -49,11 +49,17 @@ export function useTrainingStatus(): TrainingStatusHook {
     ...(currentModel.status === 'FAILED' && { error: 'Training failed' })
   } : null;
 
-  const startTraining = useCallback((_trainingId: string, loraId: string) => {
-    console.log('Starting training with LoRA ID:', loraId);
-    setCurrentLoraId(loraId);
-    setIsTraining(true);
-  }, []);
+  const startTraining = useCallback((trainingId: string) => {
+    console.log('Starting training with training ID:', trainingId);
+    // Try to find the corresponding model
+    const model = models.find(m => m.training?.databaseId === trainingId);
+    if (model) {
+      setCurrentLoraId(model.databaseId);
+      setIsTraining(true);
+    } else {
+      console.error('Could not find model for training ID:', trainingId);
+    }
+  }, [models]);
 
   const finishTraining = useCallback(() => {
     setIsTraining(false);
