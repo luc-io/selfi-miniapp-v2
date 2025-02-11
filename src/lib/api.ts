@@ -128,9 +128,22 @@ export interface TrainingResult {
   test_mode?: boolean;
 }
 
-export interface TrainingProgress {
-  status: 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
+export interface TrainingProgressInfo {
+  status: 'pending' | 'training' | 'completed' | 'failed';
+  progress: number;
   message?: string;
+}
+
+export interface TrainingStatus {
+  trainingId: string;
+  loraId: string;
+  status: 'PENDING' | 'TRAINING' | 'COMPLETED' | 'FAILED';
+  trainingStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  metadata?: any;
+  error?: string;
+  completedAt?: string;
+  test_mode?: boolean;
+  progress?: TrainingProgressInfo | null;
 }
 
 export async function startTraining(
@@ -172,7 +185,7 @@ export async function startTraining(
   });
 }
 
-export async function getTrainingProgress(id: string | null): Promise<TrainingProgress | null> {  
+export async function getTrainingStatus(id: string | null): Promise<TrainingStatus | null> {  
   if (!id) return null;
-  return apiRequest<TrainingProgress>(`/api/training/${id}/status`);
+  return apiRequest<TrainingStatus>(`/api/training/${id}/status`);
 }
