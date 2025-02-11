@@ -13,7 +13,7 @@ interface ImageItemProps {
   onImageClick: (imageId: string) => void;
 }
 
-const ITEMS_PER_PAGE = 20; // Increased from 10 to 20
+const ITEMS_PER_PAGE = 20;
 
 const formatDateLatam = (date: Date) => {
   const options: Intl.DateTimeFormatOptions = {
@@ -36,7 +36,6 @@ const generateCommand = (image: GeneratedImage): string => {
   }
   if (image.params?.num_inference_steps) parts.push(`--s ${image.params.num_inference_steps}`);
   if (image.params?.guidance_scale) parts.push(`--c ${image.params.guidance_scale}`);
-  // Only add seed if it exists and is not null/undefined
   if (typeof image.seed === 'number' && !isNaN(image.seed)) {
     parts.push(`--seed ${image.seed}`);
   }
@@ -59,11 +58,9 @@ const ImageGallery = ({
   initialImageId: string,
   onImageChange: (imageId: string) => void 
 }) => {
-  // Find initial image index
   const initialIndex = images.findIndex(img => img.id === initialImageId);
   const [currentIndex, setCurrentIndex] = useState(initialIndex !== -1 ? initialIndex : 0);
   
-  // Handle keydown events for navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
@@ -79,7 +76,6 @@ const ImageGallery = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [images.length, onClose]);
 
-  // Notify parent about image changes
   useEffect(() => {
     onImageChange(images[currentIndex].id);
   }, [currentIndex, images, onImageChange]);
@@ -151,7 +147,6 @@ const ImageItem = ({ image, themeParams, images, onImageClick }: ImageItemProps)
 
   const handleGalleryClose = () => {
     setShowGallery(false);
-    // Scroll the item into view when gallery closes
     itemRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -223,7 +218,7 @@ const ImageItem = ({ image, themeParams, images, onImageClick }: ImageItemProps)
           images={images}
           onClose={handleGalleryClose}
           initialImageId={image.id}
-          onImageChange={(newImageId) => onImageClick(newImageId)}
+          onImageChange={onImageClick}
         />
       )}
     </div>
@@ -232,7 +227,6 @@ const ImageItem = ({ image, themeParams, images, onImageClick }: ImageItemProps)
 
 export function ImagesTab() {
   const themeParams = useTelegramTheme();
-  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -258,7 +252,6 @@ export function ImagesTab() {
     }
   });
 
-  // Set up intersection observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -277,7 +270,10 @@ export function ImagesTab() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleImageClick = useCallback((imageId: string) => {
-    setCurrentImageId(imageId);
+    const imageElement = document.querySelector(`[data-image-id="${imageId}"]`);
+    if (imageElement) {
+      imageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }, []);
 
   const cardStyle = {
@@ -330,7 +326,6 @@ export function ImagesTab() {
             </p>
           </div>
         ) : (
-          // Infinite scroll trigger element
           <div 
             ref={loadMoreRef} 
             className="p-4 flex justify-center"
