@@ -35,7 +35,7 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
           <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button type="button" className="cursor-help">
+                <button type="button" className="hover:opacity-80 transition-opacity focus:outline-none">
                   <Info 
                     className="h-3.5 w-3.5" 
                     style={{ color: themeParams.hint_color }} 
@@ -44,10 +44,11 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
               </TooltipTrigger>
               <TooltipContent 
                 side="top" 
-                className="border-0 shadow-sm p-2 text-sm" 
+                className="text-sm" 
                 style={{ 
-                  backgroundColor: themeParams.bg_color, 
-                  color: themeParams.hint_color 
+                  backgroundColor: `${themeParams.bg_color}E6`,
+                  color: themeParams.hint_color,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}
               >
                 Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.
