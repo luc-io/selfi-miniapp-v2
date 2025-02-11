@@ -47,7 +47,8 @@ export function TrainTab() {
 
     // Check if user has enough stars
     if (!hasEnoughStars) {
-      setErrorMessage(`Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`);
+      const errorMsg = `Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`;
+      setErrorMessage(errorMsg);
       window.Telegram?.WebApp?.showPopup({
         message: `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`
       });
@@ -69,15 +70,17 @@ export function TrainTab() {
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
-      }, files, captions).catch(error => {
-        console.error('Training failed:', error);
-        throw new Error('Training failed: ' + (error.message || 'Unknown error'));
-      });
+      }, files, captions);
 
       console.log('Training started successfully:', trainingResult);
 
       // Start progress tracking with training ID
-      startTrainingProgress(trainingResult.trainingId);
+      if (trainingResult.trainingId) {
+        console.log('Starting training progress tracking with ID:', trainingResult.trainingId);
+        startTrainingProgress(trainingResult.trainingId);
+      } else {
+        console.warn('No training ID received from backend');
+      }
 
       // Update user info after successful training start
       await refreshBalance();
@@ -91,21 +94,21 @@ export function TrainTab() {
 
     } catch (error) {
       console.error('Training process failed:', error);
-      let errorMessage = 'Training failed: ';
+      let errorMsg = 'Training failed: ';
       
       if (error instanceof Error) {
         if (error.message.includes('Insufficient stars')) {
-          errorMessage = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+          errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
         } else {
-          errorMessage += error.message;
+          errorMsg += error.message;
         }
       } else {
-        errorMessage += 'Unknown error occurred';
+        errorMsg += 'Unknown error occurred';
       }
 
-      setErrorMessage(errorMessage);
-      setTrainingError(errorMessage);
-      window.Telegram?.WebApp?.showPopup({ message: errorMessage });
+      setErrorMessage(errorMsg);
+      setTrainingError(errorMsg);
+      window.Telegram?.WebApp?.showPopup({ message: errorMsg });
 
     } finally {
       setIsLoading(false);
@@ -145,6 +148,7 @@ export function TrainTab() {
           onMasksChange={setMasks}
         />
 
+        {/* Always render TrainingStatus component, visibility controlled by isTraining prop */}
         <TrainingStatus
           isVisible={isTraining}
           progress={progress}
