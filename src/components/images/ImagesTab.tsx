@@ -59,61 +59,79 @@ const ImageGallery = ({
   onImageChange: (imageId: string) => void 
 }) => {
   const initialIndex = images.findIndex(img => img.id === initialImageId);
-  const [currentIndex, setCurrentIndex] = useState(initialIndex !== -1 ? initialIndex : 0);
+  const [currentImageId, setCurrentImageId] = useState(initialImageId);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
+    // Find and scroll to initial image
+    if (scrollContainerRef.current) {
+      const initialElement = scrollContainerRef.current.querySelector(`[data-image-id="${initialImageId}"]`);
+      if (initialElement) {
+        initialElement.scrollIntoView({ behavior: 'instant', block: 'center' });
+      }
+    }
+  }, [initialImageId]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
-        setCurrentIndex(prev => (prev + 1) % images.length);
-      } else if (e.key === 'ArrowLeft') {
-        setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-      } else if (e.key === 'Escape') {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [images.length, onClose]);
+  }, [onClose]);
 
+  // Use Intersection Observer to track visible images
   useEffect(() => {
-    onImageChange(images[currentIndex].id);
-  }, [currentIndex, images, onImageChange]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const imageId = entry.target.getAttribute('data-image-id');
+            if (imageId && imageId !== currentImageId) {
+              setCurrentImageId(imageId);
+              onImageChange(imageId);
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.7, // Image needs to be 70% visible
+        root: scrollContainerRef.current
+      }
+    );
+
+    const elements = scrollContainerRef.current?.querySelectorAll('[data-image-id]') || [];
+    elements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [currentImageId, onImageChange]);
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/90 z-50 flex flex-col"
       onClick={onClose}
     >
-      <div className="w-full h-full overflow-hidden relative">
-        <div 
-          className="h-full flex items-center justify-center"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <img 
-            src={images[currentIndex].url}
-            alt={images[currentIndex].prompt}
-            className="max-w-[90%] max-h-[90vh] object-contain rounded"
-          />
-          <button 
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded"
-            onClick={(e) => {
-              e.stopPropagation();
-              setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
-            }}
+      <div 
+        ref={scrollContainerRef}
+        className="flex flex-col w-full h-full overflow-y-auto py-4 snap-y snap-mandatory"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {images.map((image) => (
+          <div
+            key={image.id}
+            data-image-id={image.id}
+            className="flex-shrink-0 w-full h-full flex items-center justify-center p-4 snap-center"
           >
-            ←
-          </button>
-          <button 
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded"
-            onClick={(e) => {
-              e.stopPropagation();
-              setCurrentIndex(prev => (prev + 1) % images.length);
-            }}
-          >
-            →
-          </button>
-        </div>
+            <img 
+              src={image.url}
+              alt={image.prompt}
+              className="max-w-full max-h-[calc(100vh-2rem)] object-contain rounded select-none"
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -153,6 +171,7 @@ const ImageItem = ({ image, themeParams, images, onImageClick }: ImageItemProps)
   return (
     <div 
       ref={itemRef}
+      data-image-id={image.id}
       className="border-b last:border-b-0 py-4 px-4"
       style={itemStyle}
     >
