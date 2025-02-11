@@ -1,11 +1,10 @@
 import type { TrainingImage } from '../types/training';
-import { PhotoPlus } from 'lucide-react';
-// import { ChangeEvent } from 'react';
-import FileUpload from './FileUpload';
-import ImagePreviews from './ImagePreviews';
-import TriggerWordInput from './TriggerWordInput';
-import TrainingSteps from './TrainingSteps';
-import TrainingToggles from './TrainingToggles';
+import { Loader2 } from 'lucide-react';
+import { FileUpload } from './FileUpload';
+import { ImagePreviews } from './ImagePreviews';
+import { TriggerWordInput } from './TriggerWordInput';
+import { TrainingSteps } from './TrainingSteps';
+import { TrainingToggles } from './TrainingToggles';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 interface TrainingFormProps {
@@ -59,7 +58,6 @@ export function TrainingForm({
         onImageRemove={(index: number) => 
           onImagesChange(images.filter((_, i) => i !== index))
         }
-        
         onCaptionUpdate={(index: number, caption: string) =>
           onImagesChange(images.map((img, i) => 
             i === index ? { ...img, caption } : img
