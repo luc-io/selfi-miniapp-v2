@@ -73,7 +73,6 @@ export function TrainingForm({
 
       <TriggerWordInput
         value={triggerWord}
-        isStyle={isStyle}
         onChange={onTriggerWordChange}
       />
 
