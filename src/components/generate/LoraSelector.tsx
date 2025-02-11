@@ -33,29 +33,29 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
   const buttonStyle = {
     backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
-    borderColor: `${themeParams.button_color}20`,
+    borderColor: `${themeParams.button_color}66`,
   };
 
   const selectedItemStyle = {
     backgroundColor: themeParams.bg_color,
-    borderColor: `${themeParams.button_color}20`,
+    borderColor: `${themeParams.button_color}66`,
   };
 
   const headerStyle = {
     backgroundColor: themeParams.secondary_bg_color,
-    borderColor: `${themeParams.button_color}20`,
+    borderColor: `${themeParams.button_color}66`,
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <h2 
+          <label 
             className="text-sm font-medium" 
             style={{ color: themeParams.text_color }}
           >
             LoRAs
-          </h2>
+          </label>
           <button 
             type="button" 
             className="hover:opacity-80 transition-opacity focus:outline-none"
