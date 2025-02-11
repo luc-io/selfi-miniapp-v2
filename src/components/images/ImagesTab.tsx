@@ -58,7 +58,6 @@ const ImageGallery = ({
   initialImageId: string,
   onImageChange: (imageId: string) => void 
 }) => {
-  const initialIndex = images.findIndex(img => img.id === initialImageId);
   const [currentImageId, setCurrentImageId] = useState(initialImageId);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
