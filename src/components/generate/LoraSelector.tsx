@@ -28,10 +28,8 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
   const themeParams = useTelegramTheme();
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
-  // Helper function to check if a LoRA is selected
   const isLoraSelected = (path: string) => loras.some(lora => lora.path === path);
   
-  // Helper function to handle LoRA click
   const handleLoraClick = (path: string) => {
     if (!isLoraSelected(path) && loras.length < 5) {
       onAdd({ path, scale: 1.0 });
@@ -58,7 +56,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <h2 
-          className="text-base font-medium" 
+          className="text-sm font-medium" 
           style={{ color: themeParams.text_color }}
         >
           LoRAs
@@ -80,7 +78,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
             <TooltipContent 
               side="right" 
               align="start"
-              className="text-sm max-w-[240px]" 
+              className="text-sm max-w-[240px] whitespace-normal" 
               style={{ 
                 backgroundColor: `${themeParams.bg_color}E6`,
                 color: themeParams.hint_color,
@@ -93,7 +91,6 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
         </TooltipProvider>
       </div>
 
-      {/* Available LoRAs grid - only show if not at limit */}
       {loras.length < 5 && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
           {availableLoras
@@ -113,7 +110,6 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
         </div>
       )}
 
-      {/* Selected LoRAs list */}
       <div className="space-y-2">
         {loras.map((lora, index) => {
           const loraInfo = availableLoras.find(l => l.path === lora.path);
