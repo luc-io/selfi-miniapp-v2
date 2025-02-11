@@ -23,13 +23,13 @@ export function TriggerWordInput({ value, isStyle, onChange }: TriggerWordInputP
         className="block text-sm font-medium" 
         style={labelStyle}
       >
-        {isStyle ? 'Style Name' : 'Trigger Word'}
+        Trigger Word
       </label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={isStyle ? 'e.g., watercolor, oil painting' : 'e.g., person name, object name'}
+        placeholder="e.g., person name, object name"
         className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
         style={{
           backgroundColor: themeParams.secondary_bg_color,
@@ -41,9 +41,7 @@ export function TriggerWordInput({ value, isStyle, onChange }: TriggerWordInputP
         className="text-xs" 
         style={hintStyle}
       >
-        {isStyle ? 
-          'Name that describes the style you want to train' : 
-          'Word that will trigger your trained model'}
+        Word that will trigger your trained model
       </p>
     </div>
   );
