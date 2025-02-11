@@ -72,6 +72,10 @@ export function TrainTab() {
       }, files, captions);
 
       if (trainingResult.falRequestId && trainingResult.loraId) {
+        console.log('Training started:', {
+          trainingId: trainingResult.falRequestId,
+          loraId: trainingResult.loraId
+        });
         // Start progress tracking with both IDs
         startTrainingProgress(trainingResult.falRequestId, trainingResult.loraId);
         // Reset form after successful start
