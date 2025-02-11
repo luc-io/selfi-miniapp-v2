@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { startTraining, type UserInfo } from '@/lib/api';
+import { startTraining } from '@/lib/api';
 import { 
   FileUpload,
   ImagePreviews,
