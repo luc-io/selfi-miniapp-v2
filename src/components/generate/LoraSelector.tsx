@@ -3,12 +3,6 @@ import { Slider } from '../ui/slider';
 import { Trash2, Info } from 'lucide-react';
 import type { LoraParameter } from '@/types/lora';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface AvailableLora {
   path: string;
@@ -26,7 +20,7 @@ interface LoraSelectorProps {
 
 export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleChange }: LoraSelectorProps) {
   const themeParams = useTelegramTheme();
-  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const isLoraSelected = (path: string) => loras.some(lora => lora.path === path);
   
@@ -39,56 +33,49 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
   const buttonStyle = {
     backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
-    borderColor: `${themeParams.button_color}0A`,
+    borderColor: `${themeParams.button_color}20`,
   };
 
   const selectedItemStyle = {
     backgroundColor: themeParams.bg_color,
-    borderColor: `${themeParams.button_color}0A`,
+    borderColor: `${themeParams.button_color}20`,
   };
 
   const headerStyle = {
     backgroundColor: themeParams.secondary_bg_color,
-    borderColor: `${themeParams.button_color}0A`,
+    borderColor: `${themeParams.button_color}20`,
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <h2 
-          className="text-sm font-medium" 
-          style={{ color: themeParams.text_color }}
-        >
-          LoRAs
-        </h2>
-        <TooltipProvider>
-          <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
-            <TooltipTrigger asChild onClick={() => setIsTooltipOpen(!isTooltipOpen)}>
-              <button 
-                type="button" 
-                className="hover:opacity-80 transition-opacity focus:outline-none"
-                aria-label="Toggle LoRA info"
-              >
-                <Info 
-                  className="h-3.5 w-3.5" 
-                  style={{ color: themeParams.hint_color }} 
-                />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent 
-              side="right" 
-              align="start"
-              className="text-sm max-w-[240px] whitespace-normal" 
-              style={{ 
-                backgroundColor: `${themeParams.bg_color}E6`,
-                color: themeParams.hint_color,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              The LoRAs to use for the image generation. You can use any number of LoRAs and they will be merged together to generate the final image.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <h2 
+            className="text-sm font-medium" 
+            style={{ color: themeParams.text_color }}
+          >
+            LoRAs
+          </h2>
+          <button 
+            type="button" 
+            className="hover:opacity-80 transition-opacity focus:outline-none"
+            onClick={() => setShowHelp(!showHelp)}
+            aria-label="Toggle LoRA info"
+          >
+            <Info 
+              className="h-3.5 w-3.5" 
+              style={{ color: themeParams.hint_color }} 
+            />
+          </button>
+        </div>
+        {showHelp && (
+          <p 
+            className="text-sm" 
+            style={{ color: themeParams.hint_color }}
+          >
+            The LoRAs to use for the image generation. You can use any number of LoRAs and they will be merged together to generate the final image.
+          </p>
+        )}
       </div>
 
       {loras.length < 5 && (
