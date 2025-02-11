@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { RotateCcw, X, Info } from 'lucide-react';
 import {
   Tooltip,
@@ -28,6 +29,8 @@ const parseSeedInput = (input: string): number => {
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
   const handleSeedChange = (input: string) => {
     onChange(parseSeedInput(input));
   };
@@ -49,10 +52,14 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
         >
           Seed
         </label>
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button type="button" className="hover:opacity-80 transition-opacity focus:outline-none">
+        <TooltipProvider>
+          <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+            <TooltipTrigger asChild onClick={() => setIsTooltipOpen(!isTooltipOpen)}>
+              <button 
+                type="button" 
+                className="hover:opacity-80 transition-opacity focus:outline-none"
+                aria-label="Toggle seed info"
+              >
                 <Info 
                   className="h-3.5 w-3.5" 
                   style={{ color: themeParams.hint_color }} 
