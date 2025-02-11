@@ -72,12 +72,13 @@ export function TrainTab() {
 
       console.log('Training started successfully:', trainingResult);
 
-      // Start progress tracking with training ID
-      if (trainingResult.trainingId) {
-        console.log('Starting training progress tracking with ID:', trainingResult.trainingId);
-        startTrainingProgress(trainingResult.trainingId);
+      // Start progress tracking with falRequestId
+      if (trainingResult.falRequestId) {
+        console.log('Starting training progress tracking with FAL ID:', trainingResult.falRequestId);
+        startTrainingProgress(trainingResult.falRequestId);
       } else {
-        throw new Error('No training ID received from backend');
+        console.error('No falRequestId received:', trainingResult);
+        throw new Error('No FAL request ID received from backend');
       }
 
       // Update user info after successful training start
