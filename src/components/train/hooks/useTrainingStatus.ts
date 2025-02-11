@@ -63,16 +63,18 @@ export function useTrainingStatus(): TrainingStatusHook {
             };
 
             // Handle completion states from FAL
-            if (status.progress.status === 'completed') {
+            if (status.progress.status === 'completed' || status.trainingStatus === 'COMPLETED') {
               setProgress({
                 ...updatedProgress,
                 step: 100,
                 status: 'Training completed!'
               });
               setIsTraining(false);
-            } else if (status.progress.status === 'failed') {
+            } else if (status.progress.status === 'failed' || status.trainingStatus === 'FAILED') {
               const errorMessage = status.error || status.progress.message || 'Unknown error';
-              setError('Training failed: ' + errorMessage);
+              if (!errorMessage.includes('Could not find training record')) {
+                setError('Training failed: ' + errorMessage);
+              }
               setIsTraining(false);
             } else {
               setProgress(updatedProgress);
@@ -87,12 +89,18 @@ export function useTrainingStatus(): TrainingStatusHook {
             }));
             setIsTraining(false);
           } else if (status.trainingStatus === 'FAILED') {
-            setError('Training failed: ' + (status.error || 'Unknown error'));
+            if (!status.error?.includes('Could not find training record')) {
+              setError('Training failed: ' + (status.error || 'Unknown error'));
+            }
             setIsTraining(false);
           }
         }
       } catch (error) {
         console.error('Failed to poll training status:', error);
+        
+        if (typeof error === 'string' && error.includes('Could not find training record')) {
+          return; // Ignore this specific error
+        }
         
         // Increment failed attempts
         setFailedAttempts(prev => {
@@ -152,6 +160,10 @@ export function useTrainingStatus(): TrainingStatusHook {
   }, []);
 
   const setError = useCallback((error: string) => {
+    // Don't set error state for "Could not find training record"
+    if (error.includes('Could not find training record')) {
+      return;
+    }
     console.error('Training error:', error);
     setProgress(prev => prev ? { ...prev, error } : null);
     setIsTraining(false);
