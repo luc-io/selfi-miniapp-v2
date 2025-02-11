@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import { useStarBalance } from '@/hooks/useStarBalance';
@@ -6,7 +6,6 @@ import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
 import { startTraining } from '@/lib/api';
 import { useTrainingState, useTrainingStatus } from '../hooks';
 import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from '../components';
-import type { TrainingImage } from '../types';
 
 const TRAINING_COST = 150; // Cost in stars for training
 
@@ -118,8 +117,6 @@ export function TrainTab() {
     color: themeParams.text_color,
     borderColor: `${themeParams.button_color}20`,
   };
-
-  const isFormValid = state.images.length > 0 && state.triggerWord.trim().length > 0;
 
   return (
     <Card className="shadow-md" style={cardStyle}>
