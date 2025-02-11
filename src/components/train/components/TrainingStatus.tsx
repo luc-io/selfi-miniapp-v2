@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export interface TrainingProgress {
   step: number;
@@ -31,12 +32,26 @@ export function TrainingStatus({ isVisible, progress }: TrainingStatusProps) {
 
   const percentage = (progress.step / progress.totalSteps) * 100;
 
+  // If there's an error, show it in an Alert
+  if (progress.error) {
+    return (
+      <Alert variant="destructive" style={{
+        backgroundColor: '#FF3B3020',
+        color: '#FF3B30',
+        borderColor: '#FF3B3040'
+      }}>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{progress.error}</AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <Card className="p-4 mt-4" style={cardStyle}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium">{progress.status}</div>
-          <div className="text-sm">{progress.step}/{progress.totalSteps}</div>
+          <div className="text-sm">{Math.round(percentage)}%</div>
         </div>
 
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -49,14 +64,10 @@ export function TrainingStatus({ isVisible, progress }: TrainingStatusProps) {
           />
         </div>
 
-        {progress.error ? (
-          <div className="text-sm text-red-500">{progress.error}</div>
-        ) : (
-          <div className="flex items-center justify-center text-sm gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Processing
-          </div>
-        )}
+        <div className="flex items-center justify-center text-sm gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Processing...
+        </div>
       </div>
     </Card>
   );
