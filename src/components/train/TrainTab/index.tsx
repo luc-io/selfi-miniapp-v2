@@ -28,7 +28,6 @@ export function TrainTab() {
     progress,
     isTraining,
     startTraining: startTrainingProgress,
-    finishTraining,
     setError: setTrainingError
   } = useTrainingStatus();
 
@@ -110,7 +109,6 @@ export function TrainTab() {
 
     } finally {
       setIsLoading(false);
-      // Note: Don't call finishTraining here anymore - it will be handled by the polling mechanism
     }
   };
 
