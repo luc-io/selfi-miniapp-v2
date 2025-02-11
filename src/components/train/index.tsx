@@ -71,13 +71,10 @@ export function TrainTab() {
         triggerWord: state.triggerWord,
       }, files, captions);
 
-      if (trainingResult.falRequestId && trainingResult.loraId) {
-        console.log('Training started:', {
-          trainingId: trainingResult.falRequestId,
-          loraId: trainingResult.loraId
-        });
-        // Start progress tracking with both IDs
-        startTrainingProgress(trainingResult.falRequestId, trainingResult.loraId);
+      if (trainingResult.falRequestId) {
+        console.log('Training started:', trainingResult);
+        // Start progress tracking with training ID
+        startTrainingProgress(trainingResult.falRequestId);
         // Reset form after successful start
         resetState();
         // Show success message
@@ -87,7 +84,7 @@ export function TrainTab() {
         // Update user info
         await refreshBalance();
       } else {
-        throw new Error('Could not find required IDs in response');
+        throw new Error('Could not find training ID in response');
       }
 
     } catch (error) {
