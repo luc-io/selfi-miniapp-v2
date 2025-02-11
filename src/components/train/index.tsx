@@ -163,4 +163,5 @@ export function TrainTab() {
   );
 }
 
-export default TrainTab;
+export { TrainTab };
+
