@@ -33,17 +33,17 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
   const buttonStyle = {
     backgroundColor: themeParams.secondary_bg_color,
     color: themeParams.text_color,
-    borderColor: `${themeParams.button_color}66`,
+    borderColor: `${themeParams.button_color}33`,
   };
 
   const selectedItemStyle = {
     backgroundColor: themeParams.bg_color,
-    borderColor: `${themeParams.button_color}66`,
+    borderColor: `${themeParams.button_color}33`,
   };
 
   const headerStyle = {
     backgroundColor: themeParams.secondary_bg_color,
-    borderColor: `${themeParams.button_color}66`,
+    borderColor: `${themeParams.button_color}33`,
   };
 
   return (
