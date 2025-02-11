@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Info, RotateCcw } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import type { TelegramThemeParams } from '@/types/telegram';
@@ -16,6 +17,8 @@ interface GuidanceInputProps {
 }
 
 export function GuidanceInput({ value, onChange, onReset, themeParams }: GuidanceInputProps) {
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -32,10 +35,14 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
           >
             ({value.toFixed(1)})
           </span>
-          <TooltipProvider delayDuration={100}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button type="button" className="hover:opacity-80 transition-opacity focus:outline-none">
+          <TooltipProvider>
+            <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+              <TooltipTrigger asChild onClick={() => setIsTooltipOpen(!isTooltipOpen)}>
+                <button 
+                  type="button" 
+                  className="hover:opacity-80 transition-opacity focus:outline-none"
+                  aria-label="Toggle guidance scale info"
+                >
                   <Info 
                     className="h-3.5 w-3.5" 
                     style={{ color: themeParams.hint_color }} 
