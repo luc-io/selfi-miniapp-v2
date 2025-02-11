@@ -6,7 +6,7 @@ import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
 import { startTraining } from '@/lib/api';
 import { useTrainingState, useTrainingStatus } from './hooks';
 import { TrainingForm, CostDisplay, ErrorDisplay, TrainingStatus } from './components';
-// import type { TrainingImage } from './types/training';
+import type { TrainingImage } from './types/training';
 
 const TRAINING_COST = 150; // Cost in stars for training
 
@@ -58,8 +58,8 @@ export function TrainTab() {
       setIsLoading(true);
 
       // Extract files and captions
-      const files = state.images.map(img => img.file);
-      const captions = state.images.reduce((acc, img) => {
+      const files = state.images.map((img: TrainingImage) => img.file);
+      const captions = state.images.reduce((acc: Record<string, string>, img: TrainingImage) => {
         acc[img.file.name] = img.caption;
         return acc;
       }, {} as Record<string, string>);
@@ -71,9 +71,6 @@ export function TrainTab() {
         triggerWord: state.triggerWord,
       }, files, captions);
 
-      console.log('Backend training response:', trainingResult);
-
-      // Start progress tracking with falRequestId
       if (trainingResult.falRequestId) {
         console.log('Starting training progress tracking with FAL ID:', trainingResult.falRequestId);
         startTrainingProgress(trainingResult.falRequestId);
@@ -99,10 +96,10 @@ export function TrainTab() {
       if (error instanceof Error) {
         if (error.message.includes('Insufficient stars')) {
           errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
-          setErrorMessage(errorMsg); // Only show in form for star-related errors
+          setErrorMessage(errorMsg);
         } else {
           errorMsg += error.message;
-          setTrainingError(errorMsg); // Show in training status for training-related errors
+          setTrainingError(errorMsg);
         }
       } else {
         errorMsg += 'Unknown error occurred';
@@ -116,8 +113,6 @@ export function TrainTab() {
       setIsLoading(false);
     }
   };
-
-  console.log('Current training state:', { isTraining, progress });
 
   const cardStyle = {
     backgroundColor: themeParams.secondary_bg_color,
@@ -134,7 +129,6 @@ export function TrainTab() {
           hasEnoughStars={hasEnoughStars}
         />
 
-        {/* Only show ErrorDisplay for non-training errors (like insufficient stars) */}
         {!isTraining && <ErrorDisplay message={errorMessage} />}
 
         <TrainingForm
@@ -153,7 +147,6 @@ export function TrainTab() {
           onMasksChange={setMasks}
         />
 
-        {/* Show training status when training is in progress */}
         <TrainingStatus
           isVisible={isTraining}
           progress={progress}
@@ -162,4 +155,3 @@ export function TrainTab() {
     </Card>
   );
 }
-
