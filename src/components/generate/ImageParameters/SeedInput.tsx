@@ -59,7 +59,14 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
                 />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="border-0 shadow-sm p-2" style={{ backgroundColor: themeParams.bg_color, color: themeParams.hint_color }}>
+            <TooltipContent 
+              side="top" 
+              className="border-0 shadow-sm p-2 text-sm" 
+              style={{ 
+                backgroundColor: themeParams.bg_color, 
+                color: themeParams.hint_color 
+              }}
+            >
               Same seed + prompt = same image
             </TooltipContent>
           </Tooltip>
