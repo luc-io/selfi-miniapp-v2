@@ -1,6 +1,6 @@
 import type { TrainingImage } from '../types/training';
 import { PhotoPlus } from 'lucide-react';
-import { ChangeEvent } from 'react';
+// import { ChangeEvent } from 'react';
 import FileUpload from './FileUpload';
 import ImagePreviews from './ImagePreviews';
 import TriggerWordInput from './TriggerWordInput';
@@ -49,17 +49,18 @@ export function TrainingForm({
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <FileUpload
-        onFilesSelected={newImages => 
+        onFilesSelected={(newImages: TrainingImage[]) => 
           onImagesChange([...images, ...newImages])
         }
       />
 
       <ImagePreviews
         images={images}
-        onImageRemove={index => 
+        onImageRemove={(index: number) => 
           onImagesChange(images.filter((_, i) => i !== index))
         }
-        onCaptionUpdate={(index, caption) =>
+        
+        onCaptionUpdate={(index: number, caption: string) =>
           onImagesChange(images.map((img, i) => 
             i === index ? { ...img, caption } : img
           ))
@@ -89,7 +90,7 @@ export function TrainingForm({
         style={buttonStyle}
         disabled={isLoading || images.length === 0 || !triggerWord.trim() || !hasEnoughStars}
       >
-        <PhotoPlus className="h-4 w-4" />
+        <Loader2 className="h-4 w-4 animate-spin" />
         {isLoading ? 'Training...' : 'Start Training'}
       </button>
     </form>
