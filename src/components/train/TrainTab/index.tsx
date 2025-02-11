@@ -33,21 +33,10 @@ export function TrainTab() {
     setError: setTrainingError
   } = useTrainingStatus();
 
-  const { 
-    userInfo, 
-    refreshBalance,
-    error: balanceError 
-  } = useStarBalance();
-
+  const { userInfo, refreshBalance } = useStarBalance();
+  
   // Set up automatic balance refresh
   useBalanceRefresh(refreshBalance);
-
-  // Handle balance error
-  useEffect(() => {
-    if (balanceError) {
-      setErrorMessage(balanceError);
-    }
-  }, [balanceError]);
 
   const hasEnoughStars = userInfo ? userInfo.stars >= TRAINING_COST : false;
 
@@ -55,12 +44,15 @@ export function TrainTab() {
     e.preventDefault();
     if (state.images.length === 0 || !state.triggerWord.trim()) return;
 
+    // Clear any previous error messages
     setErrorMessage(null);
 
+    // Check if user has enough stars
     if (!hasEnoughStars) {
-      const message = `Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`;
-      setErrorMessage(message);
-      window.Telegram?.WebApp?.showPopup({ message });
+      setErrorMessage(`Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`);
+      window.Telegram?.WebApp?.showPopup({
+        message: `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`
+      });
       return;
     }
 
@@ -69,28 +61,32 @@ export function TrainTab() {
       startTrainingProgress();
 
       // Extract files and captions
-      const files = state.images.map((img: TrainingImage) => img.file);
-      const captions = state.images.reduce((acc: Record<string, string>, img: TrainingImage) => {
+      const files = state.images.map(img => img.file);
+      const captions = state.images.reduce((acc, img) => {
         acc[img.file.name] = img.caption;
         return acc;
-      }, {});
+      }, {} as Record<string, string>);
 
       const trainingResult = await startTraining({
         steps: state.steps,
         isStyle: state.isStyle,
         createMasks: state.createMasks,
         triggerWord: state.triggerWord,
-      }, files, captions);
+      }, files, captions).catch(error => {
+        console.error('Training failed:', error);
+        throw new Error('Training failed: ' + (error.message || 'Unknown error'));
+      });
 
       console.log('Training started successfully:', trainingResult);
 
-      // Update star balance after successful training start
+      // Update user info after successful training start
       await refreshBalance();
 
       window.Telegram?.WebApp?.showPopup({
         message: 'Training started successfully!'
       });
 
+      // Reset form
       resetState();
 
     } catch (error) {
@@ -122,6 +118,8 @@ export function TrainTab() {
     color: themeParams.text_color,
     borderColor: `${themeParams.button_color}20`,
   };
+
+  const isFormValid = state.images.length > 0 && state.triggerWord.trim().length > 0;
 
   return (
     <Card className="shadow-md" style={cardStyle}>
