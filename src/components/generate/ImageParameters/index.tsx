@@ -61,7 +61,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             style={{
               backgroundColor: themeParams.secondary_bg_color,
               color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}80`
+              borderColor: `${themeParams.button_color}0A`
             }}
           >
             <SelectValue />
@@ -70,7 +70,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             style={{
               backgroundColor: themeParams.bg_color,
               color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}80`
+              borderColor: `${themeParams.button_color}0A`
             }}
           >
             {Object.entries(IMAGE_SIZES).map(([value, label]) => (
@@ -80,7 +80,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
                 style={{
                   backgroundColor: 'transparent',
                   color: themeParams.text_color,
-                  '--highlight-bg': `${themeParams.button_color}80`
+                  '--highlight-bg': `${themeParams.button_color}0A`
                 } as React.CSSProperties}
               >
                 {label}
@@ -131,7 +131,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             style={{
               backgroundColor: themeParams.secondary_bg_color,
               color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}80`
+              borderColor: `${themeParams.button_color}0A`
             }}
           >
             <SelectValue />
@@ -140,7 +140,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             style={{
               backgroundColor: themeParams.bg_color,
               color: themeParams.text_color,
-              borderColor: `${themeParams.button_color}80`
+              borderColor: `${themeParams.button_color}0A`
             }}
           >
             <SelectItem 
@@ -148,7 +148,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
               style={{
                 backgroundColor: 'transparent',
                 color: themeParams.text_color,
-                '--highlight-bg': `${themeParams.button_color}80`
+                '--highlight-bg': `${themeParams.button_color}0A`
               } as React.CSSProperties}
             >
               JPEG
@@ -158,7 +158,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
               style={{
                 backgroundColor: 'transparent',
                 color: themeParams.text_color,
-                '--highlight-bg': `${themeParams.button_color}80`
+                '--highlight-bg': `${themeParams.button_color}0A`
               } as React.CSSProperties}
             >
               PNG
