@@ -70,15 +70,15 @@ export function TrainTab() {
         triggerWord: state.triggerWord,
       }, files, captions);
 
-      console.log('Training started successfully:', trainingResult);
+      console.log('Backend training response:', trainingResult);
 
       // Start progress tracking with falRequestId
       if (trainingResult.falRequestId) {
         console.log('Starting training progress tracking with FAL ID:', trainingResult.falRequestId);
         startTrainingProgress(trainingResult.falRequestId);
       } else {
-        console.error('No falRequestId received:', trainingResult);
-        throw new Error('No FAL request ID received from backend');
+        console.error('Training result missing falRequestId:', trainingResult);
+        throw new Error('Could not find training ID in response');
       }
 
       // Update user info after successful training start
@@ -88,7 +88,7 @@ export function TrainTab() {
         message: 'Training started successfully!'
       });
 
-      // Reset form
+      // Reset form after successful start
       resetState();
 
     } catch (error) {
@@ -108,12 +108,15 @@ export function TrainTab() {
         setTrainingError(errorMsg);
       }
 
+      console.error('Final error message:', errorMsg);
       window.Telegram?.WebApp?.showPopup({ message: errorMsg });
 
     } finally {
       setIsLoading(false);
     }
   };
+
+  console.log('Current training state:', { isTraining, progress });
 
   const cardStyle = {
     backgroundColor: themeParams.secondary_bg_color,
