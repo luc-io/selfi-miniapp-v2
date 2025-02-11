@@ -45,13 +45,11 @@ export function TrainTab() {
     // Clear any previous error messages
     setErrorMessage(null);
 
-    // Check if user has enough stars
+    // Check if user has enough stars before starting training
     if (!hasEnoughStars) {
-      const errorMsg = `Insufficient stars. Training requires ${TRAINING_COST} stars. You have ${userInfo?.stars || 0} stars.`;
+      const errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
       setErrorMessage(errorMsg);
-      window.Telegram?.WebApp?.showPopup({
-        message: `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`
-      });
+      window.Telegram?.WebApp?.showPopup({ message: errorMsg });
       return;
     }
 
@@ -79,7 +77,7 @@ export function TrainTab() {
         console.log('Starting training progress tracking with ID:', trainingResult.trainingId);
         startTrainingProgress(trainingResult.trainingId);
       } else {
-        console.warn('No training ID received from backend');
+        throw new Error('No training ID received from backend');
       }
 
       // Update user info after successful training start
@@ -99,15 +97,16 @@ export function TrainTab() {
       if (error instanceof Error) {
         if (error.message.includes('Insufficient stars')) {
           errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+          setErrorMessage(errorMsg); // Only show in form for star-related errors
         } else {
           errorMsg += error.message;
+          setTrainingError(errorMsg); // Show in training status for training-related errors
         }
       } else {
         errorMsg += 'Unknown error occurred';
+        setTrainingError(errorMsg);
       }
 
-      setErrorMessage(errorMsg);
-      setTrainingError(errorMsg);
       window.Telegram?.WebApp?.showPopup({ message: errorMsg });
 
     } finally {
@@ -130,7 +129,8 @@ export function TrainTab() {
           hasEnoughStars={hasEnoughStars}
         />
 
-        <ErrorDisplay message={errorMessage} />
+        {/* Only show ErrorDisplay for non-training errors (like insufficient stars) */}
+        {!isTraining && <ErrorDisplay message={errorMessage} />}
 
         <TrainingForm
           isLoading={isLoading}
@@ -148,7 +148,7 @@ export function TrainTab() {
           onMasksChange={setMasks}
         />
 
-        {/* Always render TrainingStatus component, visibility controlled by isTraining prop */}
+        {/* Show training status when training is in progress */}
         <TrainingStatus
           isVisible={isTraining}
           progress={progress}
