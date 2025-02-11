@@ -57,7 +57,6 @@ export function TrainTab() {
 
     try {
       setIsLoading(true);
-      startTrainingProgress();
 
       // Extract files and captions
       const files = state.images.map(img => img.file);
@@ -77,6 +76,9 @@ export function TrainTab() {
       });
 
       console.log('Training started successfully:', trainingResult);
+
+      // Start progress tracking with training ID
+      startTrainingProgress(trainingResult.trainingId);
 
       // Update user info after successful training start
       await refreshBalance();
@@ -108,7 +110,7 @@ export function TrainTab() {
 
     } finally {
       setIsLoading(false);
-      finishTraining();
+      // Note: Don't call finishTraining here anymore - it will be handled by the polling mechanism
     }
   };
 
