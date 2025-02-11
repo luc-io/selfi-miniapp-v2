@@ -80,7 +80,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           style={{
             backgroundColor: themeParams.secondary_bg_color,
             color: themeParams.text_color,
-            borderColor: `${themeParams.button_color}20`
+            borderColor: `${themeParams.button_color}66`
           }}
         />
         <button
