@@ -47,6 +47,9 @@ export function TrainingForm({
     color: themeParams.button_text_color,
   };
 
+  const isFormValid = images.length > 0 && triggerWord.trim().length > 0;
+  const buttonDisabled = isLoading || !isFormValid || !hasEnoughStars;
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <FileUpload
@@ -90,10 +93,20 @@ export function TrainingForm({
         type="submit"
         className="w-full mt-6 flex items-center justify-center py-3 px-4 text-sm font-semibold rounded-md shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed gap-2"
         style={buttonStyle}
-        disabled={isLoading || images.length === 0 || !triggerWord.trim() || !hasEnoughStars}
+        disabled={buttonDisabled}
       >
-        <Loader2 className="h-4 w-4 animate-spin" />
-        {isLoading ? 'Training...' : 'Start Training'}
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Training...
+          </>
+        ) : !hasEnoughStars ? (
+          'Insufficient Stars'
+        ) : !isFormValid ? (
+          'Fill Required Fields'
+        ) : (
+          'Start Training'
+        )}
       </button>
     </form>
   );
