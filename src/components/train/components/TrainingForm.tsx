@@ -39,6 +39,8 @@ export function TrainingForm({
   onMasksChange,
 }: TrainingFormProps) {
   const themeParams = useTelegramTheme();
+  const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+  const totalSize = images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
 
   const buttonStyle = {
     backgroundColor: themeParams.button_color,
@@ -48,6 +50,8 @@ export function TrainingForm({
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <FileUpload
+        totalSize={totalSize}
+        maxSize={MAX_SIZE}
         onFilesSelected={(newImages: TrainingImage[]) => 
           onImagesChange([...images, ...newImages])
         }
