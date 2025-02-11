@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { startTraining, getUserInfo, type UserInfo } from '@/lib/api';
+import { startTraining, type UserInfo } from '@/lib/api';
 import { 
   FileUpload,
   ImagePreviews,
@@ -12,6 +12,8 @@ import {
 } from './components';
 import { DEFAULT_STATE, type TrainingImage } from './types/training';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
+import { useStarBalance } from '@/hooks/useStarBalance';
+import { useBalanceRefresh } from '@/hooks/useBalanceRefresh';
 
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const TRAINING_COST = 150; // Cost in stars for training
@@ -20,25 +22,26 @@ const TrainTab: React.FC = () => {
   const themeParams = useTelegramTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState(DEFAULT_STATE);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const info = await getUserInfo();
-        setUserInfo(info);
-      } catch (error) {
-        console.error('Failed to load user info:', error);
-        setErrorMessage('Failed to load user information');
-      }
-    };
-
-    loadUserInfo();
-  }, []);
+  const { userInfo, refreshBalance } = useStarBalance();
+  
+  // Set up automatic balance refresh
+  useBalanceRefresh(refreshBalance);
 
   const totalSize = state.images.reduce((acc: number, img: TrainingImage) => acc + img.file.size, 0);
   const hasEnoughStars = userInfo ? userInfo.stars >= TRAINING_COST : false;
+
+  // Debug logs
+  useEffect(() => {
+    console.log('Current balance:', userInfo?.stars);
+    console.log('Has enough stars:', hasEnoughStars);
+    console.log('Form state:', {
+      imagesCount: state.images.length,
+      triggerWord: state.triggerWord,
+      isLoading
+    });
+  }, [userInfo?.stars, hasEnoughStars, state.images.length, state.triggerWord, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,8 +89,7 @@ const TrainTab: React.FC = () => {
       console.log('Training started successfully:', trainingResult);
 
       // Update user info after successful training start
-      const updatedInfo = await getUserInfo();
-      setUserInfo(updatedInfo);
+      await refreshBalance();
 
       window.Telegram?.WebApp?.showPopup({
         message: 'Training started successfully!'
@@ -147,6 +149,8 @@ const TrainTab: React.FC = () => {
   const costStyle = {
     color: themeParams.button_color,
   };
+
+  const isFormValid = state.images.length > 0 && state.triggerWord.trim().length > 0;
 
   return (
     <Card className="shadow-md" style={cardStyle}>
@@ -233,7 +237,7 @@ const TrainTab: React.FC = () => {
             type="submit" 
             className="w-full py-3 px-4 text-sm font-semibold shadow-sm hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={buttonStyle}
-            disabled={isLoading || state.images.length === 0 || !state.triggerWord.trim() || !hasEnoughStars}
+            disabled={isLoading || !isFormValid || !hasEnoughStars}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -242,6 +246,8 @@ const TrainTab: React.FC = () => {
               </div>
             ) : !hasEnoughStars ? (
               'Insufficient Stars'
+            ) : !isFormValid ? (
+              'Fill Required Fields'
             ) : (
               'Start Training'
             )}
