@@ -6,6 +6,7 @@ import { GuidanceInput } from './GuidanceInput';
 import { NumImagesInput } from './NumImagesInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { generateFalSeed } from '@/utils/seed';
 
 const IMAGE_SIZES = {
   landscape_4_3: 'Landscape 4:3',
@@ -25,9 +26,8 @@ interface ImageParametersProps {
 const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
-  seed: 0,
+  seed: generateFalSeed(),
   guidance_scale: 3.5,
-  num_images: 1,
   enable_safety_checker: true,
   output_format: 'jpeg',
   modelPath: 'fal-ai/flux-lora',
@@ -110,7 +110,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
       <NumImagesInput
         value={params.num_images}
         onChange={(value) => updateParam('num_images', value)}
-        onReset={() => updateParam('num_images', DEFAULT_PARAMS.num_images)}
+        onReset={() => updateParam('num_images', 1)}
         themeParams={themeParams}
       />
 
