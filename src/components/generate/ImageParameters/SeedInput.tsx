@@ -14,9 +14,9 @@ const formatSeedForDisplay = (seed: number): string => {
 };
 
 const parseSeedInput = (input: string): number => {
-  if (!input || input.trim() === '') return generateFalSeed();
+  if (!input || input.trim() === '') return 0;
   const cleanInput = input.replace(/[^0-9]/g, '');
-  if (!cleanInput) return generateFalSeed();
+  if (!cleanInput) return 0;
   
   // Convert to 7-digit number
   if (cleanInput.length < 7) {
@@ -50,7 +50,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   };
 
   const handleClearSeed = () => {
-    onChange(generateFalSeed());
+    onChange(0);  // Just clear to 0
   };
 
   return (
@@ -80,7 +80,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Same seed + prompt = same image. Seed must be a 7-digit number.
+            Same seed + prompt = same image. Use 0 for random seed.
           </p>
         )}
       </div>
@@ -91,7 +91,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           pattern="[0-9]*"
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
-          placeholder="7-digit number"
+          placeholder="0 for random"
           maxLength={7}
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
@@ -107,7 +107,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Generate new random seed"
+          title="Clear seed (use 0 for random)"
         >
           <X className="h-4 w-4" />
         </button>
