@@ -17,7 +17,10 @@ export function ModelSelector({ onSelect, defaultValue }: ModelSelectorProps) {
           <img
             src="/assets/images/flux-model.png"
             alt="Flux Model"
-            className="w-full h-[160px] object-cover rounded-lg"
+            className="w-full h-[72px] md:h-[160px] object-cover rounded-lg transition-all duration-300"
+            style={{
+              height: 'clamp(72px, calc(72px + (160 - 72) * ((100vw - 360px) / (800 - 360))), 160px)'
+            }}
           />
         </div>
       </CardContent>
