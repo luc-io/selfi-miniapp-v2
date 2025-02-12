@@ -10,16 +10,18 @@ interface SeedInputProps {
 }
 
 const formatSeedForDisplay = (seed: number): string => {
-  if (seed === 0) return "";
   return String(seed);
 };
 
 const parseSeedInput = (input: string): number => {
-  if (!input || input.trim() === '') return 0;
+  if (!input || input.trim() === '') return generateFalSeed();
   const cleanInput = input.replace(/[^0-9]/g, '');
-  if (!cleanInput) return 0;
+  if (!cleanInput) return generateFalSeed();
   const num = Number(cleanInput);
-  return isNaN(num) ? 0 : Math.min(num, Number.MAX_SAFE_INTEGER);
+  // Ensure the number is 7 digits by padding or truncating
+  if (num < 1000000) return num + 1000000;
+  if (num > 9999999) return Number(String(num).slice(0, 7));
+  return num;
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
@@ -34,7 +36,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   };
 
   const handleClearSeed = () => {
-    onChange(0);
+    onChange(generateFalSeed());
   };
 
   return (
@@ -64,7 +66,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Same seed + prompt = same image
+            Same seed + prompt = same image. Each image gets its own seed.
           </p>
         )}
       </div>
@@ -90,7 +92,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Clear seed (Random)"
+          title="Generate new random seed"
         >
           <X className="h-4 w-4" />
         </button>
