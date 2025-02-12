@@ -17,10 +17,24 @@ const parseSeedInput = (input: string): number => {
   if (!input || input.trim() === '') return generateFalSeed();
   const cleanInput = input.replace(/[^0-9]/g, '');
   if (!cleanInput) return generateFalSeed();
+  
+  // Convert to 7-digit number
+  if (cleanInput.length < 7) {
+    // If less than 7 digits, pad with leading digits starting with 1
+    return Number('1' + cleanInput.padStart(6, '0'));
+  }
+  
+  if (cleanInput.length > 7) {
+    // If more than 7 digits, take first 7
+    return Number(cleanInput.slice(0, 7));
+  }
+  
+  // Exactly 7 digits
   const num = Number(cleanInput);
-  // Ensure the number is 7 digits by padding or truncating
-  if (num < 1000000) return num + 1000000;
-  if (num > 9999999) return Number(String(num).slice(0, 7));
+  if (num < 1000000) {
+    // Ensure it starts with 1 if somehow less than 1000000
+    return 1000000 + (num % 1000000);
+  }
   return num;
 };
 
@@ -66,7 +80,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Same seed + prompt = same image. Each image gets its own seed.
+            Same seed + prompt = same image. Seed must be a 7-digit number.
           </p>
         )}
       </div>
@@ -77,7 +91,8 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           pattern="[0-9]*"
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
-          placeholder="Random"
+          placeholder="7-digit number"
+          maxLength={7}
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
             backgroundColor: themeParams.secondary_bg_color,
