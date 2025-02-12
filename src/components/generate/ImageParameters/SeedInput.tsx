@@ -10,7 +10,6 @@ interface SeedInputProps {
 }
 
 const formatSeedForDisplay = (seed: number): string => {
-  if (seed === 0) return "";
   return String(seed);
 };
 
@@ -18,8 +17,25 @@ const parseSeedInput = (input: string): number => {
   if (!input || input.trim() === '') return 0;
   const cleanInput = input.replace(/[^0-9]/g, '');
   if (!cleanInput) return 0;
+  
+  // Convert to 7-digit number
+  if (cleanInput.length < 7) {
+    // If less than 7 digits, pad with leading digits starting with 1
+    return Number('1' + cleanInput.padStart(6, '0'));
+  }
+  
+  if (cleanInput.length > 7) {
+    // If more than 7 digits, take first 7
+    return Number(cleanInput.slice(0, 7));
+  }
+  
+  // Exactly 7 digits
   const num = Number(cleanInput);
-  return isNaN(num) ? 0 : Math.min(num, Number.MAX_SAFE_INTEGER);
+  if (num < 1000000) {
+    // Ensure it starts with 1 if somehow less than 1000000
+    return 1000000 + (num % 1000000);
+  }
+  return num;
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
@@ -34,7 +50,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   };
 
   const handleClearSeed = () => {
-    onChange(0);
+    onChange(0);  // Just clear to 0
   };
 
   return (
@@ -64,7 +80,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Same seed + prompt = same image
+            Same seed + prompt = same image. Use 0 for random seed.
           </p>
         )}
       </div>
@@ -75,7 +91,8 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           pattern="[0-9]*"
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
-          placeholder="Random"
+          placeholder="0 for random"
+          maxLength={7}
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
             backgroundColor: themeParams.secondary_bg_color,
@@ -90,7 +107,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Clear seed (Random)"
+          title="Clear seed (use 0 for random)"
         >
           <X className="h-4 w-4" />
         </button>

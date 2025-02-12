@@ -3,13 +3,15 @@ import { Slider } from '@/components/ui/slider';
 import type { TelegramThemeParams } from '@/types/telegram';
 
 interface NumImagesInputProps {
-  value: number;
+  value?: number;  // Made optional
   onChange: (value: number) => void;
   onReset: () => void;
   themeParams: TelegramThemeParams;
 }
 
-export function NumImagesInput({ value, onChange, onReset, themeParams }: NumImagesInputProps) {
+const DEFAULT_VALUE = 1;
+
+export function NumImagesInput({ value = DEFAULT_VALUE, onChange, onReset, themeParams }: NumImagesInputProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">

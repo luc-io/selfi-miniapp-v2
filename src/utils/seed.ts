@@ -1,12 +1,9 @@
+/**
+ * Generates a random 7-digit number (1000000-9999999) for seed
+ * @returns number - A random 7-digit number
+ */
 export const generateFalSeed = (): number => {
-  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-};
-
-export const isCompressedSeed = (seed: number): boolean => {
-  return seed >= 0 && seed <= 4294967295; // 2^32 - 1
-};
-
-export const expandCompressedSeed = (seed: number): number => {
-  if (!isCompressedSeed(seed)) return seed;
-  return seed + 4294967296; // Add 2^32
+  const min = 1000000; // 7 digits start
+  const max = 9999999; // 7 digits end
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
