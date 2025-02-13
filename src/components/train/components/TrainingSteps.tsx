@@ -18,7 +18,7 @@ export function TrainingSteps({ value, onChange }: TrainingStepsProps) {
         className="block text-sm font-medium" 
         style={labelStyle}
       >
-        Training Steps: {value}
+        Pasos de entrenamiento (training steps): {value}
       </label>
       <input
         type="range"
