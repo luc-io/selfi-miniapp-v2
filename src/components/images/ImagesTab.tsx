@@ -1,4 +1,31 @@
-# Rest of the imports and interfaces stay the same...
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Card } from '../ui/card';
+import { Loader2, Copy } from 'lucide-react';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
+import type { GeneratedImage } from '@/types/image';
+import { getGeneratedImages, type ImagesResponse } from '@/api/images';
+import { useInfiniteQuery } from '@tanstack/react-query';
+
+interface ImageItemProps {
+  image: GeneratedImage;
+  themeParams: any;
+  images: GeneratedImage[];
+  onImageClick: (imageId: string) => void;
+}
+
+const ITEMS_PER_PAGE = 20;
+
+const formatDateLatam = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  };
+  return date.toLocaleDateString('es-AR', options);
+};
 
 const generateCommand = (image: GeneratedImage): string => {
   const parts = ['/gen', image.prompt];
@@ -21,4 +48,8 @@ const generateCommand = (image: GeneratedImage): string => {
   return parts.join(' ');
 };
 
-# Rest of the file stays the same...
+# Rest of the components stay exactly the same...
+
+export function ImagesTab() {
+  # Rest of the ImagesTab component stays exactly the same...
+}
