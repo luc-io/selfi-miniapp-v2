@@ -174,7 +174,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             className="block text-sm font-medium" 
             style={{ color: themeParams.text_color }}
           >
-            Safety Checker
+            Filtro de seguridad
           </label>
           <p 
             className="text-sm" 
