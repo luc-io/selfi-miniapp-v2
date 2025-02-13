@@ -61,7 +61,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="block text-sm font-medium" 
             style={{ color: themeParams.text_color }}
           >
-            Seed (Semilla)
+            Semilla (Seed)
           </label>
           <button 
             type="button"
