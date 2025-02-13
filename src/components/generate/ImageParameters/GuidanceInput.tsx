@@ -22,7 +22,7 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
               className="block text-sm font-medium" 
               style={{ color: themeParams.text_color }}
             >
-              CFG Scale
+              Escala CFG
             </label>
             <span 
               className="text-sm"
@@ -34,7 +34,7 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
               type="button" 
               className="hover:opacity-80 transition-opacity focus:outline-none"
               onClick={() => setShowHelp(!showHelp)}
-              aria-label="Toggle guidance scale info"
+              aria-label="Ver información de escala de guía"
             >
               <Info 
                 className="h-3.5 w-3.5" 
@@ -47,7 +47,7 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
               className="text-sm" 
               style={{ color: themeParams.hint_color }}
             >
-              Controls how closely the AI follows your prompt. Higher values = more faithful to prompt but potentially less creative.
+              Controla qué tan fielmente la IA sigue tu prompt. Valores más altos = más fiel al prompt pero potencialmente menos creativo.
             </p>
           )}
         </div>
@@ -55,7 +55,7 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
           onClick={onReset}
           className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
           style={{ color: themeParams.button_color }}
-          title="Reset to default (3.5)"
+          title="Restablecer al valor predeterminado (3.5)"
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </button>
