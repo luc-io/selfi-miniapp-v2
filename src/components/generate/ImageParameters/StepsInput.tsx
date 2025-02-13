@@ -17,7 +17,7 @@ export function StepsInput({ value, onChange, onReset, themeParams }: StepsInput
           className="block text-sm font-medium" 
           style={{ color: themeParams.text_color }}
         >
-          Steps <span style={{ color: themeParams.hint_color }} className="ml-1">({value})</span>
+          Steps (pasos) <span style={{ color: themeParams.hint_color }} className="ml-1">({value})</span>
         </label>
         <button 
           onClick={onReset}
