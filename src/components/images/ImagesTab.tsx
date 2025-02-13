@@ -39,9 +39,10 @@ const generateCommand = (image: GeneratedImage): string => {
   if (typeof image.seed === 'number' && !isNaN(image.seed)) {
     parts.push(`--seed ${image.seed}`);
   }
-  if (image.loras?.[0]) {
-    const lora = image.loras[0];
-    parts.push(`--l ${lora.triggerWord || lora.name}:${lora.scale}`);
+  if (image.loras?.length > 0) {
+    image.loras.forEach(lora => {
+      parts.push(`--l ${lora.triggerWord || lora.name}:${lora.scale}`);
+    });
   }
   
   return parts.join(' ');
