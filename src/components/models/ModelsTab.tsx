@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
 import { Model, LoraStatus } from '@/types/model';
 import { useModels } from '@/hooks/useModels';
@@ -32,6 +33,10 @@ export function ModelsTab() {
   const [activeTab, setActiveTab] = useState<DetailsTab>('input');
 
   const selectedCount = models?.filter(model => model.isSelected)?.length ?? 0;
+
+  const formatDate = (date: Date | string) => {
+    return `hace ${formatDistanceToNow(new Date(date), { locale: es })}`;
+  };
 
   const handleDelete = async (model: Model) => {
     if (!model?.databaseId) {
@@ -144,7 +149,7 @@ export function ModelsTab() {
                 <div>
                   <div className="font-medium font-mono">{model.name}</div>
                   <div style={{ color: themeParams.hint_color }} className="text-[11px] mt-0.5">
-                    hace {formatDistanceToNow(new Date(model.createdAt))}
+                    {formatDate(model.createdAt)}
                   </div>
                 </div>
                 <div className="flex justify-center">
