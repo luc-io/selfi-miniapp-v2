@@ -23,7 +23,7 @@ export function StepsInput({ value, onChange, onReset, themeParams }: StepsInput
           onClick={onReset}
           className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
           style={{ color: themeParams.button_color }}
-          title="Reset to default (28)"
+          title="Restablecer al valor predeterminado (28)"
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </button>
