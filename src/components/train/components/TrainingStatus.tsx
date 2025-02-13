@@ -47,7 +47,7 @@ export function TrainingStatus({ isVisible, progress }: TrainingStatusProps) {
             ) : isComplete ? (
               <>
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-green-500">Complete</span>
+                <span className="text-green-500">Completado</span>
               </>
             ) : (
               progress.status
@@ -74,12 +74,12 @@ export function TrainingStatus({ isVisible, progress }: TrainingStatusProps) {
         ) : isComplete ? (
           <div className="text-sm text-green-500 text-center flex items-center justify-center gap-2">
             <CheckCircle className="h-4 w-4" />
-            Training Complete!
+            ¡Entrenamiento Completado!
           </div>
         ) : (
           <div className="flex items-center justify-center text-sm gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Processing
+            Procesando
           </div>
         )}
       </div>
