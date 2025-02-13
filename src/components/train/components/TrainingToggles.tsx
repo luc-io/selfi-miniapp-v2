@@ -32,13 +32,13 @@ export function TrainingToggles({
             style={labelStyle} 
             htmlFor="style-toggle"
           >
-            Style Training
+            Entrenamiento de Estilo
           </label>
           <p 
             className="text-xs mt-1" 
             style={hintStyle}
           >
-            Enable for training visual styles
+            Activar para entrenar estilos visuales
           </p>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
@@ -66,13 +66,13 @@ export function TrainingToggles({
               style={labelStyle} 
               htmlFor="mask-toggle"
             >
-              Create Masks
+              Crear Máscaras
             </label>
             <p 
               className="text-xs mt-1" 
               style={hintStyle}
             >
-              Enable for better subject isolation
+              Activar para mejor aislamiento del sujeto
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">

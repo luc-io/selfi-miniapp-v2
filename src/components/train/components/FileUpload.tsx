@@ -23,7 +23,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     if (newTotalSize > maxSize) {
       window.Telegram?.WebApp?.showPopup({
-        message: 'Total file size must be less than 50MB'
+        message: 'El tamaño total del archivo debe ser menor a 50MB'
       });
       return;
     }
@@ -57,10 +57,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <div className="flex flex-col items-center justify-center">
           <Upload className="w-8 h-8 text-muted-foreground" />
           <span className="mt-2 text-sm text-card-foreground">
-            Drop images here or click to browse
+            Suelta imágenes aquí o haz clic para explorar
           </span>
           <span className="mt-1 text-xs text-muted-foreground">
-            {((totalSize / 1024 / 1024).toFixed(1))} MB of 50 MB used
+            {((totalSize / 1024 / 1024).toFixed(1))} MB de 50 MB usados
           </span>
         </div>
         <input

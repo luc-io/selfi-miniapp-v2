@@ -98,14 +98,14 @@ export function TrainingForm({
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Training...
+            Entrenando...
           </>
         ) : !hasEnoughStars ? (
-          'Insufficient Stars'
+          'Estrellas Insuficientes'
         ) : !isFormValid ? (
-          'Fill Required Fields'
+          'Completa los Campos Requeridos'
         ) : (
-          'Start Training'
+          'Comenzar Entrenamiento'
         )}
       </button>
     </form>
