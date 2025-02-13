@@ -9,12 +9,12 @@ import { Switch } from '@/components/ui/switch';
 import { generateFalSeed } from '@/utils/seed';
 
 const IMAGE_SIZES = {
-  landscape_4_3: 'Landscape 4:3',
-  landscape_16_9: 'Landscape 16:9',
-  square_hd: 'Square HD',
-  square: 'Square',
-  portrait_4_3: 'Portrait 4:3',
-  portrait_16_9: 'Portrait 16:9',
+  landscape_4_3: 'Paisaje 4:3',
+  landscape_16_9: 'Paisaje 16:9',
+  square_hd: 'Cuadrado 1:1 HD',
+  square: 'Cuadrado 1:1',
+  portrait_4_3: 'Retrato 4:3',
+  portrait_16_9: 'Retrato 16:9',
 } as const;
 
 interface ImageParametersProps {
