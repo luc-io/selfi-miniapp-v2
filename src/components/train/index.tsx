@@ -48,7 +48,7 @@ export function TrainTab() {
 
     // Check if user has enough stars before starting training
     if (!hasEnoughStars) {
-      const errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+      const errorMsg = `Necesitas ${TRAINING_COST} estrellas para comenzar el entrenamiento. Saldo actual: ${userInfo?.stars || 0} estrellas.`;
       setErrorMessage(errorMsg);
       window.Telegram?.WebApp?.showPopup({ message: errorMsg });
       return;
@@ -79,28 +79,28 @@ export function TrainTab() {
         resetState();
         // Show success message
         window.Telegram?.WebApp?.showPopup({
-          message: 'Training started successfully!'
+          message: '¡Entrenamiento iniciado exitosamente!'
         });
         // Update user info
         await refreshBalance();
       } else {
-        throw new Error('Could not find training ID in response');
+        throw new Error('No se pudo encontrar el ID de entrenamiento en la respuesta');
       }
 
     } catch (error) {
       console.error('Training process failed:', error);
-      let errorMsg = 'Training failed: ';
+      let errorMsg = 'Error de entrenamiento: ';
       
       if (error instanceof Error) {
         if (error.message.includes('Insufficient stars')) {
-          errorMsg = `You need ${TRAINING_COST} stars to start training. Current balance: ${userInfo?.stars || 0} stars.`;
+          errorMsg = `Necesitas ${TRAINING_COST} estrellas para comenzar el entrenamiento. Saldo actual: ${userInfo?.stars || 0} estrellas.`;
           setErrorMessage(errorMsg);
         } else {
           errorMsg += error.message;
           setTrainingError(errorMsg);
         }
       } else {
-        errorMsg += 'Unknown error occurred';
+        errorMsg += 'Ocurrió un error desconocido';
         setTrainingError(errorMsg);
       }
 
