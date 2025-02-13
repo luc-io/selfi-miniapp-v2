@@ -31,13 +31,13 @@ export function CostDisplay({ trainingCost, userInfo, hasEnoughStars }: CostDisp
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold" style={labelStyle}>Train Model</h2>
         <div className="text-sm" style={hintStyle}>
-          Training Cost: <span style={costStyle}>{trainingCost} ⭐</span>
+          Costo de entrenamiento: <span style={costStyle}>{trainingCost} ⭐</span>
         </div>
       </div>
 
       {userInfo && (
         <div className="text-sm" style={hintStyle}>
-          Your Balance:{' '}
+          Tu balance:{' '}
           <span style={balanceStyle} className="font-semibold">
             {userInfo.stars} ⭐
           </span>
