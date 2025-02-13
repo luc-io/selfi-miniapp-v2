@@ -50,7 +50,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
           className="block text-sm font-medium" 
           style={{ color: themeParams.text_color }}
         >
-          Image Size
+          Tamaño y aspecto de la imagen
         </label>
         <Select 
           value={params.image_size} 
