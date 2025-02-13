@@ -60,7 +60,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
             type="button" 
             className="hover:opacity-80 transition-opacity focus:outline-none"
             onClick={() => setShowHelp(!showHelp)}
-            aria-label="Toggle LoRA info"
+            aria-label="Ver información de LoRA"
           >
             <Info 
               className="h-3.5 w-3.5" 
@@ -73,7 +73,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            The LoRAs to use for the image generation. You can use any number of LoRAs and they will be merged together to generate the final image.
+            Los LoRAs que se usarán para la generación de la imagen. Puedes usar cualquier número de LoRAs y se combinarán para generar la imagen final.
           </p>
         )}
       </div>
