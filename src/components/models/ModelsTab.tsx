@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
 import { Model, LoraStatus } from '@/types/model';
 import { useModels } from '@/hooks/useModels';
@@ -33,11 +34,15 @@ export function ModelsTab() {
 
   const selectedCount = models?.filter(model => model.isSelected)?.length ?? 0;
 
+  const formatDate = (date: Date | string) => {
+    return `hace ${formatDistanceToNow(new Date(date), { locale: es })}`;
+  };
+
   const handleDelete = async (model: Model) => {
     if (!model?.databaseId) {
       console.error('No model ID provided for deletion');
       window.Telegram?.WebApp?.showPopup({
-        message: 'Invalid model data. Please try again.'
+        message: 'Datos del modelo inválidos. Por favor, intenta de nuevo.'
       });
       return;
     }
@@ -45,14 +50,14 @@ export function ModelsTab() {
       await deleteModel(model.databaseId);
       setModelToDelete(null);
       window.Telegram?.WebApp?.showPopup({
-        message: `Model ${model.name} deleted successfully`
+        message: `Modelo ${model.name} eliminado exitosamente`
       });
     } catch (error) {
       console.error('Error deleting model:', error);
       window.Telegram?.WebApp?.showPopup({
         message: error instanceof Error 
-          ? `Failed to delete model: ${error.message}`
-          : 'Failed to delete model. Please try again.'
+          ? `Error al eliminar el modelo: ${error.message}`
+          : 'Error al eliminar el modelo. Por favor, intenta de nuevo.'
       });
     }
   };
@@ -118,7 +123,7 @@ export function ModelsTab() {
           color: themeParams.hint_color 
         }}
       >
-        <p>No models found. Train a model to see it here.</p>
+        <p>No se encontraron modelos. Entrena un modelo para verlo aquí.</p>
       </div>
     );
   }
@@ -131,9 +136,9 @@ export function ModelsTab() {
           className="grid grid-cols-[2fr,minmax(100px,1fr),80px] gap-4 px-4 py-3 font-medium text-sm border-b"
           style={headerStyle}
         >
-          <div>Model</div>
-          <div className="text-center">Status</div>
-          <div className="text-right">Actions</div>
+          <div>Modelo</div>
+          <div className="text-center">Estado</div>
+          <div className="text-right">Acciones</div>
         </div>
 
         {/* List */}
@@ -144,7 +149,7 @@ export function ModelsTab() {
                 <div>
                   <div className="font-medium font-mono">{model.name}</div>
                   <div style={{ color: themeParams.hint_color }} className="text-[11px] mt-0.5">
-                    about {formatDistanceToNow(new Date(model.createdAt))} ago
+                    {formatDate(model.createdAt)}
                   </div>
                 </div>
                 <div className="flex justify-center">
@@ -161,7 +166,7 @@ export function ModelsTab() {
                           onCheckedChange={(checked) => {
                             if (checked && selectedCount >= 5) {
                               window.Telegram?.WebApp?.showPopup({
-                                message: 'You can only select up to 5 models'
+                                message: 'Solo puedes seleccionar hasta 5 modelos'
                               });
                               return;
                             }
@@ -171,7 +176,7 @@ export function ModelsTab() {
                         />
                       </TooltipTrigger>
                       <TooltipContent>
-                        {model.isSelected ? 'Deselect model' : 'Select model'}
+                        {model.isSelected ? 'Deseleccionar modelo' : 'Seleccionar modelo'}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -203,14 +208,14 @@ export function ModelsTab() {
                         onClick={() => setActiveTab('input')}
                         style={tabStyle(activeTab === 'input')}
                       >
-                        Input
+                        Entrada
                       </button>
                       <button
                         className="px-4 py-2 text-sm font-medium -mb-px"
                         onClick={() => setActiveTab('output')}
                         style={tabStyle(activeTab === 'output')}
                       >
-                        Output
+                        Salida
                       </button>
                     </div>
 
@@ -218,7 +223,7 @@ export function ModelsTab() {
                     <div>
                       {activeTab === 'input' ? (
                         <div className="p-4 border text-xs" style={cardStyle}>
-                          <div className="font-medium mb-2">Training Parameters</div>
+                          <div className="font-medium mb-2">Parámetros de Entrenamiento</div>
                           {model.training ? (
                             <pre 
                               className="p-2 overflow-x-auto"
@@ -231,7 +236,7 @@ export function ModelsTab() {
                             </pre>
                           ) : (
                             <p style={{ color: themeParams.hint_color }}>
-                              No training parameters available
+                              No hay parámetros de entrenamiento disponibles
                             </p>
                           )}
                         </div>
@@ -239,7 +244,7 @@ export function ModelsTab() {
                         <div className="p-4 border text-xs space-y-4" style={cardStyle}>
                           {model.training?.metadata && (
                             <div>
-                              <div className="font-medium mb-1">Training Result</div>
+                              <div className="font-medium mb-1">Resultado del Entrenamiento</div>
                               <pre 
                                 className="p-2 overflow-x-auto"
                                 style={{ 
@@ -253,7 +258,7 @@ export function ModelsTab() {
                           )}
                           {!model.training?.metadata && (
                             <p style={{ color: themeParams.hint_color }}>
-                              No output data available
+                              No hay datos de salida disponibles
                             </p>
                           )}
                         </div>
@@ -271,7 +276,7 @@ export function ModelsTab() {
                         disabled={isDeleting || model.status === 'TRAINING'}
                       >
                         <Trash2 className="h-3 w-3 mr-1.5" />
-                        {isDeleting ? 'Deleting...' : 'Delete Model'}
+                        {isDeleting ? 'Eliminando...' : 'Eliminar Modelo'}
                       </button>
                     </div>
                   </div>
@@ -292,12 +297,12 @@ export function ModelsTab() {
             className="p-6 max-w-md w-full mx-4 border shadow-lg"
             style={cardStyle}
           >
-            <h3 className="text-lg font-medium mb-2">Delete Model</h3>
+            <h3 className="text-lg font-medium mb-2">Eliminar Modelo</h3>
             <p 
               className="text-sm mb-6"
               style={{ color: themeParams.hint_color }}
             >
-              Are you sure you want to delete "{modelToDelete.name}"? This action cannot be undone.
+              ¿Estás seguro de que deseas eliminar "{modelToDelete.name}"? Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -308,7 +313,7 @@ export function ModelsTab() {
                   borderColor: `${themeParams.button_color}20`,
                 }}
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 className="px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
@@ -319,7 +324,7 @@ export function ModelsTab() {
                   color: '#ffffff'
                 }}
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
               </button>
             </div>
           </div>

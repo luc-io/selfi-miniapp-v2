@@ -46,28 +46,28 @@ function App() {
             onClick={() => setActiveTab(TABS.GENERATE)}
             style={tabStyle(activeTab === TABS.GENERATE)}
           >
-            Generate
+            Generar
           </button>
           <button
             className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
             onClick={() => setActiveTab(TABS.TRAIN)}
             style={tabStyle(activeTab === TABS.TRAIN)}
           >
-            Train
+            Entrenar
           </button>
           <button
             className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
             onClick={() => setActiveTab(TABS.MODELS)}
             style={tabStyle(activeTab === TABS.MODELS)}
           >
-            Models
+            Modelos
           </button>
           <button
             className="flex-1 py-2.5 px-3 text-sm font-medium transition-colors rounded-md hover:opacity-80"
             onClick={() => setActiveTab(TABS.IMAGES)}
             style={tabStyle(activeTab === TABS.IMAGES)}
           >
-            Images
+            Imágenes
           </button>
         </div>
 
