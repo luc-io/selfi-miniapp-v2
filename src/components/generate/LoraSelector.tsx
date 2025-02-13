@@ -54,7 +54,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
             className="text-sm font-medium" 
             style={{ color: themeParams.text_color }}
           >
-            LoRAs
+            Modelos LoRA
           </label>
           <button 
             type="button" 
@@ -73,7 +73,7 @@ export function LoraSelector({ loras, availableLoras, onAdd, onRemove, onScaleCh
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Los LoRAs que se usarán para la generación de la imagen. Puedes usar cualquier número de LoRAs y se combinarán para generar la imagen final.
+            Los modelos LoRA que se usarán para la generación de la imagen. Puedes usar cualquier número de modelos LoRA y se combinarán para generar la imagen final.
           </p>
         )}
       </div>
