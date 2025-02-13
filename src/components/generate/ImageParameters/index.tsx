@@ -120,7 +120,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
           className="block text-sm font-medium" 
           style={{ color: themeParams.text_color }}
         >
-          Output Format
+          Formato de imagen
         </label>
         <Select 
           value={params.output_format}
@@ -180,7 +180,7 @@ export function ImageParameters({ params, updateParam, themeParams }: ImageParam
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Filter inappropriate content
+            Filtrar contenido inapropiado
           </p>
         </div>
         <Switch 
