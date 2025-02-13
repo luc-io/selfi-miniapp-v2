@@ -22,7 +22,7 @@ export function TriggerWordInput({ value, onChange }: TriggerWordInputProps) {
         className="block text-sm font-medium" 
         style={labelStyle}
       >
-        Trigger Word
+        Palabra disparador (trigger word)
       </label>
       <input
         type="text"
@@ -40,7 +40,7 @@ export function TriggerWordInput({ value, onChange }: TriggerWordInputProps) {
         className="text-xs" 
         style={hintStyle}
       >
-        Word that will trigger your trained model
+        Palabra que disparará el modelo
       </p>
     </div>
   );
