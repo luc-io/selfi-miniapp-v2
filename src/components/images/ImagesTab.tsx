@@ -5,12 +5,17 @@ import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import type { GeneratedImage } from '@/types/image';
 import { getGeneratedImages, type ImagesResponse } from '@/api/images';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import type { LoraParameter } from '@/types/lora';
 
 interface ImageItemProps {
   image: GeneratedImage;
   themeParams: any;
   images: GeneratedImage[];
   onImageClick: (imageId: string) => void;
+}
+
+interface StoredLora extends LoraParameter {
+  triggerWord?: string;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -30,19 +35,21 @@ const formatDateLatam = (date: Date) => {
 const generateCommand = (image: GeneratedImage): string => {
   const parts = ['/gen', image.prompt];
   
-  if (image.width && image.height) {
-    const ar = image.width === image.height ? '1:1' : '16:9';
-    parts.push(`--ar ${ar}`);
-  }
+  // Add model parameters
   if (image.params?.num_inference_steps) parts.push(`--s ${image.params.num_inference_steps}`);
   if (image.params?.guidance_scale) parts.push(`--c ${image.params.guidance_scale}`);
   if (typeof image.seed === 'number' && !isNaN(image.seed)) {
     parts.push(`--seed ${image.seed}`);
   }
-  if (image.loras?.[0]) {
-    const lora = image.loras[0];
-    parts.push(`--l ${lora.triggerWord || lora.name}:${lora.scale}`);
-  }
+
+  // Add all LoRAs with their trigger words and scales
+  // Use nullish coalescing to handle potential undefined values
+  const loras = (image.params?.loras ?? []) as StoredLora[];
+  loras.forEach(lora => {
+    if (lora.triggerWord && lora.scale) {
+      parts.push(`--l ${lora.triggerWord}:${lora.scale}`);
+    }
+  });
   
   return parts.join(' ');
 };
