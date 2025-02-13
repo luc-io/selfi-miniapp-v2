@@ -28,7 +28,7 @@ export function TriggerWordInput({ value, onChange }: TriggerWordInputProps) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="e.g., person name, object name"
+        placeholder="ej: nombre de la persona, objecto o estilo"
         className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
         style={{
           backgroundColor: themeParams.secondary_bg_color,
