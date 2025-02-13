@@ -122,7 +122,7 @@ export function GenerateTab() {
     } catch (error) {
       console.error('Error saving parameters:', error);
       window.Telegram?.WebApp?.showPopup({
-        message: 'Failed to save parameters. Please try again.'
+        message: 'Error al guardar los parámetros. Por favor intenta de nuevo.'
       });
     } finally {
       setIsSaving(false);
@@ -178,7 +178,7 @@ export function GenerateTab() {
             />
           ) : (
             <p className="text-sm" style={hintStyle}>
-              No selected LoRA models available. Go to the Models tab to select models you want to use.
+              No hay modelos LoRA seleccionados disponibles. Ve a la pestaña Modelos para seleccionar los modelos que quieres usar.
             </p>
           )}
         </div>
@@ -197,7 +197,7 @@ export function GenerateTab() {
           onClick={handleSave}
           style={buttonStyle}
         >
-          {isSaving ? 'Saving...' : 'Save Parameters'}
+          {isSaving ? 'Guardando...' : 'Guardar Parámetros'}
         </button>
       </div>
     </Card>
