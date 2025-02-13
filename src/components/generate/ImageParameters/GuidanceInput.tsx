@@ -22,7 +22,7 @@ export function GuidanceInput({ value, onChange, onReset, themeParams }: Guidanc
               className="block text-sm font-medium" 
               style={{ color: themeParams.text_color }}
             >
-              Escala CFG
+              Escala de guía CFG
             </label>
             <span 
               className="text-sm"
