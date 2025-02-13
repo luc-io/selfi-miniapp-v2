@@ -19,13 +19,13 @@ export function NumImagesInput({ value = DEFAULT_VALUE, onChange, onReset, theme
           className="block text-sm font-medium" 
           style={{ color: themeParams.text_color }}
         >
-          Images <span style={{ color: themeParams.hint_color }} className="ml-1">({value})</span>
+          Imágenes <span style={{ color: themeParams.hint_color }} className="ml-1">({value})</span>
         </label>
         <button 
           onClick={onReset}
           className="p-1 rounded-md transition-opacity duration-200 hover:opacity-80 focus:outline-none"
           style={{ color: themeParams.button_color }}
-          title="Reset to default (1)"
+          title="Restablecer al valor predeterminado (1)"
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </button>

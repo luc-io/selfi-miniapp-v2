@@ -67,7 +67,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             type="button"
             className="hover:opacity-80 transition-opacity focus:outline-none"
             onClick={() => setShowHelp(!showHelp)}
-            aria-label="Toggle seed info"
+            aria-label="Ver información de seed"
           >
             <Info 
               className="h-3.5 w-3.5" 
@@ -80,7 +80,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Same seed + prompt = same image. Use 0 for random seed.
+            Mismo seed + prompt = misma imagen. Usa 0 para seed aleatorio.
           </p>
         )}
       </div>
@@ -91,7 +91,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
           pattern="[0-9]*"
           value={formatSeedForDisplay(value)}
           onChange={(e) => handleSeedChange(e.target.value)}
-          placeholder="0 for random"
+          placeholder="0 para aleatorio"
           maxLength={7}
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
@@ -107,7 +107,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Clear seed (use 0 for random)"
+          title="Limpiar seed (usar 0 para aleatorio)"
         >
           <X className="h-4 w-4" />
         </button>
@@ -118,7 +118,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Generate random seed"
+          title="Generar seed aleatorio"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
