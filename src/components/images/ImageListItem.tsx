@@ -6,6 +6,9 @@ import type { ImageListItemProps } from './types';
 import { generateCommand } from './utils/commandGenerator';
 import { formatDateLatam } from './utils/dateFormatter';
 import { useLongPress } from '@/hooks/useLongPress';
+import { useQueryClient } from '@tanstack/react-query';
+import { deleteImage } from '@/api/images';
+import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +29,8 @@ export function ImageListItem({ image, themeParams, images, onImageClick }: Imag
   const [isDeleting, setIsDeleting] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
   const command = generateCommand(image);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const itemStyle = {
     borderColor: `${themeParams.button_color}20`,
@@ -68,11 +73,34 @@ export function ImageListItem({ image, themeParams, images, onImageClick }: Imag
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      // TODO: Call delete API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API call
-      // TODO: Show success toast
+      await deleteImage(image.id);
+      
+      // Update the cache to remove the deleted image
+      queryClient.setQueryData(['images'], (oldData: any) => ({
+        pages: oldData.pages.map((page: any) => ({
+          ...page,
+          images: page.images.filter((img: any) => img.id !== image.id)
+        }))
+      }));
+
+      toast({
+        description: "Imagen eliminada exitosamente",
+        style: {
+          backgroundColor: themeParams.bg_color,
+          color: themeParams.text_color,
+          border: `1px solid ${themeParams.button_color}20`,
+        },
+      });
     } catch (error) {
-      // TODO: Show error toast
+      toast({
+        description: "Error al eliminar la imagen",
+        variant: "destructive",
+        style: {
+          backgroundColor: '#fee2e2',
+          color: '#dc2626',
+          border: '1px solid #ef4444',
+        },
+      });
       console.error('Error deleting image:', error);
     } finally {
       setIsDeleting(false);
