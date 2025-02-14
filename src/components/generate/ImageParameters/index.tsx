@@ -13,8 +13,8 @@ const IMAGE_SIZES = {
   landscape_16_9: 'Paisaje 16:9',
   square_hd: 'Cuadrado 1:1 HD',
   square: 'Cuadrado 1:1',
-  portrait_4_3: 'Retrato 4:3',
-  portrait_16_9: 'Retrato 16:9',
+  portrait_4_3: 'Retrato 3:4',
+  portrait_16_9: 'Retrato 9:16',
 } as const;
 
 interface ImageParametersProps {
