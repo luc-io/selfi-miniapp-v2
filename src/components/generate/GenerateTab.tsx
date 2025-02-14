@@ -12,12 +12,11 @@ import { getUserModels } from '@/api/loras';
 import { useQuery } from '@tanstack/react-query';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import { ImageParameters } from './ImageParameters';
-import { generateFalSeed } from '@/utils/seed';
 
 const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
-  seed: generateFalSeed(), // Initialize with a random seed
+  seed: 0, // Default to random seed
   guidance_scale: 3.5,
   enable_safety_checker: true,
   output_format: 'jpeg',
@@ -30,8 +29,7 @@ export function GenerateTab() {
   const { parameters, isLoading: isLoadingParams, invalidateParameters } = useParameters();
   const [params, setParams] = useState<GenerationParameters>(() => ({
     ...DEFAULT_PARAMS,
-    ...parameters,
-    seed: parameters?.seed || generateFalSeed() // Ensure we always have a valid seed
+    ...parameters
   }));
   const [isSaving, setIsSaving] = useState(false);
   const themeParams = useTelegramTheme();
@@ -62,7 +60,6 @@ export function GenerateTab() {
         const updatedParams = {
           ...DEFAULT_PARAMS,
           ...parameters,
-          seed: parameters.seed || generateFalSeed(), // Ensure we always have a valid seed
           loras: parameters.loras?.filter(lora => selectedModelIds.has(lora.path)) || [],
           ...Object.fromEntries(
             Object.entries(currentParams).filter(([key]) => 

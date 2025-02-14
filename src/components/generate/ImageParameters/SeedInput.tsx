@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RotateCcw, X, Info } from 'lucide-react';
 import type { TelegramThemeParams } from '@/types/telegram';
 import { generateFalSeed } from '@/utils/seed';
@@ -10,48 +10,70 @@ interface SeedInputProps {
 }
 
 const formatSeedForDisplay = (seed: number): string => {
+  if (seed === 0) return 'aleatorio';
   return String(seed);
 };
 
 const parseSeedInput = (input: string): number => {
-  if (!input || input.trim() === '') return 0;
-  const cleanInput = input.replace(/[^0-9]/g, '');
-  if (!cleanInput) return 0;
-  
-  // Convert to 7-digit number
-  if (cleanInput.length < 7) {
-    // If less than 7 digits, pad with leading digits starting with 1
-    return Number('1' + cleanInput.padStart(6, '0'));
+  // Handle empty input or "aleatorio"
+  if (!input || input.trim() === '' || input.toLowerCase() === 'aleatorio') {
+    return 0; // Use 0 for random
   }
+
+  const cleanInput = input.replace(/[^0-9]/g, '');
+  if (!cleanInput) return 0; // Use 0 for random if no valid numbers
   
+  // Convert to number
+  const num = Number(cleanInput);
+  
+  // If number is 0, use it (for random)
+  if (num === 0) return 0;
+  
+  // Handle numbers with more than 7 digits
   if (cleanInput.length > 7) {
-    // If more than 7 digits, take first 7
     return Number(cleanInput.slice(0, 7));
   }
   
-  // Exactly 7 digits
-  const num = Number(cleanInput);
-  if (num < 1000000) {
-    // Ensure it starts with 1 if somehow less than 1000000
-    return 1000000 + (num % 1000000);
-  }
   return num;
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   const [showHelp, setShowHelp] = useState(false);
+  const [inputValue, setInputValue] = useState(formatSeedForDisplay(value));
+
+  // Generate a specific random seed and display it
+  const handleRandomSeed = () => {
+    console.log('Generating new random seed...'); // Debug log
+    const newSeed = generateFalSeed();
+    console.log('Generated new seed:', newSeed); // Debug log
+    setInputValue(String(newSeed));
+    onChange(newSeed);
+  };
+
+  // Set to "aleatorio" (0) for random seed
+  const handleClearSeed = () => {
+    console.log('Setting seed to random (0)'); // Debug log
+    setInputValue('aleatorio');
+    onChange(0);
+  };
 
   const handleSeedChange = (input: string) => {
-    onChange(parseSeedInput(input));
+    console.log('Seed input changed to:', input); // Debug log
+    setInputValue(input);
+    const parsedValue = parseSeedInput(input);
+    console.log('Parsed seed value:', parsedValue); // Debug log
+    onChange(parsedValue);
   };
 
-  const handleRandomSeed = () => {
-    onChange(generateFalSeed());
-  };
-
-  const handleClearSeed = () => {
-    onChange(0);  // Just clear to 0
-  };
+  // Update input value when prop changes (e.g., on initial load)
+  useEffect(() => {
+    console.log('Seed value prop changed to:', value); // Debug log
+    const displayValue = formatSeedForDisplay(value);
+    if (displayValue !== inputValue) {
+      console.log('Updating input display to:', displayValue); // Debug log
+      setInputValue(displayValue);
+    }
+  }, [value]);
 
   return (
     <div className="space-y-2">
@@ -80,19 +102,16 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Mismo seed + prompt = misma imagen. Usa 0 para seed aleatorio.
+            Mismo seed + prompt = misma imagen. "Aleatorio" = nuevo seed aleatorio cada vez.
           </p>
         )}
       </div>
       <div className="flex gap-2">
         <input
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={formatSeedForDisplay(value)}
+          value={inputValue}
           onChange={(e) => handleSeedChange(e.target.value)}
-          placeholder="0 para aleatorio"
-          maxLength={7}
+          placeholder="aleatorio"
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
             backgroundColor: themeParams.secondary_bg_color,
@@ -107,7 +126,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Limpiar seed (usar 0 para aleatorio)"
+          title="Usar seed aleatorio cada vez"
         >
           <X className="h-4 w-4" />
         </button>
@@ -118,7 +137,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Generar seed aleatorio"
+          title="Generar un seed aleatorio específico"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
