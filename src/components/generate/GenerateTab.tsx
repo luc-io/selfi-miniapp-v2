@@ -16,7 +16,7 @@ import { ImageParameters } from './ImageParameters';
 const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
-  seed: 0, // Default to 0 (random/aleatorio)
+  seed: 0, // Default to random seed
   guidance_scale: 3.5,
   enable_safety_checker: true,
   output_format: 'jpeg',
