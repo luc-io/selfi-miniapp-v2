@@ -10,48 +10,58 @@ interface SeedInputProps {
 }
 
 const formatSeedForDisplay = (seed: number): string => {
+  if (seed === 0) return 'aleatorio';
   return String(seed);
 };
 
 const parseSeedInput = (input: string): number => {
-  if (!input || input.trim() === '') return 0;
+  // Handle empty input or "aleatorio"
+  if (!input || input.trim() === '' || input.toLowerCase() === 'aleatorio') {
+    return 0;
+  }
+
   const cleanInput = input.replace(/[^0-9]/g, '');
   if (!cleanInput) return 0;
   
-  // Convert to 7-digit number
-  if (cleanInput.length < 7) {
-    // If less than 7 digits, pad with leading digits starting with 1
-    return Number('1' + cleanInput.padStart(6, '0'));
-  }
+  // Convert to number
+  const num = Number(cleanInput);
   
+  // If number is 0, return 0 (random)
+  if (num === 0) return 0;
+  
+  // Handle numbers with more than 7 digits
   if (cleanInput.length > 7) {
-    // If more than 7 digits, take first 7
     return Number(cleanInput.slice(0, 7));
   }
   
-  // Exactly 7 digits
-  const num = Number(cleanInput);
-  if (num < 1000000) {
-    // Ensure it starts with 1 if somehow less than 1000000
-    return 1000000 + (num % 1000000);
-  }
   return num;
 };
 
 export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   const [showHelp, setShowHelp] = useState(false);
+  const [inputValue, setInputValue] = useState(formatSeedForDisplay(value));
 
   const handleSeedChange = (input: string) => {
-    onChange(parseSeedInput(input));
+    setInputValue(input);
+    const parsedValue = parseSeedInput(input);
+    onChange(parsedValue);
   };
 
   const handleRandomSeed = () => {
-    onChange(generateFalSeed());
+    const newSeed = generateFalSeed();
+    setInputValue(String(newSeed));
+    onChange(newSeed);
   };
 
   const handleClearSeed = () => {
-    onChange(0);  // Just clear to 0
+    setInputValue('aleatorio');
+    onChange(0);
   };
+
+  // Update input value when prop changes (e.g., on initial load)
+  if (formatSeedForDisplay(value) !== inputValue) {
+    setInputValue(formatSeedForDisplay(value));
+  }
 
   return (
     <div className="space-y-2">
@@ -80,19 +90,16 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Mismo seed + prompt = misma imagen. Usa 0 para seed aleatorio.
+            Mismo seed + prompt = misma imagen. Usa 0 o "aleatorio" para seed aleatorio.
           </p>
         )}
       </div>
       <div className="flex gap-2">
         <input
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={formatSeedForDisplay(value)}
+          value={inputValue}
           onChange={(e) => handleSeedChange(e.target.value)}
-          placeholder="0 para aleatorio"
-          maxLength={7}
+          placeholder="aleatorio"
           className="w-full px-3 py-1.5 rounded-md border text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-offset-1"
           style={{
             backgroundColor: themeParams.secondary_bg_color,
@@ -107,7 +114,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Limpiar seed (usar 0 para aleatorio)"
+          title="Usar seed aleatorio"
         >
           <X className="h-4 w-4" />
         </button>
