@@ -6,6 +6,26 @@ export interface ImageData {
   url: string;
   prompt: string;
   createdAt: string;
+  width: number;
+  height: number;
+  seed: string;
+  hasNsfw: boolean;
+  params: {
+    image_size: string;
+    num_inference_steps: number;
+    guidance_scale: number;
+    enable_safety_checker: boolean;
+    output_format: 'jpeg' | 'png';
+    originalSeed: number;
+    requestedSeed: number;
+    loras?: Array<{
+      id: string;
+      name: string;
+      triggerWord: string;
+      scale: number;
+      weightsUrl: string;
+    }>;
+  };
 }
 
 export interface ImagesResponse {
