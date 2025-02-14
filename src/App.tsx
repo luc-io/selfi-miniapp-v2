@@ -4,7 +4,7 @@ import { TrainTab } from './components/train/index';
 import { ModelsTab } from './components/models/ModelsTab';
 import { ImagesTab } from './components/images';
 import { useTelegramTheme } from './hooks/useTelegramTheme';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from './components/ui/toaster';
 
 const TABS = {
   GENERATE: 'generate',
