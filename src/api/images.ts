@@ -1,66 +1,57 @@
-import type { GeneratedImage } from '@/types/image';
-import { buildValidationData } from './loras';
+import { API_BASE_URL } from '@/config';
+import { getValidToken } from '@/utils/telegram';
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
-
-export interface ImagesResponse {
-  images: GeneratedImage[];
-  total: number;
-  hasMore: boolean;
+export interface ImageData {
+  id: string;
+  url: string;
+  prompt: string;
+  createdAt: string;
 }
 
-export interface GetImagesParams {
+export interface ImagesResponse {
+  images: ImageData[];
+  hasMore: boolean;
+  total: number;
+}
+
+interface PaginationParams {
   page?: number;
   limit?: number;
 }
 
-export async function getGeneratedImages(params: GetImagesParams = {}): Promise<ImagesResponse> {
-  const webApp = window.Telegram?.WebApp;
-  if (!webApp) throw new Error('Telegram WebApp not available');
-  const userId = webApp.initDataUnsafe?.user?.id?.toString();
-  if (!userId) throw new Error('Telegram user ID not available');
-
-  const { page = 1, limit = 10 } = params;
+export async function getGeneratedImages(params: PaginationParams = {}): Promise<ImagesResponse> {
+  const token = await getValidToken();
   
-  const searchParams = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString()
-  });
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', params.page.toString());
+  if (params.limit) searchParams.set('limit', params.limit.toString());
 
-  const response = await fetch(`${API_BASE}/images?${searchParams.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/api/images?${searchParams.toString()}`, {
     headers: {
-      'x-telegram-init-data': buildValidationData(webApp),
-      'x-telegram-user-id': userId,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-telegram-init-data': token
     }
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to fetch generated images');
+    throw new Error(`Failed to fetch images: ${response.statusText}`);
   }
 
   return response.json();
 }
 
-export async function getImageById(id: string): Promise<GeneratedImage> {
-  const webApp = window.Telegram?.WebApp;
-  if (!webApp) throw new Error('Telegram WebApp not available');
-  const userId = webApp.initDataUnsafe?.user?.id?.toString();
-  if (!userId) throw new Error('Telegram user ID not available');
-
-  const response = await fetch(`${API_BASE}/images/${id}`, {
+export async function deleteImage(imageId: string): Promise<void> {
+  const token = await getValidToken();
+  
+  const response = await fetch(`${API_BASE_URL}/api/images/${imageId}`, {
+    method: 'DELETE',
     headers: {
-      'x-telegram-init-data': buildValidationData(webApp),
-      'x-telegram-user-id': userId,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-telegram-init-data': token
     }
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to fetch image details');
+    throw new Error(response.statusText || 'Failed to delete image');
   }
-
-  return response.json();
 }
