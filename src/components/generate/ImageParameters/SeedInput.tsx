@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RotateCcw, X, Info } from 'lucide-react';
 import type { TelegramThemeParams } from '@/types/telegram';
+import { generateFalSeed } from '@/utils/seed';
 
 interface SeedInputProps {
   value: number;
@@ -40,28 +41,36 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   const [showHelp, setShowHelp] = useState(false);
   const [inputValue, setInputValue] = useState(formatSeedForDisplay(value));
 
-  // For random seed requests
+  // Generate a specific random seed and display it
   const handleRandomSeed = () => {
-    setInputValue('aleatorio');
-    onChange(0);
+    console.log('Generating new random seed...'); // Debug log
+    const newSeed = generateFalSeed();
+    console.log('Generated new seed:', newSeed); // Debug log
+    setInputValue(String(newSeed));
+    onChange(newSeed);
   };
 
-  // For clear button and "aleatorio" option
+  // Set to "aleatorio" (0) for random seed
   const handleClearSeed = () => {
+    console.log('Setting seed to random (0)'); // Debug log
     setInputValue('aleatorio');
     onChange(0);
   };
 
   const handleSeedChange = (input: string) => {
+    console.log('Seed input changed to:', input); // Debug log
     setInputValue(input);
     const parsedValue = parseSeedInput(input);
+    console.log('Parsed seed value:', parsedValue); // Debug log
     onChange(parsedValue);
   };
 
   // Update input value when prop changes (e.g., on initial load)
   useEffect(() => {
+    console.log('Seed value prop changed to:', value); // Debug log
     const displayValue = formatSeedForDisplay(value);
     if (displayValue !== inputValue) {
+      console.log('Updating input display to:', displayValue); // Debug log
       setInputValue(displayValue);
     }
   }, [value]);
@@ -93,7 +102,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Mismo seed + prompt = misma imagen. Usa "aleatorio" o 0 para seed aleatorio.
+            Mismo seed + prompt = misma imagen. "Aleatorio" = nuevo seed aleatorio cada vez.
           </p>
         )}
       </div>
@@ -117,7 +126,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Usar seed aleatorio"
+          title="Usar seed aleatorio cada vez"
         >
           <X className="h-4 w-4" />
         </button>
@@ -128,7 +137,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             backgroundColor: themeParams.button_color,
             color: themeParams.button_text_color
           }}
-          title="Generar seed aleatorio"
+          title="Generar un seed aleatorio específico"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
