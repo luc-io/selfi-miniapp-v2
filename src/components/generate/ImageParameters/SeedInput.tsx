@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RotateCcw, X, Info } from 'lucide-react';
 import type { TelegramThemeParams } from '@/types/telegram';
 import { generateFalSeed } from '@/utils/seed';
@@ -17,17 +17,17 @@ const formatSeedForDisplay = (seed: number): string => {
 const parseSeedInput = (input: string): number => {
   // Handle empty input or "aleatorio"
   if (!input || input.trim() === '' || input.toLowerCase() === 'aleatorio') {
-    return 0;
+    return generateFalSeed(); // Generate new seed immediately instead of using 0
   }
 
   const cleanInput = input.replace(/[^0-9]/g, '');
-  if (!cleanInput) return 0;
+  if (!cleanInput) return generateFalSeed(); // Generate new seed if no valid numbers
   
   // Convert to number
   const num = Number(cleanInput);
   
-  // If number is 0, return 0 (random)
-  if (num === 0) return 0;
+  // If number is 0, generate a new seed
+  if (num === 0) return generateFalSeed();
   
   // Handle numbers with more than 7 digits
   if (cleanInput.length > 7) {
@@ -41,27 +41,33 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
   const [showHelp, setShowHelp] = useState(false);
   const [inputValue, setInputValue] = useState(formatSeedForDisplay(value));
 
-  const handleSeedChange = (input: string) => {
-    setInputValue(input);
-    const parsedValue = parseSeedInput(input);
-    onChange(parsedValue);
-  };
-
+  // Generate a new random seed when requested or needed
   const handleRandomSeed = () => {
     const newSeed = generateFalSeed();
     setInputValue(String(newSeed));
     onChange(newSeed);
   };
 
+  // For clear button and "aleatorio" option, generate a new seed
   const handleClearSeed = () => {
+    const newSeed = generateFalSeed();
     setInputValue('aleatorio');
-    onChange(0);
+    onChange(newSeed);
+  };
+
+  const handleSeedChange = (input: string) => {
+    setInputValue(input);
+    const parsedValue = parseSeedInput(input);
+    onChange(parsedValue);
   };
 
   // Update input value when prop changes (e.g., on initial load)
-  if (formatSeedForDisplay(value) !== inputValue) {
-    setInputValue(formatSeedForDisplay(value));
-  }
+  useEffect(() => {
+    const displayValue = value === 0 ? 'aleatorio' : String(value);
+    if (displayValue !== inputValue) {
+      setInputValue(displayValue);
+    }
+  }, [value]);
 
   return (
     <div className="space-y-2">
@@ -90,7 +96,7 @@ export function SeedInput({ value, onChange, themeParams }: SeedInputProps) {
             className="text-sm" 
             style={{ color: themeParams.hint_color }}
           >
-            Mismo seed + prompt = misma imagen. Usa 0 o "aleatorio" para seed aleatorio.
+            Mismo seed + prompt = misma imagen. Usa "aleatorio" para seed aleatorio.
           </p>
         )}
       </div>
