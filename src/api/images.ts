@@ -1,32 +1,8 @@
 import { API_BASE_URL } from '@/config';
 import { getValidToken } from '@/utils/telegram';
+import type { GeneratedImage } from '@/types/image';
 
-export interface ImageData {
-  id: string;
-  url: string;
-  prompt: string;
-  createdAt: string;
-  width: number;
-  height: number;
-  seed: string;
-  hasNsfw: boolean;
-  params: {
-    image_size: string;
-    num_inference_steps: number;
-    guidance_scale: number;
-    enable_safety_checker: boolean;
-    output_format: 'jpeg' | 'png';
-    originalSeed: number;
-    requestedSeed: number;
-    loras?: Array<{
-      id: string;
-      name: string;
-      triggerWord: string;
-      scale: number;
-      weightsUrl: string;
-    }>;
-  };
-}
+export type ImageData = GeneratedImage;
 
 export interface ImagesResponse {
   images: ImageData[];
@@ -57,7 +33,18 @@ export async function getGeneratedImages(params: PaginationParams = {}): Promise
     throw new Error(`Failed to fetch images: ${response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  // Convert string seed to number if necessary
+  const images = data.images.map((img: any) => ({
+    ...img,
+    seed: typeof img.seed === 'string' ? parseInt(img.seed, 10) : img.seed
+  }));
+
+  return {
+    ...data,
+    images
+  };
 }
 
 export async function deleteImage(imageId: string): Promise<void> {
