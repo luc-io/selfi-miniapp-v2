@@ -26,5 +26,9 @@ export async function getValidToken(): Promise<string> {
   cachedToken = webApp.initData;
   lastTokenTimestamp = currentTime;
 
+  if (!cachedToken) {
+    throw new Error('Failed to get Telegram init data');
+  }
+
   return cachedToken;
 }
