@@ -22,7 +22,7 @@ export function TriggerWordInput({ value, onChange }: TriggerWordInputProps) {
         className="block text-sm font-medium" 
         style={labelStyle}
       >
-        Palabra disparador (trigger word)
+        Nombre del modelo
       </label>
       <input
         type="text"
@@ -33,14 +33,14 @@ export function TriggerWordInput({ value, onChange }: TriggerWordInputProps) {
         style={{
           backgroundColor: themeParams.secondary_bg_color,
           color: themeParams.text_color,
-          borderColor: `${themeParams.button_color}40`
+          borderColor: `${themeParams.button_color}60`
         }}
       />
       <p 
         className="text-xs" 
         style={hintStyle}
       >
-        Palabra que disparará el modelo
+        Palabra que usaras para identificar el modelo
       </p>
     </div>
   );
