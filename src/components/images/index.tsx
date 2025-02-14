@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Loader2 } from 'lucide-react';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
@@ -34,6 +34,29 @@ export function ImagesTab() {
       return allPages.length + 1;
     }
   });
+
+  // Infinite scroll handling
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentElement = loadMoreRef.current;
+    if (currentElement) {
+      observer.observe(currentElement);
+    }
+
+    return () => {
+      if (currentElement) {
+        observer.unobserve(currentElement);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleImageClick = useCallback((imageId: string) => {
     const imageElement = document.querySelector(`[data-image-id="${imageId}"]`);
@@ -91,7 +114,7 @@ export function ImagesTab() {
               No images generated yet. Go to the Generate tab to create some!
             </p>
           </div>
-        ) : (
+        ) : hasNextPage && (
           <div 
             ref={loadMoreRef} 
             className="p-4 flex justify-center"
