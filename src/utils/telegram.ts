@@ -18,6 +18,10 @@ export async function getValidToken(): Promise<string> {
     throw new Error('Telegram WebApp is not available');
   }
 
+  if (!webApp.initData) {
+    throw new Error('Telegram init data is not available');
+  }
+
   // Update cache
   cachedToken = webApp.initData;
   lastTokenTimestamp = currentTime;
