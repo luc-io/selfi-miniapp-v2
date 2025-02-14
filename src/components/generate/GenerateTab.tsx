@@ -16,7 +16,7 @@ import { ImageParameters } from './ImageParameters';
 const DEFAULT_PARAMS: GenerationParameters = {
   image_size: 'landscape_4_3',
   num_inference_steps: 28,
-  seed: 0, // Default to random (0) instead of generating
+  seed: 0, // Default to 0 (random/aleatorio)
   guidance_scale: 3.5,
   enable_safety_checker: true,
   output_format: 'jpeg',
@@ -29,9 +29,7 @@ export function GenerateTab() {
   const { parameters, isLoading: isLoadingParams, invalidateParameters } = useParameters();
   const [params, setParams] = useState<GenerationParameters>(() => ({
     ...DEFAULT_PARAMS,
-    ...parameters,
-    // Keep seed as 0 if parameters.seed is 0, otherwise use parameters.seed or 0
-    seed: parameters?.seed === 0 ? 0 : (parameters?.seed || 0)
+    ...parameters
   }));
   const [isSaving, setIsSaving] = useState(false);
   const themeParams = useTelegramTheme();
@@ -62,8 +60,6 @@ export function GenerateTab() {
         const updatedParams = {
           ...DEFAULT_PARAMS,
           ...parameters,
-          // Keep seed as 0 if it's 0 in parameters
-          seed: parameters.seed === 0 ? 0 : (parameters.seed || 0),
           loras: parameters.loras?.filter(lora => selectedModelIds.has(lora.path)) || [],
           ...Object.fromEntries(
             Object.entries(currentParams).filter(([key]) => 
